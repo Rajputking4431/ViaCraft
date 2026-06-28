@@ -1,0 +1,14 @@
+# https://www.robotstxt.org/robotstxt.html
+User-agent: *
+Allow: /
+
+# Directories
+Disallow: /admin/
+Disallow: /_authenticated/
+Disallow: /reset-password/
+
+# Host
+Host: https://viacraft.com
+
+# Sitemaps
+Sitemap: https://viacraft.com/sitemap.xml
