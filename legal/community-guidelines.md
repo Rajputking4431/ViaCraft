@@ -1,12 +1,12 @@
 # Community Guidelines
 
-**Effective Date:** [Effective Date]  
-**Last Updated:** [Last Updated]
+**Effective Date:** July 10, 2026  
+**Last Updated:** July 10, 2026
 
 ## 1. Introduction
 Welcome to ViaCraft. ViaCraft is a multi-vendor online marketplace specializing in handcrafted resin products, customized gifts, home decor, and preservation crafts.
 
-Our Community Guidelines are designed to ensure that [Website URL] remains a safe, respectful, and inspiring environment for Customers, Vendors, and creators alike.
+Our Community Guidelines are designed to ensure that https://viacraft.in remains a safe, respectful, and inspiring environment for Customers, Vendors, and creators alike.
 
 ## 2. Purpose
 The purpose of these guidelines is to outline the standard of behavior expected from everyone interacting on the Platform. This includes rules regarding communication, reviews, listings, and the prevention of fraud, abuse, and harassment.
@@ -43,7 +43,7 @@ The following activities are strictly prohibited on the Platform:
 
 ## 7. Review and Moderation Policy
 *   **Review Removal:** ViaCraft will remove reviews containing profanity, advertising, personally identifiable details, or those verified as fake or malicious.
-*   **Reporting:** Users can report inappropriate behavior or listings by emailing [Support Email].
+*   **Reporting:** Users can report inappropriate behavior or listings by emailing support@viacraft.in.
 
 ## 8. Exceptions & Special Cases
 *   **Public Interest:** The Platform may share logs, messages, and account details with law enforcement agencies in cases of fraud, theft, or explicit illegal activities, bypassing standard account confidentiality.
@@ -60,7 +60,7 @@ ViaCraft is not responsible for user-generated content, reviews, or messages. Th
 
 ## 11. Contact & Reporting
 To report a violation of these guidelines:
-*   **Support Email:** [Support Email]
+*   **Support Email:** support@viacraft.in
 *   **Subject Line:** "Guideline Violation Report - [Store Name / User Name]"
 
 ## 12. Governing Law

@@ -1,12 +1,12 @@
 # About Us
 
-**Effective Date:** [Effective Date]  
-**Last Updated:** [Last Updated]
+**Effective Date:** July 10, 2026  
+**Last Updated:** July 10, 2026
 
 ## 1. Introduction
 Welcome to ViaCraft ("Platform"). ViaCraft is a dedicated multi-vendor online marketplace designed to support independent artisans specializing in handmade resin crafts, personalized gifts, jewellery, home decor, and preservation art.
 
-Through [Website URL], we connect passionate creators with customers looking for custom-tailored keepsakes.
+Through https://viacraft.in, we connect passionate creators with customers looking for custom-tailored keepsakes.
 
 ## 2. Purpose
 The purpose of this About Us page is to share our brand mission, vision, operational model, and story, and to outline the values that guide ViaCraft's marketplace ecosystem.
@@ -51,8 +51,8 @@ We built ViaCraft as a bridge—taking care of the technological and operational
 While we strive to curate the highest-quality network of sellers, ViaCraft is not liable for minor color variations, product delays, or dispute resolution timelines resulting from Vendor operational issues.
 
 ## 12. Contact Information
-*   **General Inquiries:** [Support Email]
-*   **Media Contact:** [Support Email]
+*   **General Inquiries:** support@viacraft.in
+*   **Media Contact:** support@viacraft.in
 
 ## 13. Governing Law
 This information is provided in compliance with standard commercial intermediary guidelines in India.

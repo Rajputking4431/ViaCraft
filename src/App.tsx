@@ -3,50 +3,73 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AuthProvider } from "@/hooks/use-auth";
 import { NotificationsProvider } from "@/hooks/use-notifications";
 import { Toaster } from "sonner";
-import { useEffect } from "react";
+import { useEffect, lazy, Suspense } from "react";
 import { initGA, trackPageView } from "@/services/analytics/google";
 import { initClarity, trackClarityPageView } from "@/services/analytics/clarity";
 import { supabase } from "@/integrations/supabase/client";
 
-// Import all route modules
-import { Route as IndexRoute } from "./routes/index";
-import { Route as AuthRoute } from "./routes/auth";
-import { Route as CartRoute } from "./routes/cart";
-import { Route as CheckoutRoute } from "./routes/checkout";
-import { Route as CollectionsRoute } from "./routes/collections";
-import { Route as CustomOrderRoute } from "./routes/custom-order";
-import { Route as ResetPasswordRoute } from "./routes/reset-password";
-import { Route as SellRoute } from "./routes/sell";
-import { Route as ShopRoute } from "./routes/shop";
-import { Route as WishlistRoute } from "./routes/wishlist";
-import { Route as TrackingIdRoute } from "./routes/tracking.$id";
-import { Route as StoreSlugRoute } from "./routes/store.$slug";
-import { Route as ProductsSlugRoute } from "./routes/products.$slug";
-import { Route as LegalSlugRoute } from "./routes/legal.$slug";
+// Reusable elegant loader for route transitions
+function PageLoadingFallback() {
+  return (
+    <div className="flex min-h-[400px] w-full items-center justify-center bg-transparent">
+      <div className="flex flex-col items-center gap-3">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-accent border-t-transparent" />
+        <p className="text-xs font-semibold text-muted-foreground animate-pulse">Loading ViaCraft...</p>
+      </div>
+    </div>
+  );
+}
+
+// Reusable lazy route builder
+function lazyRoute(importFn: () => Promise<{ Route: { component: React.ComponentType<any> } }>) {
+  const LazyComponent = lazy(() => importFn().then((m) => ({ default: m.Route.component })));
+  return (props: any) => (
+    <Suspense fallback={<PageLoadingFallback />}>
+      <LazyComponent {...props} />
+    </Suspense>
+  );
+}
+
+// Lazy-loaded routes
+const IndexRouteComponent = lazyRoute(() => import("./routes/index"));
+const AuthRouteComponent = lazyRoute(() => import("./routes/auth"));
+const CartRouteComponent = lazyRoute(() => import("./routes/cart"));
+const CheckoutRouteComponent = lazyRoute(() => import("./routes/checkout"));
+const CollectionsRouteComponent = lazyRoute(() => import("./routes/collections"));
+const CustomOrderRouteComponent = lazyRoute(() => import("./routes/custom-order"));
+const ResetPasswordRouteComponent = lazyRoute(() => import("./routes/reset-password"));
+const SellRouteComponent = lazyRoute(() => import("./routes/sell"));
+const ShopRouteComponent = lazyRoute(() => import("./routes/shop"));
+const WishlistRouteComponent = lazyRoute(() => import("./routes/wishlist"));
+const TrackingIdRouteComponent = lazyRoute(() => import("./routes/tracking.$id"));
+const StoreSlugRouteComponent = lazyRoute(() => import("./routes/store.$slug"));
+const ProductsSlugRouteComponent = lazyRoute(() => import("./routes/products.$slug"));
+const LegalSlugRouteComponent = lazyRoute(() => import("./routes/legal.$slug"));
 
 // Preservation subtree
-import { Route as PreservationRoute } from "./routes/preservation";
-import { Route as PreservationIndexRoute } from "./routes/preservation.index";
-import { Route as PreservationIdRoute } from "./routes/preservation.$id";
+const PreservationRouteComponent = lazyRoute(() => import("./routes/preservation"));
+const PreservationIndexRouteComponent = lazyRoute(() => import("./routes/preservation.index"));
+const PreservationIdRouteComponent = lazyRoute(() => import("./routes/preservation.$id"));
 
 // Admin subtree
-import { Route as AdminRoute } from "./routes/admin";
-import { Route as AdminIndexRoute } from "./routes/admin.index";
-import { Route as AdminAnalyticsRoute } from "./routes/admin.analytics";
-import { Route as AdminCategoriesRoute } from "./routes/admin.categories";
-import { Route as AdminDashboardRoute } from "./routes/admin.dashboard";
-import { Route as AdminOrdersRoute } from "./routes/admin.orders";
-import { Route as AdminPreservationRoute } from "./routes/admin.preservation";
-import { Route as AdminProductsRoute } from "./routes/admin.products";
-import { Route as AdminSettingsRoute } from "./routes/admin.settings";
-import { Route as AdminVendorsRoute } from "./routes/admin.vendors";
+const AdminRouteComponent = lazyRoute(() => import("./routes/admin"));
+const AdminIndexRouteComponent = lazyRoute(() => import("./routes/admin.index"));
+const AdminAnalyticsRouteComponent = lazyRoute(() => import("./routes/admin.analytics"));
+const AdminCategoriesRouteComponent = lazyRoute(() => import("./routes/admin.categories"));
+const AdminDashboardRouteComponent = lazyRoute(() => import("./routes/admin.dashboard"));
+const AdminOrdersRouteComponent = lazyRoute(() => import("./routes/admin.orders"));
+const AdminPreservationRouteComponent = lazyRoute(() => import("./routes/admin.preservation"));
+const AdminProductsRouteComponent = lazyRoute(() => import("./routes/admin.products"));
+const AdminSettingsRouteComponent = lazyRoute(() => import("./routes/admin.settings"));
+const AdminReturnsRouteComponent = lazyRoute(() => import("./routes/admin.returns"));
+const AdminVendorsRouteComponent = lazyRoute(() => import("./routes/admin.vendors"));
 
 // Authenticated layout and sub-routes
-import { Route as AuthenticatedRoute } from "./routes/_authenticated/route";
-import { Route as DashboardRoute } from "./routes/_authenticated/dashboard";
-import { Route as VendorDashboardRoute } from "./routes/_authenticated/vendor.dashboard";
-import { Route as AdminUsersRoute } from "./routes/_authenticated/admin.users";
-import { Route as AdminShippingRoute } from "./routes/_authenticated/admin.shipping";
+const AuthenticatedRouteComponent = lazyRoute(() => import("./routes/_authenticated/route"));
+const DashboardRouteComponent = lazyRoute(() => import("./routes/_authenticated/dashboard"));
+const VendorDashboardRouteComponent = lazyRoute(() => import("./routes/_authenticated/vendor.dashboard"));
+const AdminUsersRouteComponent = lazyRoute(() => import("./routes/_authenticated/admin.users"));
+const AdminShippingRouteComponent = lazyRoute(() => import("./routes/_authenticated/admin.shipping"));
 
 const queryClient = new QueryClient();
 
@@ -98,46 +121,47 @@ export default function App() {
             <ScrollToTop />
             <Routes>
               {/* Public Routes */}
-              <Route path="/" element={<IndexRoute.component />} />
-              <Route path="/auth" element={<AuthRoute.component />} />
-              <Route path="/cart" element={<CartRoute.component />} />
-              <Route path="/checkout" element={<CheckoutRoute.component />} />
-              <Route path="/collections" element={<CollectionsRoute.component />} />
-              <Route path="/custom-order" element={<CustomOrderRoute.component />} />
-              <Route path="/reset-password" element={<ResetPasswordRoute.component />} />
-              <Route path="/sell" element={<SellRoute.component />} />
-              <Route path="/shop" element={<ShopRoute.component />} />
-              <Route path="/wishlist" element={<WishlistRoute.component />} />
-              <Route path="/tracking/:id" element={<TrackingIdRoute.component />} />
-              <Route path="/store/:slug" element={<StoreSlugRoute.component />} />
-              <Route path="/products/:slug" element={<ProductsSlugRoute.component />} />
-              <Route path="/legal/:slug" element={<LegalSlugRoute.component />} />
+              <Route path="/" element={<IndexRouteComponent />} />
+              <Route path="/auth" element={<AuthRouteComponent />} />
+              <Route path="/cart" element={<CartRouteComponent />} />
+              <Route path="/checkout" element={<CheckoutRouteComponent />} />
+              <Route path="/collections" element={<CollectionsRouteComponent />} />
+              <Route path="/custom-order" element={<CustomOrderRouteComponent />} />
+              <Route path="/reset-password" element={<ResetPasswordRouteComponent />} />
+              <Route path="/sell" element={<SellRouteComponent />} />
+              <Route path="/shop" element={<ShopRouteComponent />} />
+              <Route path="/wishlist" element={<WishlistRouteComponent />} />
+              <Route path="/tracking/:id" element={<TrackingIdRouteComponent />} />
+              <Route path="/store/:slug" element={<StoreSlugRouteComponent />} />
+              <Route path="/products/:slug" element={<ProductsSlugRouteComponent />} />
+              <Route path="/legal/:slug" element={<LegalSlugRouteComponent />} />
 
               {/* Preservation Subtree */}
-              <Route path="/preservation" element={<PreservationRoute.component />}>
-                <Route index element={<PreservationIndexRoute.component />} />
-                <Route path=":id" element={<PreservationIdRoute.component />} />
+              <Route path="/preservation" element={<PreservationRouteComponent />}>
+                <Route index element={<PreservationIndexRouteComponent />} />
+                <Route path=":id" element={<PreservationIdRouteComponent />} />
               </Route>
 
               {/* Admin Layout */}
-              <Route path="/admin" element={<AdminRoute.component />}>
-                <Route index element={<AdminIndexRoute.component />} />
-                <Route path="analytics" element={<AdminAnalyticsRoute.component />} />
-                <Route path="categories" element={<AdminCategoriesRoute.component />} />
-                <Route path="dashboard" element={<AdminDashboardRoute.component />} />
-                <Route path="orders" element={<AdminOrdersRoute.component />} />
-                <Route path="preservation" element={<AdminPreservationRoute.component />} />
-                <Route path="products" element={<AdminProductsRoute.component />} />
-                <Route path="settings" element={<AdminSettingsRoute.component />} />
-                <Route path="vendors" element={<AdminVendorsRoute.component />} />
+              <Route path="/admin" element={<AdminRouteComponent />}>
+                <Route index element={<AdminIndexRouteComponent />} />
+                <Route path="analytics" element={<AdminAnalyticsRouteComponent />} />
+                <Route path="categories" element={<AdminCategoriesRouteComponent />} />
+                <Route path="dashboard" element={<AdminDashboardRouteComponent />} />
+                <Route path="orders" element={<AdminOrdersRouteComponent />} />
+                <Route path="returns" element={<AdminReturnsRouteComponent />} />
+                <Route path="preservation" element={<AdminPreservationRouteComponent />} />
+                <Route path="products" element={<AdminProductsRouteComponent />} />
+                <Route path="settings" element={<AdminSettingsRouteComponent />} />
+                <Route path="vendors" element={<AdminVendorsRouteComponent />} />
+                <Route path="users" element={<AdminUsersRouteComponent />} />
+                <Route path="shipping" element={<AdminShippingRouteComponent />} />
               </Route>
 
               {/* Authenticated Layout Subtree */}
-              <Route element={<AuthenticatedRoute.component />}>
-                <Route path="/dashboard" element={<DashboardRoute.component />} />
-                <Route path="/vendor/dashboard" element={<VendorDashboardRoute.component />} />
-                <Route path="/admin/users" element={<AdminUsersRoute.component />} />
-                <Route path="/admin/shipping" element={<AdminShippingRoute.component />} />
+              <Route element={<AuthenticatedRouteComponent />}>
+                <Route path="/dashboard" element={<DashboardRouteComponent />} />
+                <Route path="/vendor/dashboard" element={<VendorDashboardRouteComponent />} />
               </Route>
 
               {/* Catch-all 404 */}

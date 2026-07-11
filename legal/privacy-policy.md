@@ -1,12 +1,12 @@
 # Privacy Policy
 
-**Effective Date:** [Effective Date]  
-**Last Updated:** [Last Updated]
+**Effective Date:** July 10, 2026  
+**Last Updated:** July 10, 2026
 
 ## 1. Introduction
 Welcome to ViaCraft ("we," "our," "us," or "Platform"). ViaCraft is a multi-vendor online marketplace providing facilitation services for independent artisans selling resin handmade products, gifts, jewellery, home decor, preservation items, customized resin products, and handmade crafts ("Products") to buyers ("Customers" or "Users"). We respect your privacy and are committed to protecting the personal data we collect, process, or store.
 
-This Privacy Policy describes how we collect, use, share, and protect your information when you visit and use our website [Website URL] and its subdomains.
+This Privacy Policy describes how we collect, use, share, and protect your information when you visit and use our website https://viacraft.in and its subdomains.
 
 ## 2. Purpose
 The purpose of this Privacy Policy is to inform Users (both Customers and Vendors) of our practices regarding data privacy, security, and our compliance with applicable laws, including the Indian Information Technology Act, 2000, and the Digital Personal Data Protection (DPDP) Act, 2023. It aims to establish clear guidelines for details collected, stored on Supabase, and media assets processed via Cloudinary.
@@ -74,13 +74,13 @@ The Platform is not directed to individuals under the age of 18. We do not knowi
 
 ## 14. Contact Information
 For privacy questions, access requests, or to exercise your rights, please contact our Grievance Officer:
-*   **Grievance Officer:** [Grievance Officer]
-*   **Support Email:** [Support Email]
-*   **Phone Number:** [Phone Number]
-*   **Business Address:** [Business Address]
+*   **Grievance Officer:** Mr. Om Sharma
+*   **Support Email:** support@viacraft.in
+*   **Phone Number:** +91 98765 43210
+*   **Business Address:** ViaCraft Office, 4th Floor, Sector 62, Noida, Uttar Pradesh - 201301, India
 
 ## 15. Governing Law
-This Privacy Policy is governed by and construed in accordance with the laws of India. Any disputes arising out of this policy shall be subject to the exclusive jurisdiction of the courts in [City/State, India].
+This Privacy Policy is governed by and construed in accordance with the laws of India. Any disputes arising out of this policy shall be subject to the exclusive jurisdiction of the courts in Noida, Uttar Pradesh, India.
 
 ## 16. Changes to This Policy
 We reserves the right to modify this Privacy Policy at any time. Any changes will be posted on this page with the updated "Last Updated" date. Continued use of the Platform constitutes your acceptance of the revised policy.

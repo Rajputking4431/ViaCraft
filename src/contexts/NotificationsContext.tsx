@@ -35,9 +35,9 @@ const playChimeSound = () => {
   try {
     const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
     if (!AudioContextClass) return;
-    
+
     const audioCtx = new AudioContextClass();
-    
+
     // Tone 1 (D5)
     const osc1 = audioCtx.createOscillator();
     const gain1 = audioCtx.createGain();
@@ -54,7 +54,7 @@ const playChimeSound = () => {
     const osc2 = audioCtx.createOscillator();
     const gain2 = audioCtx.createGain();
     osc2.type = "sine";
-    osc2.frequency.setValueAtTime(880.00, audioCtx.currentTime + 0.1); // A5 frequency
+    osc2.frequency.setValueAtTime(880.0, audioCtx.currentTime + 0.1); // A5 frequency
     gain2.gain.setValueAtTime(0.08, audioCtx.currentTime + 0.1);
     gain2.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.45);
     osc2.connect(gain2);
@@ -129,7 +129,10 @@ export function NotificationsProvider({ children }: { children: React.ReactNode 
 
   const clearAllMutation = useMutation({
     mutationFn: async () => {
-      const { error } = await (supabase as any).from("notifications").delete().eq("receiver_id", user!.id);
+      const { error } = await (supabase as any)
+        .from("notifications")
+        .delete()
+        .eq("receiver_id", user!.id);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -168,7 +171,7 @@ export function NotificationsProvider({ children }: { children: React.ReactNode 
 
           // Invalidate queries so components pick up new records
           queryClient.invalidateQueries({ queryKey: ["notifications", user.id] });
-        }
+        },
       )
       .subscribe();
 

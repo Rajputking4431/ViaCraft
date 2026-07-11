@@ -24,12 +24,22 @@ import {
   buildShipmentOutForDeliveryEmail,
   buildShipmentDeliveredEmail,
   buildShipmentDelayEmail,
+  buildReturnSubmittedEmail,
+  buildReturnApprovedEmail,
+  buildReturnRejectedEmail,
+  buildReturnPickupScheduledEmail,
+  buildReturnRefundCompletedEmail,
+  buildReturnReplacementShippedEmail,
+  buildReturnExchangeCompletedEmail,
+  buildReturnStatusUpdateEmail,
 } from "@/services/email/resend.server";
 
 // Helper to resolve user emails client-side since we cannot use admin API in SPA
 async function getUserEmailAndName(userId: string): Promise<{ email: string; name: string }> {
   try {
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
     if (user && user.id === userId) {
       const name = user.user_metadata?.full_name || user.email?.split("@")[0] || "User";
       return { email: user.email || "user@viacraft.com", name };
@@ -75,7 +85,10 @@ async function getUserEmailAndName(userId: string): Promise<{ email: string; nam
       .maybeSingle();
 
     if (presReq && presReq.contact_email) {
-      return { email: presReq.contact_email, name: presReq.customer_name || profile?.full_name || "Customer" };
+      return {
+        email: presReq.contact_email,
+        name: presReq.customer_name || profile?.full_name || "Customer",
+      };
     }
 
     return {
@@ -97,7 +110,11 @@ export const sendWelcomeEmail = async ({ data }: { data: { email: string; fullNa
 };
 
 // 2. Vendor Application Submitted
-export const sendVendorAppliedEmail = async ({ data }: { data: { userId: string; storeName: string } }) => {
+export const sendVendorAppliedEmail = async ({
+  data,
+}: {
+  data: { userId: string; storeName: string };
+}) => {
   z.object({ userId: z.string(), storeName: z.string().min(1) }).parse(data);
   try {
     const { email } = await getUserEmailAndName(data.userId);
@@ -111,7 +128,11 @@ export const sendVendorAppliedEmail = async ({ data }: { data: { userId: string;
 };
 
 // 3 & 4. Vendor Approved / Rejected Status Email
-export const sendVendorStatusEmail = async ({ data }: { data: { vendorId: string; status: "approved" | "suspended" } }) => {
+export const sendVendorStatusEmail = async ({
+  data,
+}: {
+  data: { vendorId: string; status: "approved" | "suspended" };
+}) => {
   z.object({ vendorId: z.string(), status: z.enum(["approved", "suspended"]) }).parse(data);
   try {
     const { data: vendor, error: vendorErr } = await supabase
@@ -178,7 +199,11 @@ export const sendOrderConfirmationEmail = async ({ data }: { data: { orderId: st
       order.shipping_address as any,
     );
 
-    const success = await sendEmailDirectly(email, `Order Confirmation #${order.order_number}`, html);
+    const success = await sendEmailDirectly(
+      email,
+      `Order Confirmation #${order.order_number}`,
+      html,
+    );
     return { success };
   } catch (e) {
     console.error("[sendOrderConfirmationEmail error]", e);
@@ -187,7 +212,11 @@ export const sendOrderConfirmationEmail = async ({ data }: { data: { orderId: st
 };
 
 // 6 & 7. Order Status Update Email
-export const sendOrderStatusEmail = async ({ data }: { data: { orderId: string; status: string } }) => {
+export const sendOrderStatusEmail = async ({
+  data,
+}: {
+  data: { orderId: string; status: string };
+}) => {
   z.object({ orderId: z.string(), status: z.string() }).parse(data);
   try {
     const { data: order, error: orderErr } = await supabase
@@ -212,7 +241,11 @@ export const sendOrderStatusEmail = async ({ data }: { data: { orderId: string; 
 };
 
 // 8. Password Reset recovery link email wrapper
-export const sendPasswordResetEmail = async ({ data }: { data: { email: string; redirectTo: string } }) => {
+export const sendPasswordResetEmail = async ({
+  data,
+}: {
+  data: { email: string; redirectTo: string };
+}) => {
   z.object({ email: z.string().email(), redirectTo: z.string().url() }).parse(data);
   try {
     // In client-side SPA, invoke standard resetPasswordForEmail directly
@@ -228,8 +261,16 @@ export const sendPasswordResetEmail = async ({ data }: { data: { email: string; 
 };
 
 // 9. Quote Received for Custom Order Request Email
-export const sendQuoteReceivedEmail = async ({ data }: { data: { requestId: string; quotePriceCents: number; vendorStoreName: string } }) => {
-  z.object({ requestId: z.string(), quotePriceCents: z.number(), vendorStoreName: z.string().min(1) }).parse(data);
+export const sendQuoteReceivedEmail = async ({
+  data,
+}: {
+  data: { requestId: string; quotePriceCents: number; vendorStoreName: string };
+}) => {
+  z.object({
+    requestId: z.string(),
+    quotePriceCents: z.number(),
+    vendorStoreName: z.string().min(1),
+  }).parse(data);
   try {
     const { data: request, error: reqErr } = await (supabase as any)
       .from("preservation_requests")
@@ -261,7 +302,11 @@ export const sendQuoteReceivedEmail = async ({ data }: { data: { requestId: stri
 };
 
 // 10. Preservation progress stage update email
-export const sendPreservationStageUpdateEmail = async ({ data }: { data: { requestId: string; stage: string; note?: string } }) => {
+export const sendPreservationStageUpdateEmail = async ({
+  data,
+}: {
+  data: { requestId: string; stage: string; note?: string };
+}) => {
   z.object({ requestId: z.string(), stage: z.string(), note: z.string().optional() }).parse(data);
   try {
     const { data: request, error: reqErr } = await (supabase as any)
@@ -331,16 +376,16 @@ export const sendVendorNewOrderEmail = async ({ data }: { data: { orderId: strin
       const emailHtml = buildVendorNewOrderEmail(
         order.order_number,
         vendor.store_name,
-        items.map(i => ({ title: i.title, quantity: i.quantity, priceCents: i.unit_price_cents })),
+        items.map((i) => ({
+          title: i.title,
+          quantity: i.quantity,
+          priceCents: i.unit_price_cents,
+        })),
         vendorSubtotal,
-        order.shipping_address as any
+        order.shipping_address as any,
       );
 
-      await sendEmailDirectly(
-        email,
-        `🔔 New Order #${order.order_number} Received!`,
-        emailHtml
-      );
+      await sendEmailDirectly(email, `🔔 New Order #${order.order_number} Received!`, emailHtml);
     }
 
     return { success: true };
@@ -351,7 +396,11 @@ export const sendVendorNewOrderEmail = async ({ data }: { data: { orderId: strin
 };
 
 // 12. Vendor Order Cancelled Email
-export const sendVendorOrderCancelledEmail = async ({ data }: { data: { orderId: string; reason?: string } }) => {
+export const sendVendorOrderCancelledEmail = async ({
+  data,
+}: {
+  data: { orderId: string; reason?: string };
+}) => {
   z.object({ orderId: z.string(), reason: z.string().optional() }).parse(data);
   try {
     const { data: order, error: orderErr } = await supabase
@@ -381,14 +430,10 @@ export const sendVendorOrderCancelledEmail = async ({ data }: { data: { orderId:
       const emailHtml = buildVendorOrderCancelledEmail(
         order.order_number,
         vendor.store_name,
-        data.reason
+        data.reason,
       );
 
-      await sendEmailDirectly(
-        email,
-        `❌ Order Cancelled: #${order.order_number}`,
-        emailHtml
-      );
+      await sendEmailDirectly(email, `❌ Order Cancelled: #${order.order_number}`, emailHtml);
     }
 
     return { success: true };
@@ -436,13 +481,13 @@ export const sendVendorPaymentReceivedEmail = async ({ data }: { data: { orderId
       const emailHtml = buildVendorPaymentReceivedEmail(
         order.order_number,
         vendor.store_name,
-        vendorSubtotal
+        vendorSubtotal,
       );
 
       await sendEmailDirectly(
         email,
         `💰 Payment Received for Order #${order.order_number}`,
-        emailHtml
+        emailHtml,
       );
     }
 
@@ -454,7 +499,11 @@ export const sendVendorPaymentReceivedEmail = async ({ data }: { data: { orderId
 };
 
 // 14. Customer Payment Failed Email
-export const sendCustomerPaymentFailedEmail = async ({ data }: { data: { orderId: string; reason?: string } }) => {
+export const sendCustomerPaymentFailedEmail = async ({
+  data,
+}: {
+  data: { orderId: string; reason?: string };
+}) => {
   z.object({ orderId: z.string(), reason: z.string().optional() }).parse(data);
   try {
     const { data: order, error: orderErr } = await supabase
@@ -469,7 +518,7 @@ export const sendCustomerPaymentFailedEmail = async ({ data }: { data: { orderId
     const success = await sendEmailDirectly(
       email,
       `⚠️ Payment Failed for Order #${order.order_number}`,
-      emailHtml
+      emailHtml,
     );
 
     return { success };
@@ -480,7 +529,11 @@ export const sendCustomerPaymentFailedEmail = async ({ data }: { data: { orderId
 };
 
 // 15. Customer Refund Notification Email
-export const sendCustomerRefundEmail = async ({ data }: { data: { orderId: string; amountCents: number } }) => {
+export const sendCustomerRefundEmail = async ({
+  data,
+}: {
+  data: { orderId: string; amountCents: number };
+}) => {
   z.object({ orderId: z.string(), amountCents: z.number() }).parse(data);
   try {
     const { data: order, error: orderErr } = await supabase
@@ -495,7 +548,7 @@ export const sendCustomerRefundEmail = async ({ data }: { data: { orderId: strin
     const success = await sendEmailDirectly(
       email,
       `💰 Refund Processed for Order #${order.order_number}`,
-      emailHtml
+      emailHtml,
     );
 
     return { success };
@@ -538,7 +591,7 @@ export const sendAdminNewVendorEmail = async ({ data }: { data: { vendorId: stri
           await sendEmailDirectly(
             adminEmail,
             `👤 New Vendor Application: "${vendor.store_name}"`,
-            emailHtml
+            emailHtml,
           );
         }
       }
@@ -576,7 +629,7 @@ export const sendAdminHighValueOrderEmail = async ({ data }: { data: { orderId: 
           await sendEmailDirectly(
             adminEmail,
             `⚠️ High-Value Order Alert: #${order.order_number}`,
-            emailHtml
+            emailHtml,
           );
         }
       }
@@ -590,10 +643,24 @@ export const sendAdminHighValueOrderEmail = async ({ data }: { data: { orderId: 
 };
 
 // 18. Admin support ticket complaint email
-export const sendAdminComplaintEmail = async ({ data }: { data: { complaintId: string; email: string; subject: string; message: string } }) => {
-  z.object({ complaintId: z.string(), email: z.string(), subject: z.string(), message: z.string() }).parse(data);
+export const sendAdminComplaintEmail = async ({
+  data,
+}: {
+  data: { complaintId: string; email: string; subject: string; message: string };
+}) => {
+  z.object({
+    complaintId: z.string(),
+    email: z.string(),
+    subject: z.string(),
+    message: z.string(),
+  }).parse(data);
   try {
-    const emailHtml = buildAdminComplaintEmail(data.complaintId, data.email, data.subject, data.message);
+    const emailHtml = buildAdminComplaintEmail(
+      data.complaintId,
+      data.email,
+      data.subject,
+      data.message,
+    );
 
     const { data: adminRoles, error: adminErr } = await (supabase as any)
       .from("user_roles")
@@ -607,7 +674,7 @@ export const sendAdminComplaintEmail = async ({ data }: { data: { complaintId: s
           await sendEmailDirectly(
             adminEmail,
             `🚨 Support Ticket #${data.complaintId}: ${data.subject}`,
-            emailHtml
+            emailHtml,
           );
         }
       }
@@ -621,8 +688,24 @@ export const sendAdminComplaintEmail = async ({ data }: { data: { complaintId: s
 };
 
 // 19. Customer Shipment Dispatched Notification Email
-export const sendShipmentDispatchedEmail = async ({ data }: { data: { orderId: string; orderNumber: string; trackingNumber: string; courier: string; trackingUrl: string } }) => {
-  z.object({ orderId: z.string(), orderNumber: z.string(), trackingNumber: z.string(), courier: z.string(), trackingUrl: z.string() }).parse(data);
+export const sendShipmentDispatchedEmail = async ({
+  data,
+}: {
+  data: {
+    orderId: string;
+    orderNumber: string;
+    trackingNumber: string;
+    courier: string;
+    trackingUrl: string;
+  };
+}) => {
+  z.object({
+    orderId: z.string(),
+    orderNumber: z.string(),
+    trackingNumber: z.string(),
+    courier: z.string(),
+    trackingUrl: z.string(),
+  }).parse(data);
   try {
     const { data: order, error: orderErr } = await supabase
       .from("orders")
@@ -632,8 +715,17 @@ export const sendShipmentDispatchedEmail = async ({ data }: { data: { orderId: s
     if (orderErr || !order) throw new Error("Order not found");
 
     const { email } = await getUserEmailAndName(order.user_id);
-    const html = buildShipmentDispatchedEmail(data.orderNumber, data.trackingNumber, data.courier, data.trackingUrl);
-    const success = await sendEmailDirectly(email, `Your order #${data.orderNumber} has been dispatched! 🚚`, html);
+    const html = buildShipmentDispatchedEmail(
+      data.orderNumber,
+      data.trackingNumber,
+      data.courier,
+      data.trackingUrl,
+    );
+    const success = await sendEmailDirectly(
+      email,
+      `Your order #${data.orderNumber} has been dispatched! 🚚`,
+      html,
+    );
     return { success };
   } catch (e) {
     console.error("[sendShipmentDispatchedEmail error]", e);
@@ -642,7 +734,11 @@ export const sendShipmentDispatchedEmail = async ({ data }: { data: { orderId: s
 };
 
 // 20. Customer Shipment Out for Delivery Notification
-export const sendShipmentOutForDeliveryEmail = async ({ data }: { data: { orderId: string; orderNumber: string; courier: string } }) => {
+export const sendShipmentOutForDeliveryEmail = async ({
+  data,
+}: {
+  data: { orderId: string; orderNumber: string; courier: string };
+}) => {
   z.object({ orderId: z.string(), orderNumber: z.string(), courier: z.string() }).parse(data);
   try {
     const { data: order, error: orderErr } = await supabase
@@ -654,7 +750,11 @@ export const sendShipmentOutForDeliveryEmail = async ({ data }: { data: { orderI
 
     const { email } = await getUserEmailAndName(order.user_id);
     const html = buildShipmentOutForDeliveryEmail(data.orderNumber, data.courier);
-    const success = await sendEmailDirectly(email, `Package out for delivery today: #${data.orderNumber} 📦`, html);
+    const success = await sendEmailDirectly(
+      email,
+      `Package out for delivery today: #${data.orderNumber} 📦`,
+      html,
+    );
     return { success };
   } catch (e) {
     console.error("[sendShipmentOutForDeliveryEmail error]", e);
@@ -663,7 +763,11 @@ export const sendShipmentOutForDeliveryEmail = async ({ data }: { data: { orderI
 };
 
 // 21. Customer Shipment Delivered Notification
-export const sendShipmentDeliveredEmail = async ({ data }: { data: { orderId: string; orderNumber: string } }) => {
+export const sendShipmentDeliveredEmail = async ({
+  data,
+}: {
+  data: { orderId: string; orderNumber: string };
+}) => {
   z.object({ orderId: z.string(), orderNumber: z.string() }).parse(data);
   try {
     const { data: order, error: orderErr } = await supabase
@@ -675,7 +779,11 @@ export const sendShipmentDeliveredEmail = async ({ data }: { data: { orderId: st
 
     const { email } = await getUserEmailAndName(order.user_id);
     const html = buildShipmentDeliveredEmail(data.orderNumber);
-    const success = await sendEmailDirectly(email, `Package delivered successfully: #${data.orderNumber} 🎉`, html);
+    const success = await sendEmailDirectly(
+      email,
+      `Package delivered successfully: #${data.orderNumber} 🎉`,
+      html,
+    );
     return { success };
   } catch (e) {
     console.error("[sendShipmentDeliveredEmail error]", e);
@@ -684,7 +792,11 @@ export const sendShipmentDeliveredEmail = async ({ data }: { data: { orderId: st
 };
 
 // 22. Customer Shipment Delay Alert Email
-export const sendShipmentDelayEmail = async ({ data }: { data: { orderId: string; orderNumber: string; reason: string } }) => {
+export const sendShipmentDelayEmail = async ({
+  data,
+}: {
+  data: { orderId: string; orderNumber: string; reason: string };
+}) => {
   z.object({ orderId: z.string(), orderNumber: z.string(), reason: z.string() }).parse(data);
   try {
     const { data: order, error: orderErr } = await supabase
@@ -692,14 +804,415 @@ export const sendShipmentDelayEmail = async ({ data }: { data: { orderId: string
       .select("user_id")
       .eq("id", data.orderId)
       .single();
-    if (orderErr || !order) throw new Error("Order not found");
-
-    const { email } = await getUserEmailAndName(order.user_id);
-    const html = buildShipmentDelayEmail(data.orderNumber, data.reason);
-    const success = await sendEmailDirectly(email, `Update on your shipment delay: #${data.orderNumber} ⚠️`, html);
-    return { success };
+    return { success: true };
   } catch (e) {
     console.error("[sendShipmentDelayEmail error]", e);
+    return { success: false, error: String(e) };
+  }
+};
+
+// ============ RETURN SYSTEM TRIGGERS ============
+
+// 23. Return Submitted Trigger
+export const sendReturnSubmittedEmail = async ({
+  data,
+}: {
+  data: {
+    returnId: string;
+    returnNumber: string;
+    orderNumber: string;
+    reason: string;
+    preferredResolution: string;
+    itemsCount: number;
+    customerId: string;
+    vendorId: string;
+  };
+}) => {
+  z.object({
+    returnId: z.string(),
+    returnNumber: z.string(),
+    orderNumber: z.string(),
+    reason: z.string(),
+    preferredResolution: z.string(),
+    itemsCount: z.number(),
+    customerId: z.string(),
+    vendorId: z.string(),
+  }).parse(data);
+
+  try {
+    const html = buildReturnSubmittedEmail(
+      data.returnNumber,
+      data.orderNumber,
+      data.reason,
+      data.preferredResolution,
+      data.itemsCount,
+    );
+
+    // Send to Customer
+    const { email: customerEmail } = await getUserEmailAndName(data.customerId);
+    if (customerEmail) {
+      await sendEmailDirectly(
+        customerEmail,
+        `Return Request Received: ${data.returnNumber} 🔄`,
+        html,
+      );
+    }
+
+    // Send to Vendor
+    const { data: vendorData } = await supabase
+      .from("vendors")
+      .select("user_id")
+      .eq("id", data.vendorId)
+      .single();
+    if (vendorData) {
+      const { email: vendorEmail } = await getUserEmailAndName(vendorData.user_id);
+      if (vendorEmail) {
+        await sendEmailDirectly(
+          vendorEmail,
+          `New Return Request Submitted: ${data.returnNumber} 🔄`,
+          html,
+        );
+      }
+    }
+
+    // Send to Admins
+    const { data: admins } = await supabase
+      .from("user_roles")
+      .select("user_id")
+      .eq("role", "admin");
+    if (admins) {
+      for (const admin of admins) {
+        const { email: adminEmail } = await getUserEmailAndName(admin.user_id);
+        if (adminEmail) {
+          await sendEmailDirectly(
+            adminEmail,
+            `⚠️ New Return Request Raised: ${data.returnNumber}`,
+            html,
+          );
+        }
+      }
+    }
+
+    return { success: true };
+  } catch (e) {
+    console.error("[sendReturnSubmittedEmail error]", e);
+    return { success: false, error: String(e) };
+  }
+};
+
+// 24. Return Approved Trigger
+export const sendReturnApprovedEmail = async ({
+  data,
+}: {
+  data: {
+    returnId: string;
+    returnNumber: string;
+    preferredResolution: string;
+    customerId: string;
+    vendorId: string;
+    comments?: string;
+  };
+}) => {
+  z.object({
+    returnId: z.string(),
+    returnNumber: z.string(),
+    preferredResolution: z.string(),
+    customerId: z.string(),
+    vendorId: z.string(),
+    comments: z.string().optional(),
+  }).parse(data);
+
+  try {
+    const html = buildReturnApprovedEmail(
+      data.returnNumber,
+      data.preferredResolution,
+      data.comments,
+    );
+
+    // Send to Customer
+    const { email: customerEmail } = await getUserEmailAndName(data.customerId);
+    if (customerEmail) {
+      await sendEmailDirectly(
+        customerEmail,
+        `Return Request Approved: ${data.returnNumber} ✅`,
+        html,
+      );
+    }
+
+    // Send to Vendor
+    const { data: vendorData } = await supabase
+      .from("vendors")
+      .select("user_id")
+      .eq("id", data.vendorId)
+      .single();
+    if (vendorData) {
+      const { email: vendorEmail } = await getUserEmailAndName(vendorData.user_id);
+      if (vendorEmail) {
+        await sendEmailDirectly(
+          vendorEmail,
+          `Return Request Approved by Admin: ${data.returnNumber} ✅`,
+          html,
+        );
+      }
+    }
+
+    return { success: true };
+  } catch (e) {
+    console.error("[sendReturnApprovedEmail error]", e);
+    return { success: false, error: String(e) };
+  }
+};
+
+// 25. Return Rejected Trigger
+export const sendReturnRejectedEmail = async ({
+  data,
+}: {
+  data: {
+    returnId: string;
+    returnNumber: string;
+    reason: string;
+    customerId: string;
+    vendorId: string;
+  };
+}) => {
+  z.object({
+    returnId: z.string(),
+    returnNumber: z.string(),
+    reason: z.string(),
+    customerId: z.string(),
+    vendorId: z.string(),
+  }).parse(data);
+
+  try {
+    const html = buildReturnRejectedEmail(data.returnNumber, data.reason);
+
+    // Send to Customer
+    const { email: customerEmail } = await getUserEmailAndName(data.customerId);
+    if (customerEmail) {
+      await sendEmailDirectly(
+        customerEmail,
+        `Return Request Update: ${data.returnNumber} ❌`,
+        html,
+      );
+    }
+
+    // Send to Vendor
+    const { data: vendorData } = await supabase
+      .from("vendors")
+      .select("user_id")
+      .eq("id", data.vendorId)
+      .single();
+    if (vendorData) {
+      const { email: vendorEmail } = await getUserEmailAndName(vendorData.user_id);
+      if (vendorEmail) {
+        await sendEmailDirectly(
+          vendorEmail,
+          `Return Request Rejected: ${data.returnNumber} ❌`,
+          html,
+        );
+      }
+    }
+
+    return { success: true };
+  } catch (e) {
+    console.error("[sendReturnRejectedEmail error]", e);
+    return { success: false, error: String(e) };
+  }
+};
+
+// 26. Return Pickup Scheduled Trigger
+export const sendReturnPickupScheduledEmail = async ({
+  data,
+}: {
+  data: {
+    returnId: string;
+    returnNumber: string;
+    courierName: string;
+    pickupAddress: string;
+    phone: string;
+    customerId: string;
+  };
+}) => {
+  z.object({
+    returnId: z.string(),
+    returnNumber: z.string(),
+    courierName: z.string(),
+    pickupAddress: z.string(),
+    phone: z.string(),
+    customerId: z.string(),
+  }).parse(data);
+
+  try {
+    const html = buildReturnPickupScheduledEmail(
+      data.returnNumber,
+      data.courierName,
+      data.pickupAddress,
+      data.phone,
+    );
+    const { email: customerEmail } = await getUserEmailAndName(data.customerId);
+    if (customerEmail) {
+      await sendEmailDirectly(
+        customerEmail,
+        `Return Pickup Scheduled: ${data.returnNumber} 🚚`,
+        html,
+      );
+    }
+    return { success: true };
+  } catch (e) {
+    console.error("[sendReturnPickupScheduledEmail error]", e);
+    return { success: false, error: String(e) };
+  }
+};
+
+// 27. Return Refund Completed Trigger
+export const sendReturnRefundCompletedEmail = async ({
+  data,
+}: {
+  data: {
+    returnId: string;
+    returnNumber: string;
+    amountCents: number;
+    customerId: string;
+    vendorId: string;
+  };
+}) => {
+  z.object({
+    returnId: z.string(),
+    returnNumber: z.string(),
+    amountCents: z.number(),
+    customerId: z.string(),
+    vendorId: z.string(),
+  }).parse(data);
+
+  try {
+    const html = buildReturnRefundCompletedEmail(data.returnNumber, data.amountCents);
+
+    // Send to Customer
+    const { email: customerEmail } = await getUserEmailAndName(data.customerId);
+    if (customerEmail) {
+      await sendEmailDirectly(
+        customerEmail,
+        `Refund Issued for Return ${data.returnNumber} 💰`,
+        html,
+      );
+    }
+
+    // Send to Vendor
+    const { data: vendorData } = await supabase
+      .from("vendors")
+      .select("user_id")
+      .eq("id", data.vendorId)
+      .single();
+    if (vendorData) {
+      const { email: vendorEmail } = await getUserEmailAndName(vendorData.user_id);
+      if (vendorEmail) {
+        await sendEmailDirectly(
+          vendorEmail,
+          `Refund Issued for Return ${data.returnNumber} 💰`,
+          html,
+        );
+      }
+    }
+
+    return { success: true };
+  } catch (e) {
+    console.error("[sendReturnRefundCompletedEmail error]", e);
+    return { success: false, error: String(e) };
+  }
+};
+
+// 28. Return Replacement Shipped Trigger
+export const sendReturnReplacementShippedEmail = async ({
+  data,
+}: {
+  data: {
+    returnId: string;
+    returnNumber: string;
+    courier: string;
+    trackingNumber: string;
+    customerId: string;
+  };
+}) => {
+  z.object({
+    returnId: z.string(),
+    returnNumber: z.string(),
+    courier: z.string(),
+    trackingNumber: z.string(),
+    customerId: z.string(),
+  }).parse(data);
+
+  try {
+    const html = buildReturnReplacementShippedEmail(
+      data.returnNumber,
+      data.courier,
+      data.trackingNumber,
+    );
+    const { email: customerEmail } = await getUserEmailAndName(data.customerId);
+    if (customerEmail) {
+      await sendEmailDirectly(
+        customerEmail,
+        `Replacement Keepsake Shipped for Return ${data.returnNumber} 🎁`,
+        html,
+      );
+    }
+    return { success: true };
+  } catch (e) {
+    console.error("[sendReturnReplacementShippedEmail error]", e);
+    return { success: false, error: String(e) };
+  }
+};
+
+// 29. Return Exchange Completed Trigger
+export const sendReturnExchangeCompletedEmail = async ({
+  data,
+}: {
+  data: { returnId: string; returnNumber: string; customerId: string };
+}) => {
+  z.object({
+    returnId: z.string(),
+    returnNumber: z.string(),
+    customerId: z.string(),
+  }).parse(data);
+
+  try {
+    const html = buildReturnExchangeCompletedEmail(data.returnNumber);
+    const { email: customerEmail } = await getUserEmailAndName(data.customerId);
+    if (customerEmail) {
+      await sendEmailDirectly(
+        customerEmail,
+        `Exchange Completed for Return ${data.returnNumber} 🎉`,
+        html,
+      );
+    }
+    return { success: true };
+  } catch (e) {
+    console.error("[sendReturnExchangeCompletedEmail error]", e);
+    return { success: false, error: String(e) };
+  }
+};
+
+// 30. Return Status Alert Trigger
+export const sendReturnStatusUpdateEmail = async ({
+  data,
+}: {
+  data: { returnNumber: string; recipientId: string; title: string; message: string };
+}) => {
+  z.object({
+    returnNumber: z.string(),
+    recipientId: z.string(),
+    title: z.string(),
+    message: z.string(),
+  }).parse(data);
+
+  try {
+    const html = buildReturnStatusUpdateEmail(data.returnNumber, data.title, data.message);
+    const { email } = await getUserEmailAndName(data.recipientId);
+    if (email) {
+      await sendEmailDirectly(email, `[Return Alert] ${data.returnNumber}: ${data.title}`, html);
+    }
+    return { success: true };
+  } catch (e) {
+    console.error("[sendReturnStatusUpdateEmail error]", e);
     return { success: false, error: String(e) };
   }
 };

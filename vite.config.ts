@@ -5,19 +5,12 @@ import tailwindcss from "@tailwindcss/vite";
 import path from "path";
 
 export default defineConfig({
-  plugins: [
-    react(),
-    tsconfigPaths(),
-    tailwindcss(),
-  ],
+  plugins: [react(), tsconfigPaths(), tailwindcss()],
 
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
-      "@tanstack/react-router": path.resolve(
-        __dirname,
-        "./src/utils/router-compat.tsx"
-      ),
+      "@tanstack/react-router": path.resolve(__dirname, "./src/utils/router-compat.tsx"),
     },
   },
 

@@ -38,10 +38,12 @@ export function initClarity() {
 
   try {
     // 1. Initialize clarity function queue
-    window.clarity = window.clarity || function() {
-      // eslint-disable-next-line prefer-rest-params
-      (window.clarity!.q = window.clarity!.q || []).push(arguments);
-    };
+    window.clarity =
+      window.clarity ||
+      function () {
+        // eslint-disable-next-line prefer-rest-params
+        (window.clarity!.q = window.clarity!.q || []).push(arguments);
+      };
 
     // 2. Create and inject tracking script asynchronously
     const script = document.createElement("script");

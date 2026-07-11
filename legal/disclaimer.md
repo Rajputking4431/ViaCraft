@@ -1,12 +1,12 @@
 # Disclaimer
 
-**Effective Date:** [Effective Date]  
-**Last Updated:** [Last Updated]
+**Effective Date:** July 10, 2026  
+**Last Updated:** July 10, 2026
 
 ## 1. Introduction
 Welcome to ViaCraft ("Platform"). ViaCraft is a multi-vendor online marketplace designed to facilitate the sale of handcrafted resin products, customized gifts, home decor, and preservation services. 
 
-By browsing or using [Website URL], you acknowledge that you have read and agreed to the disclaimers set forth on this page.
+By browsing or using https://viacraft.in, you acknowledge that you have read and agreed to the disclaimers set forth on this page.
 
 ## 2. Purpose
 The purpose of this Disclaimer is to define the boundaries of ViaCraft's liabilities, state our operational capacity as an intermediary, and clarify that product descriptions, pricing, and quality are the sole responsibilities of independent Vendors.
@@ -43,11 +43,11 @@ To the maximum extent permitted by Indian law, ViaCraft, its directors, and empl
 *   Financial transactions handled by external payment processors.
 
 ## 10. Governing Law
-This Disclaimer is governed by the laws of India. Any legal action or dispute arising out of this website must be filed in the courts of [City/State, India].
+This Disclaimer is governed by the laws of India. Any legal action or dispute arising out of this website must be filed in the courts of Noida, Uttar Pradesh, India.
 
 ## 11. Contact Information
 For any clarification on this Disclaimer:
-*   **Legal Inquiries:** [Support Email]
+*   **Legal Inquiries:** support@viacraft.in
 
 ## 12. Changes to This Disclaimer
 We reserves the right to update this Disclaimer page. Your continued use of the website following any changes signifies your agreement to the modified terms.

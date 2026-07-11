@@ -1,29 +1,18 @@
 import { Logo } from "./Logo";
-import { Instagram, Facebook, ChevronDown, Mail } from "lucide-react";
+import {
+  Instagram,
+  Facebook,
+  Linkedin,
+  Youtube,
+  ChevronDown,
+  Mail,
+  Phone,
+  Clock,
+  MapPin,
+  Building,
+} from "lucide-react";
 import React, { useState } from "react";
 import { Link } from "@tanstack/react-router";
-
-const XIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    viewBox="0 0 16 16"
-    fill="currentColor"
-    {...props}
-  >
-    <path d="M12.6.75h2.454l-5.36 6.142L16 15.25h-4.937l-3.867-5.07-4.425 5.07H.316l5.733-6.57L0 .75h5.063l3.495 4.633L12.601.75Zm-.86 13.028h1.36L4.323 2.145H2.865z" />
-  </svg>
-);
-
-const WhatsAppIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    viewBox="0 0 16 16"
-    fill="currentColor"
-    {...props}
-  >
-    <path d="M13.601 2.326A7.85 7.85 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.9 7.9 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.9 7.9 0 0 0 13.6 2.326zM7.994 14.521a6.6 6.6 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.56 6.56 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592m3.615-4.934c-.197-.099-1.17-.578-1.353-.646-.182-.065-.315-.099-.445.099-.133.197-.513.646-.627.775-.114.133-.232.148-.43.05-.197-.1-.836-.308-1.592-.985-.59-.525-.985-1.175-1.103-1.372-.114-.198-.011-.304.088-.403.087-.088.197-.232.296-.346.1-.114.133-.198.198-.33.065-.134.034-.248-.015-.347-.05-.099-.445-1.076-.612-1.47-.16-.389-.323-.335-.445-.34-.114-.007-.247-.007-.38-.007a.73.73 0 0 0-.529.247c-.182.198-.691.677-.691 1.654s.71 1.916.81 2.049c.098.133 1.394 2.132 3.383 2.992.47.205.84.326 1.129.418.475.152.904.129 1.246.08.38-.058 1.171-.48 1.338-.943.164-.464.164-.86.114-.943-.049-.084-.182-.133-.38-.232" />
-  </svg>
-);
 
 export function SiteFooter() {
   const [expandedCols, setExpandedCols] = useState<Record<string, boolean>>({});
@@ -32,55 +21,124 @@ export function SiteFooter() {
     setExpandedCols((prev) => ({ ...prev, [title]: !prev[title] }));
   };
 
-  const cols = [
+  const cols: {
+    title: string;
+    links: {
+      label: string;
+      to: string;
+      params?: { slug: string };
+      isExternal?: boolean;
+      icon?: React.ComponentType<any>;
+    }[];
+  }[] = [
     {
-      title: "Shop",
-      links: ["Jewelry", "Keychains", "Coasters", "Home Decor", "Wedding Keepsakes"],
+      title: "Company",
+      links: [
+        { label: "About Us", to: "/legal/$slug", params: { slug: "about-us" } },
+        { label: "Contact Us", to: "/legal/$slug", params: { slug: "contact-us" } },
+        { label: "Careers (Coming Soon)", to: "/legal/$slug", params: { slug: "careers" } },
+      ],
     },
     {
-      title: "Services",
+      title: "Customer Support",
       links: [
-        "Bouquet Preservation",
-        "Pet Memories",
-        "Baby Memories",
-        "Custom Orders",
-        "Corporate Gifts",
+        { label: "Help Center", to: "/legal/$slug", params: { slug: "help-center" } },
+        { label: "FAQ", to: "/legal/$slug", params: { slug: "faq" } },
+        { label: "Shipping Policy", to: "/legal/$slug", params: { slug: "shipping-policy" } },
+        { label: "Return & Refund Policy", to: "/legal/$slug", params: { slug: "return-refund-policy" } },
+        { label: "Cancellation Policy", to: "/legal/$slug", params: { slug: "cancellation-policy" } },
+      ],
+    },
+    {
+      title: "Legal",
+      links: [
+        { label: "Privacy Policy", to: "/legal/$slug", params: { slug: "privacy-policy" } },
+        { label: "Terms & Conditions", to: "/legal/$slug", params: { slug: "terms-and-conditions" } },
+        { label: "Cookie Policy", to: "/legal/$slug", params: { slug: "cookie-policy" } },
+        { label: "Disclaimer", to: "/legal/$slug", params: { slug: "disclaimer" } },
+        { label: "Intellectual Property Policy", to: "/legal/$slug", params: { slug: "intellectual-property-policy" } },
+        { label: "Vendor Terms & Conditions", to: "/legal/$slug", params: { slug: "vendor-terms" } },
+        { label: "Buyer Protection Policy", to: "/legal/$slug", params: { slug: "buyer-protection-policy" } },
+        { label: "Grievance Redressal Policy", to: "/legal/$slug", params: { slug: "grievance-policy" } },
       ],
     },
     {
       title: "Marketplace",
-      links: ["Become a Seller", "Vendor Directory", "Artisan Stories", "Affiliate", "Wholesale"],
+      links: [
+        { label: "Become a Seller", to: "/sell" },
+        { label: "Seller Guidelines", to: "/legal/$slug", params: { slug: "seller-guidelines" } },
+        { label: "Vendor Commission Policy", to: "/legal/$slug", params: { slug: "vendor-commission-policy" } },
+      ],
     },
-    { title: "Company", links: ["About", "Blog", "Contact", "FAQ", "Press"] },
+    {
+      title: "Social",
+      links: [
+        { label: "Instagram", to: "https://instagram.com", isExternal: true, icon: Instagram },
+        { label: "Facebook", to: "https://facebook.com", isExternal: true, icon: Facebook },
+        { label: "LinkedIn", to: "https://linkedin.com", isExternal: true, icon: Linkedin },
+        { label: "YouTube", to: "https://youtube.com", isExternal: true, icon: Youtube },
+      ],
+    },
   ];
+
+  const contactInfo = {
+    businessName: "ViaCraft",
+    businessType: "Multi Vendor Marketplace",
+    email: "support@viacraft.in",
+    phone: "+91 98765 43210",
+    hours: "Monday–Saturday, 10 AM – 7 PM",
+    address: "ViaCraft Office, 4th Floor, Sector 62, Noida, Uttar Pradesh - 201301, India",
+  };
 
   return (
     <footer className="mt-32 border-t border-border bg-secondary/30">
       <div className="mx-auto max-w-7xl px-6 py-16 grid gap-8 lg:gap-12 lg:grid-cols-6">
-        <div className="lg:col-span-2 space-y-4">
-          <Logo className="h-12 w-auto" />
-          <p className="text-sm text-muted-foreground max-w-xs leading-relaxed">
-            Handcrafted resin art and luxury preservation services. Where memories become heirlooms.
-          </p>
-          <div className="flex gap-3 pt-2">
-            {[
-              { icon: Mail, href: "mailto:support@viacraft.com", label: "Email support" },
-              { icon: Instagram, href: "#", label: "Instagram" },
-              { icon: Facebook, href: "#", label: "Facebook" },
-              { icon: XIcon, href: "#", label: "X" },
-              { icon: WhatsAppIcon, href: "#", label: "WhatsApp" },
-            ].map(({ icon: Icon, href, label }) => (
-              <a
-                key={label}
-                href={href}
-                className="h-9 w-9 grid place-items-center rounded-full border border-border hover:bg-accent hover:text-accent-foreground hover:border-accent transition-colors"
-                aria-label={label}
-              >
-                <Icon className="h-4 w-4" />
-              </a>
-            ))}
+        {/* Logo and Contact Info Column */}
+        <div className="lg:col-span-2 space-y-6">
+          <div className="space-y-4">
+            <Logo className="h-12 w-auto" />
+            <p className="text-sm text-muted-foreground max-w-xs leading-relaxed">
+              Handcrafted resin art and luxury preservation services. Where memories become heirlooms.
+            </p>
+          </div>
+
+          <div className="border-t border-border/40 pt-6 space-y-4">
+            <h4 className="font-display text-sm font-bold uppercase tracking-wider text-foreground">
+              Contact Information
+            </h4>
+            <div className="space-y-3 text-xs sm:text-sm text-muted-foreground">
+              <div className="flex items-start gap-2.5">
+                <Building className="h-4 w-4 text-accent shrink-0 mt-0.5" />
+                <div>
+                  <p className="font-semibold text-foreground">{contactInfo.businessName}</p>
+                  <p className="text-xs text-muted-foreground">{contactInfo.businessType}</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2.5">
+                <Mail className="h-4 w-4 text-accent shrink-0" />
+                <a href={`mailto:${contactInfo.email}`} className="hover:text-accent transition-colors">
+                  {contactInfo.email}
+                </a>
+              </div>
+              <div className="flex items-center gap-2.5">
+                <Phone className="h-4 w-4 text-accent shrink-0" />
+                <a href={`tel:${contactInfo.phone.replace(/\s+/g, '')}`} className="hover:text-accent transition-colors">
+                  {contactInfo.phone}
+                </a>
+              </div>
+              <div className="flex items-start gap-2.5">
+                <Clock className="h-4 w-4 text-accent shrink-0 mt-0.5" />
+                <p>{contactInfo.hours}</p>
+              </div>
+              <div className="flex items-start gap-2.5">
+                <MapPin className="h-4 w-4 text-accent shrink-0 mt-0.5" />
+                <p className="leading-relaxed">{contactInfo.address}</p>
+              </div>
+            </div>
           </div>
         </div>
+
+        {/* Dynamic Columns */}
         {cols.map((c) => {
           const isExpanded = !!expandedCols[c.title];
           return (
@@ -97,15 +155,31 @@ export function SiteFooter() {
               <ul
                 className={`space-y-2.5 text-sm text-muted-foreground transition-all duration-300 overflow-hidden ${
                   isExpanded
-                    ? "max-h-60 opacity-100 mt-2 pointer-events-auto"
+                    ? "max-h-[350px] opacity-100 mt-2 pointer-events-auto"
                     : "max-h-0 opacity-0 pointer-events-none lg:max-h-none lg:opacity-100 lg:pointer-events-auto"
                 }`}
               >
                 {c.links.map((l) => (
-                  <li key={l}>
-                    <a href="#" className="hover:text-accent transition-colors">
-                      {l}
-                    </a>
+                  <li key={l.label}>
+                    {l.isExternal ? (
+                      <a
+                        href={l.to}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="hover:text-accent transition-colors inline-flex items-center gap-1.5"
+                      >
+                        {l.icon && <l.icon className="h-3.5 w-3.5" />}
+                        {l.label}
+                      </a>
+                    ) : (
+                      <Link
+                        to={l.to}
+                        params={l.params}
+                        className="hover:text-accent transition-colors"
+                      >
+                        {l.label}
+                      </Link>
+                    )}
                   </li>
                 ))}
               </ul>
@@ -117,16 +191,32 @@ export function SiteFooter() {
         <div className="mx-auto max-w-7xl px-6 py-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-muted-foreground">
           <p>© {new Date().getFullYear()} ViaCraft. Preserve Memories Forever.</p>
           <div className="flex gap-6">
-            <Link to="/legal/$slug" params={{ slug: "privacy-policy" }} className="hover:text-accent">
+            <Link
+              to="/legal/$slug"
+              params={{ slug: "privacy-policy" }}
+              className="hover:text-accent"
+            >
               Privacy
             </Link>
-            <Link to="/legal/$slug" params={{ slug: "terms-and-conditions" }} className="hover:text-accent">
+            <Link
+              to="/legal/$slug"
+              params={{ slug: "terms-and-conditions" }}
+              className="hover:text-accent"
+            >
               Terms
             </Link>
-            <Link to="/legal/$slug" params={{ slug: "refund-policy" }} className="hover:text-accent">
+            <Link
+              to="/legal/$slug"
+              params={{ slug: "return-refund-policy" }}
+              className="hover:text-accent"
+            >
               Refunds
             </Link>
-            <Link to="/legal/$slug" params={{ slug: "shipping-policy" }} className="hover:text-accent">
+            <Link
+              to="/legal/$slug"
+              params={{ slug: "shipping-policy" }}
+              className="hover:text-accent"
+            >
               Shipping
             </Link>
           </div>

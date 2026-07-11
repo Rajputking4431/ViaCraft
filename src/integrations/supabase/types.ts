@@ -805,6 +805,408 @@ export type Database = {
           },
         ];
       };
+      returns: {
+        Row: {
+          id: string;
+          return_number: string;
+          order_id: string;
+          user_id: string;
+          vendor_id: string;
+          status: string;
+          preferred_resolution: "refund" | "replacement" | "exchange";
+          pickup_address: Json;
+          phone: string;
+          video_url: string | null;
+          priority: "low" | "medium" | "high";
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          return_number?: string;
+          order_id: string;
+          user_id: string;
+          vendor_id: string;
+          status?: string;
+          preferred_resolution: "refund" | "replacement" | "exchange";
+          pickup_address: Json;
+          phone: string;
+          video_url?: string | null;
+          priority?: "low" | "medium" | "high";
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          return_number?: string;
+          order_id?: string;
+          user_id?: string;
+          vendor_id?: string;
+          status?: string;
+          preferred_resolution?: "refund" | "replacement" | "exchange";
+          pickup_address?: Json;
+          phone?: string;
+          video_url?: string | null;
+          priority?: "low" | "medium" | "high";
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "returns_order_id_fkey";
+            columns: ["order_id"];
+            isOneToOne: false;
+            referencedRelation: "orders";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "returns_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "returns_vendor_id_fkey";
+            columns: ["vendor_id"];
+            isOneToOne: false;
+            referencedRelation: "vendors";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      return_items: {
+        Row: {
+          id: string;
+          return_id: string;
+          order_item_id: string;
+          quantity: number;
+          reason: string;
+          description: string | null;
+        };
+        Insert: {
+          id?: string;
+          return_id: string;
+          order_item_id: string;
+          quantity: number;
+          reason: string;
+          description?: string | null;
+        };
+        Update: {
+          id?: string;
+          return_id?: string;
+          order_item_id?: string;
+          quantity?: number;
+          reason?: string;
+          description?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "return_items_return_id_fkey";
+            columns: ["return_id"];
+            isOneToOne: false;
+            referencedRelation: "returns";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "return_items_order_item_id_fkey";
+            columns: ["order_item_id"];
+            isOneToOne: false;
+            referencedRelation: "order_items";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      return_images: {
+        Row: {
+          id: string;
+          return_id: string;
+          url: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          return_id: string;
+          url: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          return_id?: string;
+          url?: string;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "return_images_return_id_fkey";
+            columns: ["return_id"];
+            isOneToOne: false;
+            referencedRelation: "returns";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      return_timeline: {
+        Row: {
+          id: string;
+          return_id: string;
+          status: string;
+          actor_id: string;
+          actor_role: "customer" | "vendor" | "admin";
+          action: string;
+          comments: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          return_id: string;
+          status: string;
+          actor_id: string;
+          actor_role: "customer" | "vendor" | "admin";
+          action: string;
+          comments?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          return_id?: string;
+          status?: string;
+          actor_id?: string;
+          actor_role?: "customer" | "vendor" | "admin";
+          action?: string;
+          comments?: string | null;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "return_timeline_return_id_fkey";
+            columns: ["return_id"];
+            isOneToOne: false;
+            referencedRelation: "returns";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "return_timeline_actor_id_fkey";
+            columns: ["actor_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      return_comments: {
+        Row: {
+          id: string;
+          return_id: string;
+          author_id: string;
+          author_role: "customer" | "vendor" | "admin";
+          comment: string;
+          is_internal: boolean;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          return_id: string;
+          author_id: string;
+          author_role: "customer" | "vendor" | "admin";
+          comment: string;
+          is_internal?: boolean;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          return_id?: string;
+          author_id?: string;
+          author_role?: "customer" | "vendor" | "admin";
+          comment?: string;
+          is_internal?: boolean;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "return_comments_return_id_fkey";
+            columns: ["return_id"];
+            isOneToOne: false;
+            referencedRelation: "returns";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "return_comments_author_id_fkey";
+            columns: ["author_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      return_documents: {
+        Row: {
+          id: string;
+          return_id: string;
+          name: string;
+          url: string;
+          type: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          return_id: string;
+          name: string;
+          url: string;
+          type: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          return_id?: string;
+          name?: string;
+          url?: string;
+          type?: string;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "return_documents_return_id_fkey";
+            columns: ["return_id"];
+            isOneToOne: false;
+            referencedRelation: "returns";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      refunds: {
+        Row: {
+          id: string;
+          payment_id: string | null;
+          order_id: string | null;
+          return_id: string | null;
+          razorpay_refund_id: string | null;
+          amount_cents: number;
+          status: string;
+          reason: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          payment_id?: string | null;
+          order_id?: string | null;
+          return_id?: string | null;
+          razorpay_refund_id?: string | null;
+          amount_cents: number;
+          status?: string;
+          reason?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          payment_id?: string | null;
+          order_id?: string | null;
+          return_id?: string | null;
+          razorpay_refund_id?: string | null;
+          amount_cents?: number;
+          status?: string;
+          reason?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "refunds_order_id_fkey";
+            columns: ["order_id"];
+            isOneToOne: false;
+            referencedRelation: "orders";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "refunds_return_id_fkey";
+            columns: ["return_id"];
+            isOneToOne: false;
+            referencedRelation: "returns";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      payments: {
+        Row: {
+          id: string;
+          order_id: string | null;
+          preservation_request_id: string | null;
+          customer_id: string;
+          vendor_id: string | null;
+          payment_type: string;
+          amount_cents: number;
+          razorpay_order_id: string | null;
+          razorpay_payment_id: string | null;
+          razorpay_signature: string | null;
+          status: string;
+          currency: string;
+          payment_method: string | null;
+          verified: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          order_id?: string | null;
+          preservation_request_id?: string | null;
+          customer_id: string;
+          vendor_id?: string | null;
+          payment_type: string;
+          amount_cents: number;
+          razorpay_order_id?: string | null;
+          razorpay_payment_id?: string | null;
+          razorpay_signature?: string | null;
+          status?: string;
+          currency?: string;
+          payment_method?: string | null;
+          verified?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          order_id?: string | null;
+          preservation_request_id?: string | null;
+          customer_id?: string;
+          vendor_id?: string | null;
+          payment_type?: string;
+          amount_cents?: number;
+          razorpay_order_id?: string | null;
+          razorpay_payment_id?: string | null;
+          razorpay_signature?: string | null;
+          status?: string;
+          currency?: string;
+          payment_method?: string | null;
+          verified?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "payments_order_id_fkey";
+            columns: ["order_id"];
+            isOneToOne: false;
+            referencedRelation: "orders";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "payments_customer_id_fkey";
+            columns: ["customer_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "payments_vendor_id_fkey";
+            columns: ["vendor_id"];
+            isOneToOne: false;
+            referencedRelation: "vendors";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
     };
     Views: {
       [_ in never]: never;

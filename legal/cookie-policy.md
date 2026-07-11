@@ -1,12 +1,12 @@
 # Cookie Policy
 
-**Effective Date:** [Effective Date]  
-**Last Updated:** [Last Updated]
+**Effective Date:** July 10, 2026  
+**Last Updated:** July 10, 2026
 
 ## 1. Introduction
 Welcome to ViaCraft ("Platform"). ViaCraft is a multi-vendor marketplace facilitator for handmade resin products, home decor, jewellery, and preservation services. 
 
-This Cookie Policy explains how we use cookies, tracking pixels, and similar technologies on [Website URL] to improve your browsing experience.
+This Cookie Policy explains how we use cookies, tracking pixels, and similar technologies on https://viacraft.in to improve your browsing experience.
 
 ## 2. Purpose
 The purpose of this Cookie Policy is to provide clear and transparent information regarding what cookies are, the types of cookies we use, why we use them, and how you can manage or disable them.
@@ -67,7 +67,7 @@ ViaCraft is not responsible for the cookie policies of external links or third-p
 
 ## 13. Contact Information
 For any cookie-related inquiries:
-*   **Technical Support Email:** [Support Email]
+*   **Technical Support Email:** support@viacraft.in
 
 ## 14. Governing Law
 This Cookie Policy complies with the Information Technology Act, 2000, and is aligned with international best practices.

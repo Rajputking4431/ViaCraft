@@ -13,16 +13,39 @@ export async function uploadToCloudinary(
   onProgress?: (progress: number) => void,
 ): Promise<string> {
   // 1. Validation
-  const validTypes = ["image/jpeg", "image/png", "image/webp"];
-  if (!validTypes.includes(file.type)) {
-    throw new Error(
-      `Unsupported file type: ${file.name}. Only JPG, PNG, and WEBP formats are supported.`,
-    );
-  }
+  const isVideo = file.type.startsWith("video/");
+  const resourceType = isVideo ? "video" : "image";
 
-  const maxSizeInBytes = 5 * 1024 * 1024; // 5MB
-  if (file.size > maxSizeInBytes) {
-    throw new Error(`File ${file.name} is too large. Maximum size is 5MB.`);
+  if (isVideo) {
+    const validVideoTypes = [
+      "video/mp4",
+      "video/quicktime",
+      "video/webm",
+      "video/ogg",
+      "video/mpeg",
+    ];
+    if (!validVideoTypes.includes(file.type)) {
+      throw new Error(
+        `Unsupported video type: ${file.name}. Only MP4, MOV, WEBM, OGG, and MPEG formats are supported.`,
+      );
+    }
+
+    const maxVideoSize = 25 * 1024 * 1024; // 25MB
+    if (file.size > maxVideoSize) {
+      throw new Error(`Video ${file.name} is too large. Maximum size is 25MB.`);
+    }
+  } else {
+    const validImageTypes = ["image/jpeg", "image/png", "image/webp"];
+    if (!validImageTypes.includes(file.type)) {
+      throw new Error(
+        `Unsupported image type: ${file.name}. Only JPG, PNG, and WEBP formats are supported.`,
+      );
+    }
+
+    const maxImageSize = 5 * 1024 * 1024; // 5MB
+    if (file.size > maxImageSize) {
+      throw new Error(`Image ${file.name} is too large. Maximum size is 5MB.`);
+    }
   }
 
   // 2. Configuration check
@@ -39,7 +62,7 @@ export async function uploadToCloudinary(
   // 3. Upload execution via XMLHttpRequest for tracking progress
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
-    xhr.open("POST", `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`);
+    xhr.open("POST", `https://api.cloudinary.com/v1_1/${cloudName}/${resourceType}/upload`);
 
     if (onProgress && xhr.upload) {
       xhr.upload.onprogress = (event) => {

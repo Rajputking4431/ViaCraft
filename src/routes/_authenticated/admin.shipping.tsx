@@ -48,7 +48,9 @@ function AdminShippingPage() {
   const { data: warehouses = [], isLoading: loadingWarehouses } = useQuery({
     queryKey: ["admin-warehouses"],
     queryFn: async () => {
-      const { data, error } = await (supabase.from("vendor_pickup_addresses" as any).select("*, vendors(store_name)") as any);
+      const { data, error } = await (supabase
+        .from("vendor_pickup_addresses" as any)
+        .select("*, vendors(store_name)") as any);
       if (error) {
         // Fallback to local storage if relation missing or error
         return shippingDb.pickupAddress.listAll();
@@ -82,9 +84,10 @@ function AdminShippingPage() {
 
   // Filtered shipments
   const filteredShipments = shipments.filter((ship) => {
-    const matchesSearch = 
+    const matchesSearch =
       ship.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (ship.tracking_number && ship.tracking_number.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      (ship.tracking_number &&
+        ship.tracking_number.toLowerCase().includes(searchQuery.toLowerCase())) ||
       (ship.courier_name && ship.courier_name.toLowerCase().includes(searchQuery.toLowerCase()));
 
     const matchesStatus = statusFilter === "all" || ship.status === statusFilter;
@@ -94,7 +97,6 @@ function AdminShippingPage() {
 
   return (
     <div className="space-y-8 text-slate-100 font-sans">
-      
       {/* Title block */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
@@ -103,7 +105,8 @@ function AdminShippingPage() {
             Global Logistics & Shipping
           </h1>
           <p className="text-slate-400 mt-2">
-            Monitor shipments, audit API communication logs, inspect pickup warehouses, and manage stuck deliveries.
+            Monitor shipments, audit API communication logs, inspect pickup warehouses, and manage
+            stuck deliveries.
           </p>
         </div>
 
@@ -157,7 +160,7 @@ function AdminShippingPage() {
                 className="w-full pl-10 pr-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-white focus:border-amber-500 outline-none transition-colors"
               />
             </div>
-            
+
             <div className="flex gap-3">
               <select
                 value={statusFilter}
@@ -231,22 +234,26 @@ function AdminShippingPage() {
                           )}
                         </td>
                         <td className="py-4 px-6">
-                          <span className={`inline-flex px-2 py-0.5 rounded text-[10px] uppercase font-bold tracking-wider border ${
-                            ship.shipping_method === "shiprocket"
-                              ? "bg-indigo-500/10 text-indigo-400 border-indigo-500/20"
-                              : "bg-teal-500/10 text-teal-400 border-teal-500/20"
-                          }`}>
+                          <span
+                            className={`inline-flex px-2 py-0.5 rounded text-[10px] uppercase font-bold tracking-wider border ${
+                              ship.shipping_method === "shiprocket"
+                                ? "bg-indigo-500/10 text-indigo-400 border-indigo-500/20"
+                                : "bg-teal-500/10 text-teal-400 border-teal-500/20"
+                            }`}
+                          >
                             {ship.shipping_method}
                           </span>
                         </td>
                         <td className="py-4 px-6">
-                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border ${
-                            ship.status === "delivered"
-                              ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
-                              : ship.status === "cancelled"
-                                ? "bg-rose-500/10 text-rose-400 border-rose-500/20"
-                                : "bg-amber-500/10 text-amber-400 border-amber-500/20"
-                          }`}>
+                          <span
+                            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border ${
+                              ship.status === "delivered"
+                                ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+                                : ship.status === "cancelled"
+                                  ? "bg-rose-500/10 text-rose-400 border-rose-500/20"
+                                  : "bg-amber-500/10 text-amber-400 border-amber-500/20"
+                            }`}
+                          >
                             {ship.status.replace(/_/g, " ")}
                           </span>
                         </td>
@@ -300,11 +307,15 @@ function AdminShippingPage() {
                       </td>
                       <td className="py-4 px-6 font-medium">{w.contact_person}</td>
                       <td className="py-4 px-6 text-slate-400 font-mono text-xs">{w.phone}</td>
-                      <td className="py-4 px-6 text-slate-400 max-w-[200px] truncate" title={w.street}>
+                      <td
+                        className="py-4 px-6 text-slate-400 max-w-[200px] truncate"
+                        title={w.street}
+                      >
                         {w.street}
                       </td>
                       <td className="py-4 px-6">
-                        {w.city}, {w.state} - <span className="font-mono text-xs">{w.postal_code}</span>
+                        {w.city}, {w.state} -{" "}
+                        <span className="font-mono text-xs">{w.postal_code}</span>
                       </td>
                     </tr>
                   ))}
@@ -355,7 +366,11 @@ function AdminShippingPage() {
                       </td>
                       <td className="py-4 px-6 text-slate-400 font-sans max-w-sm whitespace-normal leading-relaxed">
                         {log.notes}
-                        {log.reason && <span className="text-rose-500 block font-semibold mt-1">Reason: {log.reason}</span>}
+                        {log.reason && (
+                          <span className="text-rose-500 block font-semibold mt-1">
+                            Reason: {log.reason}
+                          </span>
+                        )}
                       </td>
                     </tr>
                   ))}
@@ -380,55 +395,68 @@ function AdminShippingPage() {
             </SheetHeader>
 
             <div className="space-y-6">
-              
               {/* Parameters Box */}
               <div className="bg-slate-950 border border-slate-800 p-5 rounded-2xl space-y-4 text-xs">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <span className="text-slate-500 block uppercase tracking-wider text-[10px]">Courier</span>
-                    <p className="font-bold text-sm text-white">{selectedShipment.courier_name || "N/A"}</p>
+                    <span className="text-slate-500 block uppercase tracking-wider text-[10px]">
+                      Courier
+                    </span>
+                    <p className="font-bold text-sm text-white">
+                      {selectedShipment.courier_name || "N/A"}
+                    </p>
                   </div>
                   <div>
-                    <span className="text-slate-500 block uppercase tracking-wider text-[10px]">Status</span>
-                    <p className="font-bold text-sm text-amber-500 uppercase">{selectedShipment.status.replace(/_/g, " ")}</p>
+                    <span className="text-slate-500 block uppercase tracking-wider text-[10px]">
+                      Status
+                    </span>
+                    <p className="font-bold text-sm text-amber-500 uppercase">
+                      {selectedShipment.status.replace(/_/g, " ")}
+                    </p>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4 border-t border-slate-800 pt-3">
                   <div>
                     <span className="text-slate-500 block">AWB / Tracking Number:</span>
-                    <p className="font-mono text-white">{selectedShipment.tracking_number || "N/A"}</p>
+                    <p className="font-mono text-white">
+                      {selectedShipment.tracking_number || "N/A"}
+                    </p>
                   </div>
                   <div>
                     <span className="text-slate-500 block">Dispatch Mode:</span>
-                    <p className="font-semibold text-white uppercase">{selectedShipment.shipping_method}</p>
+                    <p className="font-semibold text-white uppercase">
+                      {selectedShipment.shipping_method}
+                    </p>
                   </div>
                 </div>
               </div>
 
               {/* CANCEL SHIPMENT BUTTON (Only if not delivered/cancelled) */}
-              {selectedShipment.status !== "delivered" && selectedShipment.status !== "cancelled" && (
-                <div className="bg-rose-500/5 border border-rose-500/20 rounded-2xl p-5 space-y-3">
-                  <h4 className="text-xs uppercase tracking-wider font-bold text-rose-500 flex items-center gap-1.5">
-                    <AlertOctagon className="h-4.5 w-4.5" /> Administrative Overrides
-                  </h4>
-                  <p className="text-xs text-slate-400 leading-relaxed">
-                    As a system administrator, you can void and cancel this shipment in case of courier problems or order refund processes. This will free up the order items.
-                  </p>
-                  <button
-                    onClick={() => cancelShipmentMutation.mutate(selectedShipment.id)}
-                    disabled={cancelShipmentMutation.isPending}
-                    className="w-full py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
-                  >
-                    {cancelShipmentMutation.isPending ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <XCircle className="h-4.5 w-4.5" />
-                    )}
-                    Void & Cancel Shipment
-                  </button>
-                </div>
-              )}
+              {selectedShipment.status !== "delivered" &&
+                selectedShipment.status !== "cancelled" && (
+                  <div className="bg-rose-500/5 border border-rose-500/20 rounded-2xl p-5 space-y-3">
+                    <h4 className="text-xs uppercase tracking-wider font-bold text-rose-500 flex items-center gap-1.5">
+                      <AlertOctagon className="h-4.5 w-4.5" /> Administrative Overrides
+                    </h4>
+                    <p className="text-xs text-slate-400 leading-relaxed">
+                      As a system administrator, you can void and cancel this shipment in case of
+                      courier problems or order refund processes. This will free up the order items.
+                    </p>
+                    <button
+                      onClick={() => cancelShipmentMutation.mutate(selectedShipment.id)}
+                      disabled={cancelShipmentMutation.isPending}
+                      className="w-full py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
+                    >
+                      {cancelShipmentMutation.isPending ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <XCircle className="h-4.5 w-4.5" />
+                      )}
+                      Void & Cancel Shipment
+                    </button>
+                  </div>
+                )}
 
               {/* Shipment Event Log Timeline */}
               <div className="space-y-4">
@@ -436,9 +464,12 @@ function AdminShippingPage() {
                   <CheckCircle className="h-4.5 w-4.5 text-amber-500" />
                   Cargo Logistics Timeline
                 </h4>
-                
-                {logs.filter((l: ShippingLog) => l.shipment_id === selectedShipment.id).length === 0 ? (
-                  <p className="text-xs text-slate-500 italic">No events recorded for this shipment.</p>
+
+                {logs.filter((l: ShippingLog) => l.shipment_id === selectedShipment.id).length ===
+                0 ? (
+                  <p className="text-xs text-slate-500 italic">
+                    No events recorded for this shipment.
+                  </p>
                 ) : (
                   <div className="relative border-l border-slate-800 pl-4 space-y-6">
                     {logs
@@ -455,7 +486,9 @@ function AdminShippingPage() {
                               {new Date(log.created_at).toLocaleString()}
                             </span>
                           </div>
-                          {log.notes && <p className="text-slate-400 mt-0.5 leading-relaxed">{log.notes}</p>}
+                          {log.notes && (
+                            <p className="text-slate-400 mt-0.5 leading-relaxed">{log.notes}</p>
+                          )}
                           {log.reason && (
                             <p className="text-rose-400 mt-0.5 font-medium">Reason: {log.reason}</p>
                           )}
@@ -467,12 +500,10 @@ function AdminShippingPage() {
                   </div>
                 )}
               </div>
-
             </div>
           </SheetContent>
         </Sheet>
       )}
-
     </div>
   );
 }

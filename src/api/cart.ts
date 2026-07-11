@@ -7,7 +7,8 @@ import {
   updateGuestCartItem,
 } from "@/utils/guest-cart";
 
-const PRODUCT_SELECT = "id, slug, title, price_cents, cover_image, currency, vendor_id, stock";
+const PRODUCT_SELECT =
+  "id, slug, title, price_cents, cover_image, currency, vendor_id, stock, status";
 
 export type CartProduct = {
   id: string;
@@ -18,6 +19,7 @@ export type CartProduct = {
   currency: string;
   vendor_id: string;
   stock: number;
+  status?: string;
 };
 
 export type CartLineItem = {
@@ -93,13 +95,15 @@ export async function fetchUserCartItems(userId: string): Promise<CartLineItem[]
     .select(`id, quantity, product:products(${PRODUCT_SELECT})`)
     .eq("user_id", userId);
 
-  return (data ?? []).map((row) => ({
-    id: row.id,
-    quantity: row.quantity,
-    product_id: row.product?.id ?? "",
-    isGuest: false,
-    product: row.product as CartProduct | null,
-  }));
+  return (data ?? [])
+    .map((row) => ({
+      id: row.id,
+      quantity: row.quantity,
+      product_id: row.product?.id ?? "",
+      isGuest: false,
+      product: row.product as CartProduct | null,
+    }))
+    .filter((item) => item.product && item.product.status !== "deleted");
 }
 
 export async function fetchGuestCartItems(): Promise<CartLineItem[]> {
@@ -110,6 +114,7 @@ export async function fetchGuestCartItems(): Promise<CartLineItem[]> {
   const { data: products } = await supabase
     .from("products")
     .select(PRODUCT_SELECT)
+    .neq("status", "deleted")
     .in("id", productIds);
 
   const productMap = new Map((products ?? []).map((p) => [p.id, p as CartProduct]));

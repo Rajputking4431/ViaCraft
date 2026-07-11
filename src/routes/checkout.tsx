@@ -7,8 +7,17 @@ import { useAuth } from "@/hooks/use-auth";
 import { fetchUserCartItems } from "@/api/cart";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
-import { trackCheckoutStarted, trackPaymentSuccess, trackOrderCompleted } from "@/services/analytics/google";
-import { sendOrderConfirmationEmail, sendVendorNewOrderEmail, sendAdminHighValueOrderEmail } from "@/api/email.functions";
+import {
+  trackCheckoutStarted,
+  trackPaymentSuccess,
+  trackOrderCompleted,
+} from "@/services/analytics/google";
+import {
+  sendOrderConfirmationEmail,
+  sendVendorNewOrderEmail,
+  sendAdminHighValueOrderEmail,
+} from "@/api/email.functions";
+import { initializeRazorpayPayment } from "@/utils/razorpay";
 import {
   Check,
   MapPin,
@@ -71,7 +80,7 @@ function CheckoutPage() {
     if (user) {
       setFullName(user.user_metadata?.full_name || user.email?.split("@")[0] || "Customer Name");
       if (user.phone) setPhone(user.phone);
-      
+
       // Load saved addresses specific to the logged-in user
       const savedAddr = localStorage.getItem(`user_addresses_${user.id}`);
       if (savedAddr) {
@@ -99,7 +108,9 @@ function CheckoutPage() {
     if (savedCoupon) setCouponCode(savedCoupon);
   }, [user]);
 
-  const [variations, setVariations] = useState<Record<string, { size: string; price_cents: number }>>({});
+  const [variations, setVariations] = useState<
+    Record<string, { size: string; price_cents: number }>
+  >({});
 
   // Fetch cart items
   const { data: items = [], isLoading } = useQuery({
@@ -169,14 +180,14 @@ function CheckoutPage() {
           const storageKey = `user_addresses_${user!.id}`;
           const savedStr = localStorage.getItem(storageKey);
           const savedList = savedStr ? JSON.parse(savedStr) : [];
-          
+
           const exists = savedList.some(
             (a: any) =>
               a.street.toLowerCase() === street.toLowerCase() &&
               a.city.toLowerCase() === city.toLowerCase() &&
               a.zip === zipCode,
           );
-          
+
           if (!exists) {
             const newAddr = {
               id: Math.random().toString(),
@@ -217,12 +228,10 @@ function CheckoutPage() {
         .filter((i) => i.product)
         .map((i) => {
           const variation = variations[i.product!.id];
-          const finalTitle = variation 
-            ? `${i.product!.title} (${variation.size})` 
+          const finalTitle = variation
+            ? `${i.product!.title} (${variation.size})`
             : i.product!.title;
-          const finalPrice = variation 
-            ? variation.price_cents 
-            : i.product!.price_cents;
+          const finalPrice = variation ? variation.price_cents : i.product!.price_cents;
 
           return {
             order_id: order.id,
@@ -266,58 +275,80 @@ function CheckoutPage() {
         console.error("Failed to write fallback order copy", err);
       }
 
-      // 4. Delete items from Supabase cart
-      await supabase.from("cart_items").delete().eq("user_id", user!.id);
-
-      // 5. Clean checkout local storage
-      localStorage.removeItem("checkout_discount_cents");
-      localStorage.removeItem("checkout_coupon_code");
-      localStorage.removeItem("cart_item_variations");
-
       return order;
     },
     onSuccess: (order) => {
       qc.invalidateQueries();
-      toast.success(`Order ${order.order_number} placed successfully!`);
-      trackOrderCompleted(order.id, order.order_number, order.total_cents, items);
 
-      sendOrderConfirmationEmail({ data: { orderId: order.id } }).catch((err) => {
-        console.error("Order confirmation email trigger failure", err);
-      });
+      if (paymentMethod === "cod") {
+        // Cash on delivery: complete order immediately
+        toast.success(`Order ${order.order_number} placed successfully (COD)!`);
+        trackOrderCompleted(order.id, order.order_number, order.total_cents, items);
 
-      sendVendorNewOrderEmail({ data: { orderId: order.id } }).catch((err) => {
-        console.error("Vendor order email trigger failure", err);
-      });
+        // Clean cart and checkout local storage
+        supabase
+          .from("cart_items")
+          .delete()
+          .eq("user_id", user!.id)
+          .then(() => {
+            localStorage.removeItem("checkout_discount_cents");
+            localStorage.removeItem("checkout_coupon_code");
+            localStorage.removeItem("cart_item_variations");
+            qc.invalidateQueries({ queryKey: ["cart-items"] });
+          });
 
-      if (order.total_cents > 500000) {
-        sendAdminHighValueOrderEmail({ data: { orderId: order.id } }).catch((err) => {
-          console.error("Admin high-value order email trigger failure", err);
+        sendOrderConfirmationEmail({ data: { orderId: order.id } }).catch(console.error);
+        sendVendorNewOrderEmail({ data: { orderId: order.id } }).catch(console.error);
+        if (order.total_cents > 500000) {
+          sendAdminHighValueOrderEmail({ data: { orderId: order.id } }).catch(console.error);
+        }
+
+        navigate({ to: "/dashboard" });
+      } else {
+        // Card or UPI: Initialize secure Razorpay Checkout
+        setIsRazorpaySimulating(true);
+        initializeRazorpayPayment({
+          amountCents: order.total_cents,
+          orderId: order.id,
+          paymentType: "full",
+          customerId: user!.id,
+          customerName: fullName,
+          customerEmail: user!.email || "",
+          customerPhone: phone,
+          onSuccess: async (payment) => {
+            setIsRazorpaySimulating(false);
+            toast.success("Payment verified! Order placed successfully.");
+            trackPaymentSuccess(paymentMethod, order.total_cents);
+            trackOrderCompleted(order.id, order.order_number, order.total_cents, items);
+
+            // Clean cart and checkout local storage
+            await supabase.from("cart_items").delete().eq("user_id", user!.id);
+            localStorage.removeItem("checkout_discount_cents");
+            localStorage.removeItem("checkout_coupon_code");
+            localStorage.removeItem("cart_item_variations");
+
+            sendOrderConfirmationEmail({ data: { orderId: order.id } }).catch(console.error);
+            sendVendorNewOrderEmail({ data: { orderId: order.id } }).catch(console.error);
+            if (order.total_cents > 500000) {
+              sendAdminHighValueOrderEmail({ data: { orderId: order.id } }).catch(console.error);
+            }
+
+            navigate({ to: "/payment/success", search: { order_id: order.id } });
+          },
+          onFailure: (errMsg) => {
+            setIsRazorpaySimulating(false);
+            navigate({ to: "/payment/failure", search: { order_id: order.id, error: errMsg } });
+          },
         });
       }
-
-      navigate({ to: "/dashboard" });
     },
     onError: (e: any) => {
       toast.error(e.message || "Failed to submit order");
     },
   });
 
-  const simulatePayment = () => {
-    setIsRazorpaySimulating(true);
-    setTimeout(() => {
-      setIsRazorpaySimulating(false);
-      toast.success("Razorpay payment transaction simulated successfully!");
-      trackPaymentSuccess(paymentMethod, total);
-      placeOrderMutation.mutate();
-    }, 2000);
-  };
-
   const handlePlaceOrderClick = () => {
-    if (paymentMethod === "upi" || paymentMethod === "card") {
-      simulatePayment();
-    } else {
-      placeOrderMutation.mutate();
-    }
+    placeOrderMutation.mutate();
   };
 
   if (!user) {
@@ -362,7 +393,7 @@ function CheckoutPage() {
         </div>
 
         {/* Wizard Steps Indicator tabs */}
-        <div className="grid grid-cols-4 gap-2 text-center text-[10px] font-bold uppercase tracking-wider mb-10 border-b border-border/40 pb-6 select-none max-w-2xl mx-auto">
+        <div className="grid grid-cols-4 gap-4 text-center text-[10px] font-bold uppercase tracking-wider mb-10 border-b border-border/40 pb-8 select-none max-w-xl mx-auto">
           {[
             { s: 1, label: "Address", icon: MapPin },
             { s: 2, label: "Delivery", icon: Truck },
@@ -377,35 +408,35 @@ function CheckoutPage() {
                 key={it.s}
                 disabled={step < it.s}
                 onClick={() => setStep(it.s)}
-                className={`flex flex-col items-center gap-1.5 transition-colors cursor-pointer ${
+                className={`flex flex-col items-center gap-2 transition-all duration-300 cursor-pointer ${
                   isActive
-                    ? "text-accent"
+                    ? "text-accent scale-105"
                     : isCompleted
                       ? "text-emerald-500 hover:text-accent"
-                      : "text-muted-foreground/60"
+                      : "text-muted-foreground/50"
                 }`}
               >
                 <div
-                  className={`h-8 w-8 rounded-full flex items-center justify-center border transition-all ${
+                  className={`h-9 w-9 rounded-full flex items-center justify-center border transition-all duration-300 ${
                     isActive
-                      ? "border-accent bg-accent/5"
+                      ? "border-accent bg-accent/10 shadow-sm"
                       : isCompleted
                         ? "border-emerald-500 bg-emerald-500/10 text-emerald-500"
-                        : "border-border"
+                        : "border-border/80 bg-muted/20"
                   }`}
                 >
                   {isCompleted ? <Check className="h-4.5 w-4.5" /> : <Icon className="h-4 w-4" />}
                 </div>
-                <span>{it.label}</span>
+                <span className="font-semibold">{it.label}</span>
               </button>
             );
           })}
         </div>
 
         {/* Main Columns Grid */}
-        <div className="grid lg:grid-cols-12 gap-8 items-start">
+        <div className="grid lg:grid-cols-12 gap-8 items-start animate-in fade-in duration-300">
           {/* Left Column: Form Stages */}
-          <div className="lg:col-span-8 bg-card border border-border/80 rounded-3xl p-6 sm:p-8 shadow-sm min-h-[300px]">
+          <div className="lg:col-span-8 bg-card border border-border/60 rounded-2xl p-6 sm:p-8 shadow-soft min-h-[300px]">
             {/* Step 1: Address */}
             {step === 1 && (
               <div className="space-y-6 animate-in fade-in duration-200">
@@ -820,7 +851,7 @@ function CheckoutPage() {
           </div>
 
           {/* Right Column: Invoice Breakdown */}
-          <aside className="lg:col-span-4 bg-card border border-border/80 rounded-3xl p-6 shadow-sm space-y-4">
+          <aside className="lg:col-span-4 bg-card border border-border/60 rounded-2xl p-6 shadow-soft space-y-4">
             <h3 className="font-display text-lg font-bold border-b border-border pb-3 mb-2">
               Order Price Summary
             </h3>

@@ -31,7 +31,9 @@ import {
 import { AnimatePresence } from "framer-motion";
 
 export const Route = createFileRoute("/products/$slug")({
-  head: ({ params }: any) => ({ meta: [{ title: `${params.slug.replace(/-/g, " ")} — ViaCraft` }] }),
+  head: ({ params }: any) => ({
+    meta: [{ title: `${params.slug.replace(/-/g, " ")} — ViaCraft` }],
+  }),
   validateSearch: (search: Record<string, unknown>) => ({
     tab:
       search.tab === "details" || search.tab === "shipping" || search.tab === "reviews"
@@ -100,6 +102,7 @@ function ProductPage() {
         .from("products")
         .select("*, vendors(id,slug,store_name,location,rating,tagline)")
         .eq("slug", slug)
+        .neq("status", "deleted")
         .maybeSingle();
       return data;
     },
@@ -173,7 +176,7 @@ function ProductPage() {
       toast.success("Added to cart");
       qc.invalidateQueries({ queryKey: ["cart-count"] });
       qc.invalidateQueries({ queryKey: ["cart"] });
-      
+
       const trackedProduct = selectedSize
         ? { ...product!, price_cents: selectedSize.price * 100 }
         : product!;
@@ -357,8 +360,6 @@ function ProductPage() {
 
           {/* Right Side: Product Details & Options */}
           <div className="space-y-6">
-
-
             {/* Title */}
             <h1 className="font-display text-3xl sm:text-4xl lg:text-5xl font-extrabold text-foreground leading-tight">
               {product.title}
@@ -400,9 +401,7 @@ function ProductPage() {
                   <span className="text-xs font-bold text-accent">
                     (
                     {Math.round(
-                      ((product.compare_at_cents - basePrice) /
-                        product.compare_at_cents) *
-                        100,
+                      ((product.compare_at_cents - basePrice) / product.compare_at_cents) * 100,
                     )}
                     % OFF)
                   </span>
@@ -485,7 +484,9 @@ function ProductPage() {
                     >
                       <span className="text-xs">{op.size}</span>
                       <span className="text-[9px] text-muted-foreground mt-0.5">{op.inches}</span>
-                      <span className="text-[10px] font-bold text-foreground/90 mt-1">{inr(op.price * 100)}</span>
+                      <span className="text-[10px] font-bold text-foreground/90 mt-1">
+                        {inr(op.price * 100)}
+                      </span>
                     </button>
                   ))}
                 </div>
@@ -493,39 +494,39 @@ function ProductPage() {
             )}
 
             {/* Sizing / Base variations selection (conditional) */}
-            {((product.custom_url === "Resin Clocks" || 
-               product.custom_url === "Resin Tables" || 
-               product.title.toLowerCase().includes("lamp") || 
-               product.title.toLowerCase().includes("clock") ||
-               product.title.toLowerCase().includes("table")) &&
-              sizes.length === 0) && (
-              <div className="space-y-3 pt-2">
-                <label className="text-xs font-bold uppercase tracking-wider text-foreground block">
-                  Select Base Lamp Add-on
-                </label>
-                <div className="grid grid-cols-3 gap-2">
-                  {[
-                    { id: "standard", label: "No Stand", price: "Free" },
-                    { id: "led", label: "LED Warm Stand", price: "+₹499" },
-                    { id: "rotary", label: "Rotary Light Base", price: "+₹799" },
-                  ].map((op) => (
-                    <button
-                      key={op.id}
-                      type="button"
-                      onClick={() => setSelectedBase(op.id)}
-                      className={`p-3 rounded-2xl border text-center flex flex-col justify-center transition-all cursor-pointer ${
-                        selectedBase === op.id
-                          ? "border-accent bg-accent/5 ring-1 ring-accent text-accent font-bold"
-                          : "border-border hover:border-accent/30 text-foreground/80 bg-card"
-                      }`}
-                    >
-                      <span className="text-xs">{op.label}</span>
-                      <span className="text-[9px] text-muted-foreground mt-0.5">{op.price}</span>
-                    </button>
-                  ))}
+            {(product.custom_url === "Resin Clocks" ||
+              product.custom_url === "Resin Tables" ||
+              product.title.toLowerCase().includes("lamp") ||
+              product.title.toLowerCase().includes("clock") ||
+              product.title.toLowerCase().includes("table")) &&
+              sizes.length === 0 && (
+                <div className="space-y-3 pt-2">
+                  <label className="text-xs font-bold uppercase tracking-wider text-foreground block">
+                    Select Base Lamp Add-on
+                  </label>
+                  <div className="grid grid-cols-3 gap-2">
+                    {[
+                      { id: "standard", label: "No Stand", price: "Free" },
+                      { id: "led", label: "LED Warm Stand", price: "+₹499" },
+                      { id: "rotary", label: "Rotary Light Base", price: "+₹799" },
+                    ].map((op) => (
+                      <button
+                        key={op.id}
+                        type="button"
+                        onClick={() => setSelectedBase(op.id)}
+                        className={`p-3 rounded-2xl border text-center flex flex-col justify-center transition-all cursor-pointer ${
+                          selectedBase === op.id
+                            ? "border-accent bg-accent/5 ring-1 ring-accent text-accent font-bold"
+                            : "border-border hover:border-accent/30 text-foreground/80 bg-card"
+                        }`}
+                      >
+                        <span className="text-xs">{op.label}</span>
+                        <span className="text-[9px] text-muted-foreground mt-0.5">{op.price}</span>
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
             {/* Shipping Delivery Estimate Widget */}
             <div className="p-4 bg-muted/30 border border-border/60 rounded-3xl space-y-3 pt-3">
@@ -796,7 +797,9 @@ function ProductPage() {
 
               <div className="text-center lg:text-right pt-4 lg:pt-0 border-t lg:border-t-0 lg:border-l border-border/80 lg:pl-8 space-y-2 shrink-0">
                 <p className="text-xs text-muted-foreground">Bundle Total Price</p>
-                <p className="font-display text-2xl font-bold text-foreground">{inr(bundleTotal)}</p>
+                <p className="font-display text-2xl font-bold text-foreground">
+                  {inr(bundleTotal)}
+                </p>
                 <button
                   onClick={() => {
                     addToCart.mutate();

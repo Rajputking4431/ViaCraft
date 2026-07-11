@@ -13,6 +13,7 @@ import {
   AlertCircle,
   ArrowUpRight,
   Clock,
+  RotateCcw,
 } from "lucide-react";
 import {
   AreaChart,
@@ -50,7 +51,12 @@ function AdminDashboard() {
   const { data: products = [], isLoading: loadingProducts } = useQuery({
     queryKey: ["admin-dashboard-products"],
     queryFn: async () =>
-      (await supabase.from("products").select("id, price_cents, category_id")).data ?? [],
+      (
+        await supabase
+          .from("products")
+          .select("id, price_cents, category_id")
+          .neq("status", "deleted")
+      ).data ?? [],
   });
 
   const { data: orders = [], isLoading: loadingOrders } = useQuery({
@@ -76,13 +82,19 @@ function AdminDashboard() {
     queryFn: async () => (await supabase.from("categories").select("id, name")).data ?? [],
   });
 
+  const { data: returns = [], isLoading: loadingReturns } = useQuery({
+    queryKey: ["admin-dashboard-returns"],
+    queryFn: async () => (await supabase.from("returns").select("id, status")).data ?? [],
+  });
+
   const loading =
     loadingProfiles ||
     loadingVendors ||
     loadingProducts ||
     loadingOrders ||
     loadingPreservations ||
-    loadingCategories;
+    loadingCategories ||
+    loadingReturns;
 
   // KPI Calculations
   const totalUsers = profiles.length;
@@ -97,6 +109,12 @@ function AdminDashboard() {
   const totalRevenue = validRevenueOrders.reduce((sum, o) => sum + o.total_cents, 0);
 
   const activePreservations = preservations.filter((p) => p.current_stage !== "delivered").length;
+
+  const pendingReturns = returns.filter((r) =>
+    ["pending", "vendor_review", "admin_review"].includes(r.status),
+  ).length;
+
+  const adminReviewReturns = returns.filter((r) => r.status === "admin_review").length;
 
   // Current Month Sales
   const now = new Date();
@@ -341,13 +359,13 @@ function AdminDashboard() {
           badgeLink="/admin/preservation"
         />
         <KpiCard
-          icon={AlertCircle}
-          label="Vendor Approvals"
-          value={pendingVendors}
+          icon={RotateCcw}
+          label="Return Requests"
+          value={pendingReturns}
           color="rose"
-          description="Stores awaiting review"
-          badge={pendingVendors > 0 ? "Action Required" : "Clean"}
-          badgeLink="/admin/vendors"
+          description={`${adminReviewReturns} awaiting admin approval`}
+          badge={adminReviewReturns > 0 ? "Action Required" : "Clean"}
+          badgeLink="/admin/returns"
         />
       </div>
 

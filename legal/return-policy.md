@@ -1,12 +1,12 @@
 # Return Policy
 
-**Effective Date:** [Effective Date]  
-**Last Updated:** [Last Updated]
+**Effective Date:** July 10, 2026  
+**Last Updated:** July 10, 2026
 
 ## 1. Introduction
 Welcome to ViaCraft. ViaCraft is a multi-vendor marketplace facilitator specializing in handmade resin products, customized gifts, jewellery, and preservation crafts.
 
-This Return Policy governs the rules, criteria, and procedures under which Customers may request the return of products purchased on [Website URL].
+This Return Policy governs the rules, criteria, and procedures under which Customers may request the return of products purchased on https://viacraft.in.
 
 ## 2. Purpose
 This Return Policy clarifies return eligibility, parameters for damaged items, timeline constraints, and exclusions to protect both our artisan Vendors (who make delicate, customized products) and our Customers.
@@ -32,7 +32,7 @@ Due to the handcrafted, customized, and delicate nature of resin products, the f
 | **Clearance / Sale Items** | Non-Returnable | Marked down inventory sold under final sale terms. |
 
 ## 6. Customer Responsibilities
-*   **Prompt Request:** Customers must submit return requests via the Customer Dashboard or by emailing [Support Email] with valid evidence (e.g., photos/video).
+*   **Prompt Request:** Customers must submit return requests via the Customer Dashboard or by emailing support@viacraft.in with valid evidence (e.g., photos/video).
 *   **Safe Return Shipping:** Once a return is approved, the Customer must pack the product securely to prevent damage in transit. The Platform may arrange a pickup, or the Customer may be asked to ship it back, depending on the Vendor's location.
 
 ## 7. Vendor Responsibilities
@@ -57,8 +57,8 @@ ViaCraft is not responsible for transit damage during reverse shipping caused by
 
 ## 11. Contact Information
 To submit a return request or report a damaged item:
-*   **Support Email:** [Support Email]
-*   **Support Helpdesk:** [Website URL]/returns
+*   **Support Email:** support@viacraft.in
+*   **Support Helpdesk:** https://viacraft.in/returns
 
 ## 12. Governing Law
 This Return Policy is compliant with the Consumer Protection (E-Commerce) Rules, 2020, under the laws of India.

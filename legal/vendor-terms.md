@@ -1,10 +1,10 @@
 # Vendor Terms & Conditions
 
-**Effective Date:** [Effective Date]  
-**Last Updated:** [Last Updated]
+**Effective Date:** July 10, 2026  
+**Last Updated:** July 10, 2026
 
 ## 1. Introduction
-Welcome to ViaCraft. These Vendor Terms & Conditions ("Vendor Terms") govern your access and use of the ViaCraft Vendor Dashboard to sell your handcrafted resin products, customized gifts, resin jewellery, home decor, and preservation services ("Products") on [Website URL] (the "Platform").
+Welcome to ViaCraft. These Vendor Terms & Conditions ("Vendor Terms") govern your access and use of the ViaCraft Vendor Dashboard to sell your handcrafted resin products, customized gifts, resin jewellery, home decor, and preservation services ("Products") on https://viacraft.in (the "Platform").
 
 By registering as a Vendor, you agree to comply with these Vendor Terms, our master Terms & Conditions, and all other Platform policies.
 
@@ -59,11 +59,11 @@ Vendors warrant that they own or have the necessary licenses to all texts, image
 
 ## 13. Grievance Redressal Contact
 Any administrative or vendor-specific disputes can be escalated to the Platform:
-*   **Contact Personnel:** [Grievance Officer]
-*   **Email:** [Support Email]
+*   **Contact Personnel:** Mr. Om Sharma
+*   **Email:** support@viacraft.in
 
 ## 14. Governing Law
-These Vendor Terms are governed by the laws of India. Any disputes arising hereunder shall be subject to the exclusive jurisdiction of the courts of [City/State, India].
+These Vendor Terms are governed by the laws of India. Any disputes arising hereunder shall be subject to the exclusive jurisdiction of the courts of Noida, Uttar Pradesh, India.
 
 ## 15. Changes to Vendor Terms
 ViaCraft reserves the right to modify these terms at any time. Changes to commissions or settlement periods will be notified to Vendors at least 15 days in advance via email or the Vendor Dashboard.

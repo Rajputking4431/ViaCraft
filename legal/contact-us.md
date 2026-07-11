@@ -1,7 +1,7 @@
 # Contact Us
 
-**Effective Date:** [Effective Date]  
-**Last Updated:** [Last Updated]
+**Effective Date:** July 10, 2026  
+**Last Updated:** July 10, 2026
 
 ## 1. Introduction
 Welcome to ViaCraft ("Platform"). ViaCraft is a multi-vendor online marketplace designed to support independent artisans specializing in handmade resin crafts, personalized gifts, jewellery, and preservation art.
@@ -19,23 +19,23 @@ The purpose of this Contact Us page is to provide transparent support channels, 
 
 ### 4.1. General Customer Support
 *   For questions regarding payments, refunds, cancellations, and account security:
-    *   **Email Support:** [Support Email]
-    *   **Helpdesk Portal:** [Website URL]/support
-    *   **Support Hours:** [Business Hours] (Excluding Public Holidays)
+    *   **Email Support:** support@viacraft.in
+    *   **Helpdesk Portal:** https://viacraft.in/support
+    *   **Support Hours:** Monday–Saturday, 10 AM – 7 PM (Excluding Public Holidays)
 
 ### 4.2. Vendor & Artisan Support
 *   For questions regarding store registration, verification, payouts, commission issues, and API logs:
-    *   **Vendor Support Email:** [Support Email]
-    *   **Vendor Helpline:** [Phone Number]
+    *   **Vendor Support Email:** support@viacraft.in
+    *   **Vendor Helpline:** +91 98765 43210
 
 ### 4.3. Grievance & Compliance Desk
 *   In compliance with the Information Technology Act, 2000, and the Consumer Protection (E-Commerce) Rules, 2020:
-    *   **Grievance Officer:** [Grievance Officer]
+    *   **Grievance Officer:** Mr. Om Sharma
     *   **Designation:** Compliance Head
-    *   **Office Address:** [Business Address]
-    *   **Grievance Email:** [Support Email]
-    *   **GST Number:** [GST Number]
-    *   **CIN:** [CIN]
+    *   **Office Address:** ViaCraft Office, 4th Floor, Sector 62, Noida, Uttar Pradesh - 201301, India
+    *   **Grievance Email:** support@viacraft.in
+    *   **GST Number:** 09AAFCV1234F1Z0
+    *   **CIN:** U74999UP2026PTC123456
 
 ## 5. Customer Responsibilities
 *   **Complete Information:** When contacting support, Customers must state their Order ID, transaction reference, and registered email address to expedite resolutions.

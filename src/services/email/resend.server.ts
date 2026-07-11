@@ -469,7 +469,7 @@ export function buildVendorNewOrderEmail(
   storeName: string,
   items: Array<{ title: string; quantity: number; priceCents: number }>,
   totalCents: number,
-  shippingAddress: any
+  shippingAddress: any,
 ): string {
   let itemsHtml = "";
   items.forEach((item) => {
@@ -529,7 +529,7 @@ export function buildVendorNewOrderEmail(
 export function buildVendorOrderCancelledEmail(
   orderNumber: string,
   storeName: string,
-  reason?: string
+  reason?: string,
 ): string {
   const content = `
     <h2>Order Cancelled by Customer ❌</h2>
@@ -554,7 +554,7 @@ export function buildVendorOrderCancelledEmail(
 export function buildVendorPaymentReceivedEmail(
   orderNumber: string,
   storeName: string,
-  amountCents: number
+  amountCents: number,
 ): string {
   const content = `
     <h2>Payment Completed 💰</h2>
@@ -575,10 +575,7 @@ export function buildVendorPaymentReceivedEmail(
 }
 
 // 14. Customer: Payment Failed
-export function buildCustomerPaymentFailedEmail(
-  orderNumber: string,
-  reason?: string
-): string {
+export function buildCustomerPaymentFailedEmail(orderNumber: string, reason?: string): string {
   const content = `
     <h2>Payment Transaction Failed ⚠️</h2>
     <p>Hello Customer,</p>
@@ -599,10 +596,7 @@ export function buildCustomerPaymentFailedEmail(
 }
 
 // 15. Customer: Refund Processed
-export function buildCustomerRefundEmail(
-  orderNumber: string,
-  amountCents: number
-): string {
+export function buildCustomerRefundEmail(orderNumber: string, amountCents: number): string {
   const content = `
     <h2>Refund Processed Successfully 💰</h2>
     <p>Hello Customer,</p>
@@ -624,7 +618,7 @@ export function buildCustomerRefundEmail(
 export function buildAdminNewVendorEmail(
   storeName: string,
   email: string,
-  ownerName: string
+  ownerName: string,
 ): string {
   const content = `
     <h2>New Vendor Registered 👤</h2>
@@ -646,10 +640,7 @@ export function buildAdminNewVendorEmail(
 }
 
 // 17. Admin: High-Value Order Alert
-export function buildAdminHighValueOrderEmail(
-  orderNumber: string,
-  totalCents: number
-): string {
+export function buildAdminHighValueOrderEmail(orderNumber: string, totalCents: number): string {
   const content = `
     <h2>⚠️ High-Value Order Received</h2>
     <p>Hello Administrator,</p>
@@ -673,7 +664,7 @@ export function buildAdminComplaintEmail(
   complaintId: string,
   email: string,
   subject: string,
-  message: string
+  message: string,
 ): string {
   const content = `
     <h2>🚨 New Complaint Raised</h2>
@@ -699,7 +690,7 @@ export function buildShipmentDispatchedEmail(
   orderNumber: string,
   trackingNumber: string,
   courier: string,
-  trackingUrl: string
+  trackingUrl: string,
 ): string {
   const content = `
     <h2>Your Order has been Dispatched! 🚚</h2>
@@ -713,7 +704,7 @@ export function buildShipmentDispatchedEmail(
 
     <p>You can track the progress of your shipment using the button below:</p>
     <div style="text-align: center;">
-      <a href="${trackingUrl || '#'}" class="btn">Track Package</a>
+      <a href="${trackingUrl || "#"}" class="btn">Track Package</a>
     </div>
 
     <p>Thank you for choosing ViaCraft!</p>
@@ -722,10 +713,7 @@ export function buildShipmentDispatchedEmail(
 }
 
 // 20. Customer: Shipment Out For Delivery
-export function buildShipmentOutForDeliveryEmail(
-  orderNumber: string,
-  courier: string
-): string {
+export function buildShipmentOutForDeliveryEmail(orderNumber: string, courier: string): string {
   const content = `
     <h2>Package Out for Delivery! 📦</h2>
     <p>Hello Customer,</p>
@@ -741,9 +729,7 @@ export function buildShipmentOutForDeliveryEmail(
 }
 
 // 21. Customer: Shipment Delivered
-export function buildShipmentDeliveredEmail(
-  orderNumber: string
-): string {
+export function buildShipmentDeliveredEmail(orderNumber: string): string {
   const content = `
     <h2>Package Delivered successfully! 🎉</h2>
     <p>Hello Customer,</p>
@@ -762,10 +748,7 @@ export function buildShipmentDeliveredEmail(
 }
 
 // 22. Customer: Shipment Delay
-export function buildShipmentDelayEmail(
-  orderNumber: string,
-  reason: string
-): string {
+export function buildShipmentDelayEmail(orderNumber: string, reason: string): string {
   const content = `
     <h2>Logistics Delay Notice ⚠️</h2>
     <p>Hello Customer,</p>
@@ -781,4 +764,165 @@ export function buildShipmentDelayEmail(
   return buildHtmlShell(`Shipping Delay: Order #${orderNumber}`, content);
 }
 
+// ============ RETURN MANAGEMENT EMAIL TEMPLATES ============
 
+// 23. Customer/Vendor/Admin: Return Submitted
+export function buildReturnSubmittedEmail(
+  returnNumber: string,
+  orderNumber: string,
+  reason: string,
+  preferredResolution: string,
+  itemsCount: number,
+): string {
+  const content = `
+    <h2>Return Request Submitted 🔄</h2>
+    <p>A new return request has been recorded in the system.</p>
+    
+    <div class="highlight-box" style="border-left-color: #d97706; border-color: #d97706;">
+      <p><strong>Return ID:</strong> ${returnNumber}</p>
+      <p><strong>Order Number:</strong> #${orderNumber}</p>
+      <p><strong>Items Count:</strong> ${itemsCount}</p>
+      <p><strong>Reason:</strong> ${reason}</p>
+      <p><strong>Preferred Resolution:</strong> ${preferredResolution.toUpperCase()}</p>
+    </div>
+
+    <p>The return request is currently <strong>Pending Review</strong>. The vendor and administrators will review details and schedule verification actions shortly.</p>
+    <div style="text-align: center;">
+      <a href="https://viacraft.com/dashboard" class="btn">View My Returns</a>
+    </div>
+  `;
+  return buildHtmlShell(`Return Request Submitted: ${returnNumber}`, content);
+}
+
+// 24. Customer/Vendor: Return Approved
+export function buildReturnApprovedEmail(
+  returnNumber: string,
+  preferredResolution: string,
+  comments?: string,
+): string {
+  const content = `
+    <h2>Return Request Approved! ✅</h2>
+    <p>We are pleased to inform you that your return request <strong>${returnNumber}</strong> has been approved by our team.</p>
+    
+    <div class="highlight-box" style="border-left-color: #10b981; border-color: #10b981;">
+      <p><strong>Return ID:</strong> ${returnNumber}</p>
+      <p><strong>Resolution Action:</strong> ${preferredResolution.toUpperCase()}</p>
+      ${comments ? `<p><strong>Admin Notes:</strong> ${comments}</p>` : ""}
+    </div>
+
+    <p>Next steps: A pickup has been recommended and is being scheduled. Our logistics partner will coordinate to retrieve the return items from your pickup address.</p>
+    <div style="text-align: center;">
+      <a href="https://viacraft.com/dashboard" class="btn">Track Return Progress</a>
+    </div>
+  `;
+  return buildHtmlShell(`Return Request Approved: ${returnNumber}`, content);
+}
+
+// 25. Customer/Vendor: Return Rejected
+export function buildReturnRejectedEmail(returnNumber: string, reason: string): string {
+  const content = `
+    <h2>Return Request Rejected ❌</h2>
+    <p>Your return request <strong>${returnNumber}</strong> has been reviewed and was not approved.</p>
+    
+    <div class="highlight-box" style="border-left-color: #ef4444; border-color: #ef4444;">
+      <p><strong>Return ID:</strong> ${returnNumber}</p>
+      <p><strong>Rejection Reason:</strong> ${reason}</p>
+    </div>
+
+    <p>If you believe this decision was made in error, or if you wish to provide additional documentation, please contact our support portal.</p>
+  `;
+  return buildHtmlShell(`Return Request Rejected: ${returnNumber}`, content);
+}
+
+// 26. Customer: Pickup Scheduled
+export function buildReturnPickupScheduledEmail(
+  returnNumber: string,
+  courierName: string,
+  pickupAddress: string,
+  phone: string,
+): string {
+  const content = `
+    <h2>Return Pickup Scheduled 🚚</h2>
+    <p>Logistics have been assigned for return request <strong>${returnNumber}</strong>.</p>
+    
+    <div class="highlight-box" style="border-left-color: #3b82f6; border-color: #3b82f6;">
+      <p><strong>Courier Partner:</strong> ${courierName}</p>
+      <p><strong>Pickup Address:</strong> ${pickupAddress}</p>
+      <p><strong>Contact Phone:</strong> ${phone}</p>
+    </div>
+
+    <p>Please package the return items securely and ensure they are ready for the courier. The courier agent will verify the products against the request list before receiving.</p>
+  `;
+  return buildHtmlShell(`Pickup Scheduled for Return ${returnNumber}`, content);
+}
+
+// 27. Customer/Vendor/Admin: Refund Completed
+export function buildReturnRefundCompletedEmail(returnNumber: string, amountCents: number): string {
+  const content = `
+    <h2>Return Refund Processed 💰</h2>
+    <p>Refunds have been completed for return request <strong>${returnNumber}</strong>.</p>
+    
+    <div class="highlight-box" style="border-left-color: #10b981; border-color: #10b981;">
+      <p><strong>Return ID:</strong> ${returnNumber}</p>
+      <p><strong>Refund Amount:</strong> ₹${(amountCents / 100).toFixed(2)}</p>
+      <p><strong>Status:</strong> Transferred to original source</p>
+    </div>
+
+    <p>It will take between 5 to 7 business days for the funds to reflect in your banking account depending on your provider.</p>
+  `;
+  return buildHtmlShell(`Refund Processed for Return ${returnNumber}`, content);
+}
+
+// 28. Customer: Replacement Shipped
+export function buildReturnReplacementShippedEmail(
+  returnNumber: string,
+  courier: string,
+  trackingNumber: string,
+): string {
+  const content = `
+    <h2>Replacement Keepsake Dispatched! 🎁</h2>
+    <p>Your replacement items for return request <strong>${returnNumber}</strong> have been packed and handed over to courier.</p>
+    
+    <div class="highlight-box" style="border-left-color: #8b5cf6; border-color: #8b5cf6;">
+      <p><strong>Courier Partner:</strong> ${courier}</p>
+      <p><strong>Tracking Number:</strong> ${trackingNumber}</p>
+    </div>
+
+    <p>We appreciate your patience while we generated your replacement item. We hope this meets your complete satisfaction.</p>
+  `;
+  return buildHtmlShell(`Replacement Dispatched for Return ${returnNumber}`, content);
+}
+
+// 29. Customer: Exchange Completed
+export function buildReturnExchangeCompletedEmail(returnNumber: string): string {
+  const content = `
+    <h2>Return Exchange Completed 🎉</h2>
+    <p>We have successfully processed and delivered your exchange order for return request <strong>${returnNumber}</strong>.</p>
+    
+    <div class="highlight-box" style="border-left-color: #10b981; border-color: #10b981;">
+      <p><strong>Exchange Order Status:</strong> Completed and Verified</p>
+    </div>
+
+    <p>Thank you for choosing ViaCraft!</p>
+  `;
+  return buildHtmlShell(`Exchange Completed: Return ${returnNumber}`, content);
+}
+
+// 30. Vendor/Admin: Custom Notification Alert
+export function buildReturnStatusUpdateEmail(
+  returnNumber: string,
+  titleText: string,
+  messageText: string,
+): string {
+  const content = `
+    <h2>${titleText}</h2>
+    <p>Status alert regarding return request <strong>${returnNumber}</strong>:</p>
+    
+    <div class="highlight-box">
+      <p>${messageText}</p>
+    </div>
+
+    <p>Please log in to your dashboard console to view the return timeline, write responses, or perform administrative tasks.</p>
+  `;
+  return buildHtmlShell(`[Return Alert] ${returnNumber}: ${titleText}`, content);
+}

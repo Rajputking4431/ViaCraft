@@ -1,7 +1,7 @@
 # Vendor Commission Policy
 
-**Effective Date:** [Effective Date]  
-**Last Updated:** [Last Updated]
+**Effective Date:** July 10, 2026  
+**Last Updated:** July 10, 2026
 
 ## 1. Introduction
 Welcome to ViaCraft. ViaCraft is a multi-vendor online marketplace facilitating transactions between independent artisans ("Vendors") and buyers ("Customers") for handmade resin products, home decor, customized gifts, and preservation crafts.
@@ -33,7 +33,7 @@ Commissions are calculated on the gross product price set by the Vendor.
 ## 6. Settlement Cycle & Payouts
 Settlement funds are disbursed to the Vendor's registered bank account in accordance with the following rules:
 *   **Settlement Trigger:** Settlements are processed once the order status is updated to "Delivered" and the Customer return window (48 hours) has closed without dispute.
-*   **Disbursement Schedule:** Payouts are batch-processed weekly on **every [Weekday/Wednesday]** for all completed orders from the previous cycle.
+*   **Disbursement Schedule:** Payouts are batch-processed weekly on **every Wednesday** for all completed orders from the previous cycle.
 *   **Minimum Payout Threshold:** The minimum balance for settlement is ₹500. Balances below this amount will accumulate until the threshold is met.
 
 ## 7. Taxation & Compliance (India)
@@ -63,8 +63,8 @@ ViaCraft is not liable for delayed payouts caused by banking failures, incorrect
 
 ## 12. Contact Information
 For payout queries or dispute resolution:
-*   **Finance Support Email:** [Support Email]
-*   **Grievance Officer:** [Grievance Officer]
+*   **Finance Support Email:** support@viacraft.in
+*   **Grievance Officer:** Mr. Om Sharma
 
 ## 13. Governing Law
 This policy is governed by the laws of India, particularly the Central Goods and Services Tax (CGST) Act, 2017, and the Income Tax Act, 1961.

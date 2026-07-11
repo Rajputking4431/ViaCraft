@@ -136,7 +136,11 @@ export function SiteHeader() {
     queryKey: ["my-vendor", user?.id],
     enabled: !!user,
     queryFn: async () => {
-      const { data } = await supabase.from("vendors").select("*").eq("user_id", user!.id).maybeSingle();
+      const { data } = await supabase
+        .from("vendors")
+        .select("*")
+        .eq("user_id", user!.id)
+        .maybeSingle();
       return data;
     },
   });
@@ -150,6 +154,8 @@ export function SiteHeader() {
         .from("products")
         .select("id, title, slug, price_cents, cover_image")
         .ilike("title", `%${searchQuery}%`)
+        .eq("is_published", true)
+        .neq("status", "deleted")
         .limit(5);
       return data ?? [];
     },
@@ -264,33 +270,33 @@ export function SiteHeader() {
 
             {/* Autocomplete Search Dropdown */}
             {isSearchFocused && (
-              <div className="absolute top-full left-0 right-0 mt-2 bg-card border border-border shadow-luxe rounded-2xl overflow-hidden z-50 p-4 animate-in fade-in slide-in-from-top-1 duration-200">
+              <div className="absolute top-full left-0 right-0 mt-2 glass-card rounded-2xl overflow-hidden z-50 p-5 animate-in fade-in slide-in-from-top-1 duration-200">
                 {/* Suggestions list from typing */}
                 {searchQuery.trim().length > 1 ? (
                   <div>
-                    <h4 className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-2 px-2">
-                      Matching Products
+                    <h4 className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-3.5 px-1 flex items-center gap-1.5">
+                      <Sparkles className="h-3.5 w-3.5 text-accent" /> Matching Products
                     </h4>
                     {suggestions.length > 0 ? (
-                      <div className="space-y-1">
+                      <div className="space-y-1.5">
                         {suggestions.map((p) => (
                           <Link
                             key={p.id}
                             to="/products/$slug"
                             params={{ slug: p.slug }}
                             onClick={() => setIsSearchFocused(false)}
-                            className="flex items-center gap-3 p-2 rounded-xl hover:bg-muted transition-colors"
+                            className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-muted/80 dark:hover:bg-neutral-800/80 transition-all border border-transparent hover:border-border/60 hover:shadow-sm"
                           >
                             <img
                               src={p.cover_image ?? ""}
                               alt=""
-                              className="h-9 w-9 object-cover rounded-lg bg-muted shrink-0"
+                              className="h-10 w-10 object-cover rounded-lg bg-muted shrink-0 border border-border/40"
                             />
                             <div className="flex-1 min-w-0">
                               <p className="text-xs font-semibold text-foreground truncate">
                                 {p.title}
                               </p>
-                              <p className="text-[11px] text-muted-foreground">
+                              <p className="text-[11px] text-accent font-medium mt-0.5">
                                 {inr(p.price_cents)}
                               </p>
                             </div>
@@ -298,9 +304,11 @@ export function SiteHeader() {
                         ))}
                       </div>
                     ) : (
-                      <p className="text-xs text-muted-foreground px-2 py-1">
-                        No products found matching "{searchQuery}"
-                      </p>
+                      <div className="text-center py-6">
+                        <p className="text-xs text-muted-foreground">
+                          No products found matching "{searchQuery}"
+                        </p>
+                      </div>
                     )}
                   </div>
                 ) : (
@@ -308,15 +316,15 @@ export function SiteHeader() {
                     {/* Recent Searches */}
                     {recentSearches.length > 0 && (
                       <div>
-                        <h4 className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-2 px-1 flex items-center gap-1.5">
+                        <h4 className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-2.5 px-1 flex items-center gap-1.5">
                           <History className="h-3 w-3" /> Recent Searches
                         </h4>
-                        <div className="flex flex-wrap gap-1.5">
+                        <div className="flex flex-wrap gap-2">
                           {recentSearches.map((term) => (
                             <div
                               key={term}
                               onClick={() => handleSearchSubmit(term)}
-                              className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-muted hover:bg-muted/80 text-xs font-medium cursor-pointer text-foreground/80 hover:text-accent transition-colors"
+                              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-muted/60 hover:bg-muted text-xs font-medium cursor-pointer text-foreground/80 hover:text-accent hover:border-accent/40 border border-transparent transition-all"
                             >
                               <span>{term}</span>
                               <button
@@ -333,15 +341,15 @@ export function SiteHeader() {
 
                     {/* Popular Searches */}
                     <div>
-                      <h4 className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-2 px-1 flex items-center gap-1.5">
+                      <h4 className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-2.5 px-1 flex items-center gap-1.5">
                         <Compass className="h-3 w-3" /> Popular Searches
                       </h4>
-                      <div className="flex flex-wrap gap-1.5">
+                      <div className="flex flex-wrap gap-2">
                         {POPULAR_SEARCHES.map((term) => (
                           <button
                             key={term}
                             onClick={() => handleSearchSubmit(term)}
-                            className="px-3 py-1 rounded-full border border-border hover:border-accent text-xs text-foreground/80 hover:text-accent transition-colors cursor-pointer"
+                            className="px-3.5 py-1.5 rounded-full border border-border/70 bg-card hover:bg-accent/5 hover:border-accent text-xs text-foreground/80 hover:text-accent transition-all cursor-pointer font-medium"
                           >
                             {term}
                           </button>
@@ -407,7 +415,7 @@ export function SiteHeader() {
             <NotificationDropdown />
 
             {/* Account Icon Stacked */}
-            <div ref={profileRef} className="relative">
+            <div ref={profileRef} className="relative hidden md:block">
               {user ? (
                 <>
                   <button
@@ -431,8 +439,8 @@ export function SiteHeader() {
                     </span>
                   </button>
                   {isProfileOpen && (
-                    <div className="absolute right-0 mt-2 w-56 bg-card border border-border shadow-luxe rounded-2xl overflow-hidden z-50 p-2 animate-in fade-in slide-in-from-top-1 duration-200">
-                      <div className="px-3 py-2 border-b border-border mb-1.5 text-xs truncate">
+                    <div className="absolute right-0 mt-2 w-56 glass-card rounded-2xl overflow-hidden z-50 p-2 animate-in fade-in slide-in-from-top-1 duration-200">
+                      <div className="px-3 py-2.5 border-b border-border/50 mb-1.5 text-xs truncate bg-muted/20">
                         <p className="font-semibold text-foreground">
                           {user.user_metadata?.full_name ?? "Account"}
                         </p>

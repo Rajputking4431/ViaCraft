@@ -33,18 +33,22 @@ async function getShiprocketToken(): Promise<string | null> {
 }
 
 // 1. CREATE SHIPMENT
-export const createShipment = async ({ data: input }: { data: {
-  orderId: string;
-  vendorId: string;
-  shippingMethod: "shiprocket" | "manual";
-  courierName?: string;
-  trackingNumber?: string;
-  length?: number;
-  width?: number;
-  height?: number;
-  weight?: number;
-  notes?: string;
-} }) => {
+export const createShipment = async ({
+  data: input,
+}: {
+  data: {
+    orderId: string;
+    vendorId: string;
+    shippingMethod: "shiprocket" | "manual";
+    courierName?: string;
+    trackingNumber?: string;
+    length?: number;
+    width?: number;
+    height?: number;
+    weight?: number;
+    notes?: string;
+  };
+}) => {
   z.object({
     orderId: z.string(),
     vendorId: z.string(),
@@ -139,14 +143,17 @@ export const createShipment = async ({ data: input }: { data: {
             weight: input.weight || 0.5,
           };
 
-          const orderRes = await fetch("https://apiv2.shiprocket.in/v1/external/orders/create/adhoc", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
+          const orderRes = await fetch(
+            "https://apiv2.shiprocket.in/v1/external/orders/create/adhoc",
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+              body: JSON.stringify(orderPayload),
             },
-            body: JSON.stringify(orderPayload),
-          });
+          );
           const orderJson = await orderRes.json();
           console.log("Shiprocket order creation response:", orderJson);
 
@@ -154,14 +161,17 @@ export const createShipment = async ({ data: input }: { data: {
             shiprocketShipmentId = String(orderJson.shipment_id);
             shiprocketOrderId = String(orderJson.order_id);
 
-            const awbRes = await fetch("https://apiv2.shiprocket.in/v1/external/courier/assign/awb", {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${token}`,
+            const awbRes = await fetch(
+              "https://apiv2.shiprocket.in/v1/external/courier/assign/awb",
+              {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({ shipment_id: shiprocketShipmentId }),
               },
-              body: JSON.stringify({ shipment_id: shiprocketShipmentId }),
-            });
+            );
             const awbJson = await awbRes.json();
             console.log("Shiprocket AWB response:", awbJson);
 
@@ -220,7 +230,11 @@ export const createShipment = async ({ data: input }: { data: {
 };
 
 // 2. SCHEDULE PICKUP
-export const schedulePickup = async ({ data: input }: { data: { shipmentId: string; pickupDate: string } }) => {
+export const schedulePickup = async ({
+  data: input,
+}: {
+  data: { shipmentId: string; pickupDate: string };
+}) => {
   z.object({
     shipmentId: z.string(),
     pickupDate: z.string(),
@@ -231,23 +245,26 @@ export const schedulePickup = async ({ data: input }: { data: { shipmentId: stri
     if (!shipment) throw new Error("Shipment not found");
 
     let pickupStatus = "scheduled";
-    let shiprocketStatus = "pickup_scheduled";
+    const shiprocketStatus = "pickup_scheduled";
 
     if (shipment.shipping_method === "shiprocket" && shipment.shiprocket_shipment_id) {
       const token = await getShiprocketToken();
       if (token) {
         try {
-          const res = await fetch("https://apiv2.shiprocket.in/v1/external/courier/generate/pickup", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
+          const res = await fetch(
+            "https://apiv2.shiprocket.in/v1/external/courier/generate/pickup",
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+              body: JSON.stringify({
+                shipment_id: [shipment.shiprocket_shipment_id],
+                pickup_date: [input.pickupDate],
+              }),
             },
-            body: JSON.stringify({
-              shipment_id: [shipment.shiprocket_shipment_id],
-              pickup_date: [input.pickupDate],
-            }),
-          });
+          );
           const json = await res.json();
           console.log("Shiprocket Pickup schedule response:", json);
           if (json.pickup_status === "scheduled") {
@@ -279,7 +296,11 @@ export const schedulePickup = async ({ data: input }: { data: { shipmentId: stri
 };
 
 // 3. CANCEL SHIPMENT
-export const cancelShipment = async ({ data: input }: { data: { shipmentId: string; reason?: string } }) => {
+export const cancelShipment = async ({
+  data: input,
+}: {
+  data: { shipmentId: string; reason?: string };
+}) => {
   z.object({
     shipmentId: z.string(),
     reason: z.string().optional(),
@@ -321,15 +342,19 @@ export const cancelShipment = async ({ data: input }: { data: { shipmentId: stri
 };
 
 // 4. UPDATE STATUS / ACTION LOG
-export const updateShipmentStatus = async ({ data: input }: { data: {
-  shipmentId: string;
-  status: string;
-  courierName?: string;
-  trackingNumber?: string;
-  notes?: string;
-  reason?: string;
-  actionByRole: "admin" | "vendor" | "system";
-} }) => {
+export const updateShipmentStatus = async ({
+  data: input,
+}: {
+  data: {
+    shipmentId: string;
+    status: string;
+    courierName?: string;
+    trackingNumber?: string;
+    notes?: string;
+    reason?: string;
+    actionByRole: "admin" | "vendor" | "system";
+  };
+}) => {
   z.object({
     shipmentId: z.string(),
     status: z.string(),
@@ -410,7 +435,11 @@ export const updateShipmentStatus = async ({ data: input }: { data: {
           orderNumber,
         },
       }).catch((e) => console.error("Delivered email fail:", e));
-    } else if (input.status === "pickup_failed" || input.status === "delivery_failed" || input.reason) {
+    } else if (
+      input.status === "pickup_failed" ||
+      input.status === "delivery_failed" ||
+      input.reason
+    ) {
       if (input.reason) {
         await sendShipmentDelayEmail({
           data: {

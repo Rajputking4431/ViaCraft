@@ -4,10 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { inr, stageLabel, PRESERVATION_STAGES } from "@/utils/format";
 import { useState } from "react";
 import { toast } from "sonner";
-import {
-  sendQuoteReceivedEmail,
-  sendPreservationStageUpdateEmail,
-} from "@/api/email.functions";
+import { sendQuoteReceivedEmail, sendPreservationStageUpdateEmail } from "@/api/email.functions";
 import {
   Search,
   Sparkles,

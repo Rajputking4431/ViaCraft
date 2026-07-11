@@ -24,6 +24,8 @@ import {
   Loader2,
   Shield,
   Truck,
+  CreditCard,
+  RotateCcw,
 } from "lucide-react";
 import { Logo } from "@/components/Logo";
 
@@ -175,8 +177,10 @@ function AdminLayout() {
     { label: "Vendors", href: "/admin/vendors", icon: Store },
     { label: "Products", href: "/admin/products", icon: Package },
     { label: "Orders", href: "/admin/orders", icon: ShoppingBag },
+    { label: "Returns", href: "/admin/returns", icon: RotateCcw },
     { label: "Logistics", href: "/admin/shipping", icon: Truck },
     { label: "Preservations", href: "/admin/preservation", icon: Sparkles },
+    { label: "Payments", href: "/admin/payments", icon: CreditCard },
     { label: "Users", href: "/admin/users", icon: Users },
     { label: "Categories", href: "/admin/categories", icon: FolderOpen },
     { label: "Analytics", href: "/admin/analytics", icon: BarChart3 },

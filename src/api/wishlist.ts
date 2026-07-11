@@ -9,7 +9,7 @@ import {
 } from "@/utils/guest-wishlist";
 
 const PRODUCT_SELECT =
-  "id, slug, title, price_cents, cover_image, currency, compare_at_cents, rating, review_count, stock, is_customizable";
+  "id, slug, title, price_cents, cover_image, currency, compare_at_cents, rating, review_count, stock, is_customizable, status";
 
 export type WishlistEntry = {
   wishlistId: string;
@@ -25,6 +25,7 @@ export type WishlistEntry = {
     review_count: number;
     stock: number;
     is_customizable: boolean;
+    status?: string;
   } | null;
 };
 
@@ -110,10 +111,12 @@ export async function fetchWishlistEntries(userId?: string | null): Promise<Wish
       .select(`id, product:products(${PRODUCT_SELECT})`)
       .eq("user_id", userId);
 
-    return (data ?? []).map((row) => ({
-      wishlistId: row.id,
-      product: row.product as WishlistEntry["product"],
-    }));
+    return (data ?? [])
+      .map((row) => ({
+        wishlistId: row.id,
+        product: row.product as WishlistEntry["product"],
+      }))
+      .filter((entry) => entry.product && (entry.product as any).status !== "deleted");
   }
 
   const productIds = getGuestWishlist();
@@ -122,6 +125,7 @@ export async function fetchWishlistEntries(userId?: string | null): Promise<Wish
   const { data: products } = await supabase
     .from("products")
     .select(PRODUCT_SELECT)
+    .neq("status", "deleted")
     .in("id", productIds);
 
   const productMap = new Map((products ?? []).map((p) => [p.id, p]));
@@ -131,7 +135,7 @@ export async function fetchWishlistEntries(userId?: string | null): Promise<Wish
       wishlistId: `guest-${id}`,
       product: (productMap.get(id) as WishlistEntry["product"]) ?? null,
     }))
-    .filter((entry) => entry.product);
+    .filter((entry) => entry.product && (entry.product as any).status !== "deleted");
 }
 
 export async function removeWishlistEntry(entry: WishlistEntry, userId?: string | null) {

@@ -1,12 +1,12 @@
 # Shipping Policy
 
-**Effective Date:** [Effective Date]  
-**Last Updated:** [Last Updated]
+**Effective Date:** July 10, 2026  
+**Last Updated:** July 10, 2026
 
 ## 1. Introduction
 Welcome to ViaCraft. ViaCraft operates as a multi-vendor marketplace facilitator for resin handmade gifts, home decor, jewellery, and preservation products. 
 
-This Shipping Policy provides information regarding the processing, shipping, tracking, and delivery of orders purchased on our Platform [Website URL].
+This Shipping Policy provides information regarding the processing, shipping, tracking, and delivery of orders purchased on our Platform https://viacraft.in.
 
 ## 2. Purpose
 This policy ensures transparency regarding delivery timelines, shipping methods (manual shipping vs. integrated Shiprocket services), shipping costs, and customer/vendor expectations for order fulfillment.
@@ -45,7 +45,7 @@ Vendors on ViaCraft can utilize two main shipping models for order fulfillment:
 *   **Force Majeure:** Delays due to natural disasters, strikes, public holidays, extreme weather, or courier hub backlogs are beyond the control of the Vendor and the Platform.
 
 ## 9. Lost or Damaged Shipments
-*   **Damaged on Arrival:** If a product is damaged during transit, the Customer must notify Customer Support at [Support Email] with unboxing video/photo proof within 48 hours of delivery.
+*   **Damaged on Arrival:** If a product is damaged during transit, the Customer must notify Customer Support at support@viacraft.in with unboxing video/photo proof within 48 hours of delivery.
 *   **Lost Shipments:** If a shipment is deemed lost by the courier partner, the Platform will coordinate with the Vendor to initiate a replacement order or a full refund.
 
 ## 10. Shipping Fees
@@ -59,8 +59,8 @@ ViaCraft is not responsible for transit delays, courier handling errors, package
 
 ## 13. Contact Information
 For any shipment queries or escalation:
-*   **Support Email:** [Support Email]
-*   **Support Helpdesk:** [Website URL]/support
+*   **Support Email:** support@viacraft.in
+*   **Support Helpdesk:** https://viacraft.in/support
 
 ## 14. Governing Law
 This Shipping Policy is subject to the consumer protection and logistics laws of the Republic of India.

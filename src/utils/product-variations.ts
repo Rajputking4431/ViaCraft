@@ -1,7 +1,7 @@
 export interface SizeOption {
-  size: string;      // e.g. "8x8"
-  inches: string;    // e.g. "8x8 inches"
-  price: number;     // e.g. 1500 (price in INR)
+  size: string; // e.g. "8x8"
+  inches: string; // e.g. "8x8 inches"
+  price: number; // e.g. 1500 (price in INR)
 }
 
 export interface ParsedProduct {

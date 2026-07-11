@@ -102,12 +102,12 @@ export function ProductCard({ product, onQuickView }: ProductCardProps) {
 
   return (
     <div
-      className="group relative bg-card border border-border/50 rounded-3xl overflow-hidden transition-all duration-300 hover:shadow-soft hover:border-accent/30 flex flex-col h-full"
+      className="group relative bg-card border border-border/60 rounded-2xl overflow-hidden transition-all duration-300 hover:shadow-luxe hover:border-accent/40 flex flex-col h-full"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
       {/* Product Image Section */}
-      <div className="relative aspect-square w-full overflow-hidden bg-muted">
+      <div className="relative aspect-square w-full overflow-hidden bg-muted/30">
         {/* Wishlist Button */}
         <button
           onClick={(e) => {
@@ -115,26 +115,26 @@ export function ProductCard({ product, onQuickView }: ProductCardProps) {
             e.stopPropagation();
             toggleWishlist.mutate();
           }}
-          className={`absolute top-4 right-4 z-10 p-2.5 rounded-full backdrop-blur-md border border-border/40 transition-all duration-300 hover:scale-110 cursor-pointer ${
+          className={`absolute top-3 right-3 z-10 p-2 rounded-full backdrop-blur-md border transition-all duration-300 hover:scale-110 cursor-pointer ${
             isWishlisted
-              ? "bg-rose-50 border-rose-100 text-rose-500 shadow-sm"
-              : "bg-background/80 hover:bg-background text-foreground/80 hover:text-rose-500"
+              ? "bg-rose-50/90 border-rose-200 text-rose-500 shadow-sm"
+              : "bg-white/80 dark:bg-black/50 border-white/20 text-foreground/80 hover:text-rose-500 hover:bg-white dark:hover:bg-black"
           }`}
           aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
         >
-          <Heart className={`h-4 w-4 ${isWishlisted ? "fill-rose-500" : ""}`} />
+          <Heart className={`h-4.5 w-4.5 ${isWishlisted ? "fill-rose-500" : ""}`} />
         </button>
 
         {/* Discount Tag */}
         {discountPercentage > 0 && (
-          <span className="absolute top-4 left-4 z-10 bg-accent text-accent-foreground text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full shadow-sm">
+          <span className="absolute top-3 left-3 z-10 bg-accent text-accent-foreground text-[10px] font-semibold uppercase tracking-wider px-2.5 py-1 rounded-md shadow-sm">
             {discountPercentage}% Off
           </span>
         )}
 
         {/* Customizable Badge */}
         {product.is_customizable && (
-          <span className="absolute bottom-4 left-4 z-10 bg-foreground/90 backdrop-blur-sm text-background text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded">
+          <span className="absolute bottom-3 left-3 z-10 bg-primary/90 dark:bg-accent/90 backdrop-blur-sm text-primary-foreground dark:text-accent-foreground text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-sm">
             Customizable
           </span>
         )}
@@ -146,7 +146,7 @@ export function ProductCard({ product, onQuickView }: ProductCardProps) {
               src={product.cover_image}
               alt={product.title}
               loading="lazy"
-              className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+              className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
             />
           ) : (
             <div className="h-full w-full grid place-items-center text-muted-foreground font-display text-4xl bg-gradient-hero">
@@ -156,7 +156,7 @@ export function ProductCard({ product, onQuickView }: ProductCardProps) {
         </Link>
 
         {/* Desktop Quick Actions Hover Overlay */}
-        <div className="hidden lg:flex absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 items-end justify-center pb-6 gap-2">
+        <div className="hidden lg:flex absolute inset-0 bg-black/5 dark:bg-black/25 opacity-0 group-hover:opacity-100 transition-opacity duration-300 items-end justify-center pb-5 gap-2">
           {onQuickView && (
             <button
               onClick={(e) => {
@@ -164,7 +164,7 @@ export function ProductCard({ product, onQuickView }: ProductCardProps) {
                 e.stopPropagation();
                 onQuickView(product.id);
               }}
-              className="p-3 bg-background hover:bg-accent text-foreground hover:text-accent-foreground rounded-full shadow-md hover:scale-105 transition-all duration-200 cursor-pointer"
+              className="p-2.5 bg-white dark:bg-neutral-900 hover:bg-accent hover:text-accent-foreground text-foreground rounded-full shadow-md hover:scale-105 transition-all duration-200 cursor-pointer border border-border"
               title="Quick View"
             >
               <Eye className="h-4.5 w-4.5" />
@@ -177,13 +177,13 @@ export function ProductCard({ product, onQuickView }: ProductCardProps) {
               addToCart.mutate();
             }}
             disabled={addToCart.isPending}
-            className="px-5 py-2.5 bg-primary hover:bg-foreground text-primary-foreground text-xs font-semibold rounded-full shadow-md hover:scale-105 transition-all duration-200 flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+            className="px-4 py-2 bg-primary hover:bg-foreground text-primary-foreground text-xs font-semibold rounded-full shadow-md hover:scale-105 transition-all duration-200 flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
           >
             <ShoppingBag className="h-3.5 w-3.5" /> Add to Cart
           </button>
         </div>
 
-        {/* Mobile Quick Action Buttons Overlay (Permanent/Thumb-friendly on hover/touch) */}
+        {/* Mobile Quick Action Buttons Overlay */}
         <div className="lg:hidden absolute bottom-3 right-3 flex flex-col gap-1.5">
           <button
             onClick={(e) => {
@@ -192,7 +192,7 @@ export function ProductCard({ product, onQuickView }: ProductCardProps) {
               addToCart.mutate();
             }}
             disabled={addToCart.isPending}
-            className="p-2.5 bg-primary/90 backdrop-blur text-primary-foreground rounded-full shadow-md cursor-pointer disabled:opacity-50"
+            className="p-2.5 bg-primary/95 backdrop-blur text-primary-foreground rounded-full shadow-md cursor-pointer disabled:opacity-50"
             aria-label="Add to cart"
           >
             <ShoppingBag className="h-4 w-4" />
@@ -201,14 +201,14 @@ export function ProductCard({ product, onQuickView }: ProductCardProps) {
       </div>
 
       {/* Info Section */}
-      <div className="p-5 flex-1 flex flex-col justify-between">
+      <div className="p-4 flex-1 flex flex-col justify-between">
         <div>
           {/* Vendor Name */}
           {product.vendors && (
             <Link
               to="/store/$slug"
               params={{ slug: product.vendors.slug }}
-              className="text-[10px] uppercase tracking-[0.15em] text-accent hover:underline font-semibold block truncate"
+              className="text-[9px] uppercase tracking-[0.2em] text-accent hover:underline font-semibold block truncate"
             >
               {product.vendors.store_name}
             </Link>
@@ -218,17 +218,17 @@ export function ProductCard({ product, onQuickView }: ProductCardProps) {
           <Link
             to="/products/$slug"
             params={{ slug: product.slug }}
-            className="font-display text-base text-foreground mt-1 group-hover:text-accent transition-colors line-clamp-1 block leading-snug"
+            className="font-display text-base text-foreground mt-1 group-hover:text-accent transition-colors line-clamp-1 block leading-snug font-medium"
           >
             {product.title}
           </Link>
 
           {/* Ratings & Review Count */}
-          <div className="flex items-center gap-1.5 mt-1.5">
+          <div className="flex items-center gap-1.5 mt-1">
             <div className="flex items-center text-amber-500">
               <Star className="h-3.5 w-3.5 fill-current" />
             </div>
-            <span className="text-xs font-bold text-foreground">
+            <span className="text-xs font-semibold text-foreground">
               {Number(product.rating).toFixed(1)}
             </span>
             <span className="text-[10px] text-muted-foreground">
@@ -237,7 +237,7 @@ export function ProductCard({ product, onQuickView }: ProductCardProps) {
           </div>
         </div>
 
-        <div className="mt-4 pt-3 border-t border-border/40">
+        <div className="mt-3 pt-2.5 border-t border-border/40">
           {/* Price & Discounts */}
           <div className="flex items-baseline gap-2">
             <span className="font-display text-lg font-bold text-foreground">
@@ -251,13 +251,13 @@ export function ProductCard({ product, onQuickView }: ProductCardProps) {
           </div>
 
           {/* Logistics & Stock Info */}
-          <div className="flex flex-col gap-1 mt-2.5 text-[10px] text-muted-foreground">
+          <div className="flex flex-col gap-1 mt-1 text-[10px] text-muted-foreground">
             {/* Stock status */}
-            <div className="mt-1">
+            <div className="mt-0.5">
               {product.stock <= 0 ? (
                 <span className="text-accent font-semibold">Made to order (7-10 days)</span>
               ) : product.stock <= 3 ? (
-                <span className="text-rose-500 font-bold">Only {product.stock} left in stock!</span>
+                <span className="text-rose-500 font-semibold">Only {product.stock} left!</span>
               ) : (
                 <span className="text-emerald-600 dark:text-emerald-400 font-medium">In Stock</span>
               )}
@@ -270,7 +270,7 @@ export function ProductCard({ product, onQuickView }: ProductCardProps) {
       <div className="lg:hidden p-3 pt-0 mt-auto">
         <button
           onClick={handleQuickBuy}
-          className="w-full py-2 bg-muted hover:bg-primary hover:text-primary-foreground transition-colors text-xs font-semibold rounded-full border border-border"
+          className="w-full py-1.5 bg-secondary/20 hover:bg-primary hover:text-primary-foreground text-foreground transition-colors text-xs font-semibold rounded-full border border-border/60"
         >
           Quick Buy
         </button>
@@ -278,3 +278,4 @@ export function ProductCard({ product, onQuickView }: ProductCardProps) {
     </div>
   );
 }
+

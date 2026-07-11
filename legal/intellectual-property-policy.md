@@ -1,12 +1,12 @@
 # Intellectual Property Policy
 
-**Effective Date:** [Effective Date]  
-**Last Updated:** [Last Updated]
+**Effective Date:** July 10, 2026  
+**Last Updated:** July 10, 2026
 
 ## 1. Introduction
 Welcome to ViaCraft. ViaCraft operates as a multi-vendor marketplace facilitator for resin handmade gifts, home decor, jewellery, and preservation products.
 
-This Intellectual Property Policy ("IP Policy") outlines the guidelines regarding copyrights, trademarks, design rights, and the procedures for reporting infringement on [Website URL].
+This Intellectual Property Policy ("IP Policy") outlines the guidelines regarding copyrights, trademarks, design rights, and the procedures for reporting infringement on https://viacraft.in.
 
 ## 2. Purpose
 The purpose of this IP Policy is to protect the intellectual property rights of creators, artisans, and third-party brands on the Platform while maintaining a fair and compliant marketplace.
@@ -31,7 +31,7 @@ The Platform respects the following forms of intellectual property:
 *   **Customization Inputs:** Customers providing images or logos for customization must ensure they possess the legal right to reproduce that imagery.
 
 ## 7. Infringement Reporting Procedure (Takedown Notice)
-If you believe that a listing on ViaCraft violates your intellectual property rights, you can file a Takedown Notice by emailing [Support Email] with the following information:
+If you believe that a listing on ViaCraft violates your intellectual property rights, you can file a Takedown Notice by emailing support@viacraft.in with the following information:
 1.  **Identification:** Details of the copyrighted work, trademark, or design claimed to have been infringed.
 2.  **Location:** The exact URL(s) of the infringing listing(s) on the Platform.
 3.  **Contact Info:** Your name, address, telephone number, and email.
@@ -42,7 +42,7 @@ If you believe that a listing on ViaCraft violates your intellectual property ri
 If a Vendor believes their listing was removed due to a mistake or misidentification, they may submit a Counter-Notice containing:
 1.  **Identification:** The material that was removed and the URL before removal.
 2.  **Contact Info:** Vendor's name, address, email, and phone number.
-3.  **Consent to Jurisdiction:** A statement consenting to the jurisdiction of courts in [City/State, India].
+3.  **Consent to Jurisdiction:** A statement consenting to the jurisdiction of courts in Noida, Uttar Pradesh, India.
 4.  **Signature:** Physical or electronic signature of the Vendor.
 
 ## 9. Exceptions & Special Cases
@@ -57,8 +57,8 @@ ViaCraft shall not be liable to any party for damages (direct or indirect) resul
 
 ## 12. Grievance Officer Details
 For all intellectual property and copyright claims, please contact our designated Grievance Officer:
-*   **Name/Title:** [Grievance Officer]
-*   **Email:** [Support Email]
+*   **Name/Title:** Mr. Om Sharma
+*   **Email:** support@viacraft.in
 
 ## 13. Governing Law
 This IP Policy is governed by the Copyright Act, 1957, the Trade Marks Act, 1999, and the Information Technology Act, 2000, of India.

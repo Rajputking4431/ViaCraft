@@ -4,9 +4,13 @@ import type { Database } from "./types";
 
 function createSupabaseClient() {
   const SUPABASE_URL =
-    (typeof window !== "undefined" ? import.meta.env.VITE_SUPABASE_URL : process.env.VITE_SUPABASE_URL);
+    typeof window !== "undefined"
+      ? import.meta.env.VITE_SUPABASE_URL
+      : process.env.VITE_SUPABASE_URL;
   const SUPABASE_PUBLISHABLE_KEY =
-    (typeof window !== "undefined" ? import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY : process.env.VITE_SUPABASE_PUBLISHABLE_KEY);
+    typeof window !== "undefined"
+      ? import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY
+      : process.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
   if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
     const missing = [

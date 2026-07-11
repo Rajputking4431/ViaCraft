@@ -1,7 +1,7 @@
 # Grievance Redressal Policy
 
-**Effective Date:** [Effective Date]  
-**Last Updated:** [Last Updated]
+**Effective Date:** July 10, 2026  
+**Last Updated:** July 10, 2026
 
 ## 1. Introduction
 Welcome to ViaCraft ("Platform"). ViaCraft is a multi-vendor online marketplace designed to facilitate the sale of handcrafted resin products, custom preservation orders, resin gifts, jewellery, and home decor.
@@ -17,17 +17,17 @@ The purpose of this Grievance Redressal Policy is to provide a transparent, stru
 
 ## 4. Grievance Redressal Officer (Statutory Appointment)
 In accordance with Rule 5(3) of the Consumer Protection (E-Commerce) Rules, 2020, the Platform has appointed a dedicated Grievance Officer:
-*   **Grievance Officer Name:** [Grievance Officer]
+*   **Grievance Officer Name:** Mr. Om Sharma
 *   **Designation:** Head of Legal & Customer Compliance
-*   **Physical Address:** [Business Address]
-*   **Email Address:** [Support Email]
-*   **Direct Contact Desk:** [Phone Number]
+*   **Physical Address:** ViaCraft Office, 4th Floor, Sector 62, Noida, Uttar Pradesh - 201301, India
+*   **Email Address:** support@viacraft.in
+*   **Direct Contact Desk:** +91 98765 43210
 
 ## 5. Complaint Redressal Process Flow
 To file an official grievance:
 
 ### Step 1: Submission
-The complainant (Customer or Vendor) must send an email to [Support Email] containing:
+The complainant (Customer or Vendor) must send an email to support@viacraft.in containing:
 1.  **Ticket Details:** Order ID, Vendor Name, or customer profile details.
 2.  **Summary:** A clear description of the dispute, complaint, or policy breach.
 3.  **Proof:** Supporting files (unboxing video, photos, screenshots, or receipt documents).
@@ -62,7 +62,7 @@ The Grievance Redressal Desk's liability is limited to facilitating refunds, rep
 > Under the IT Act, any person who knowingly makes false or vexatious complaints to the Grievance Desk may face account suspension, platform blacklisting, or civil legal penalties.
 
 ## 11. Governing Law
-This Grievance Redressal Policy is subject to the Consumer Protection Act, 2019, the Information Technology Act, 2000, and rules made thereunder, under the jurisdiction of courts in [City/State, India].
+This Grievance Redressal Policy is subject to the Consumer Protection Act, 2019, the Information Technology Act, 2000, and rules made thereunder, under the jurisdiction of courts in Noida, Uttar Pradesh, India.
 
 ## 12. Policy Amendments
 ViaCraft may amend this policy from time to time. Any changes will be posted on this page and will take effect immediately.

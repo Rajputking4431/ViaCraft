@@ -1,12 +1,12 @@
 # Buyer Protection Policy
 
-**Effective Date:** [Effective Date]  
-**Last Updated:** [Last Updated]
+**Effective Date:** July 10, 2026  
+**Last Updated:** July 10, 2026
 
 ## 1. Introduction
 Welcome to ViaCraft ("Platform"). ViaCraft is a multi-vendor online marketplace designed to showcase and sell handcrafted resin products, jewellery, gifts, home decor, and preservation art.
 
-We are committed to providing a secure and reliable shopping experience. This Buyer Protection Policy outlines the guarantees and dispute resolutions available to Customers on [Website URL].
+We are committed to providing a secure and reliable shopping experience. This Buyer Protection Policy outlines the guarantees and dispute resolutions available to Customers on https://viacraft.in.
 
 ## 2. Purpose
 The purpose of this Buyer Protection Policy is to establish trust, outline secure payment guidelines, guarantee refunds for non-delivery or shipping damage, and clarify the steps Customers must take to seek resolution.
@@ -67,7 +67,7 @@ ViaCraft's liability is strictly limited to the facilitation of transaction reso
 
 ## 10. Grievance Redressal Officer
 If you are unsatisfied with a support decision, you may escalate the issue to our Grievance Officer:
-*   **Email:** [Support Email]
+*   **Email:** support@viacraft.in
 *   **Attention:** Grievance Desk - Buyer Protection
 
 ## 11. Governing Law

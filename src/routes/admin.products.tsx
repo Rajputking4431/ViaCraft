@@ -39,6 +39,7 @@ function AdminProducts() {
       const { data, error } = await supabase
         .from("products")
         .select("*, vendors(store_name), categories(name)")
+        .neq("status", "deleted")
         .order("created_at", { ascending: false });
       if (error) throw error;
       return data ?? [];
@@ -73,8 +74,38 @@ function AdminProducts() {
 
   const deleteProduct = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from("products").delete().eq("id", id);
-      if (error) throw error;
+      // 1. Fetch product slug and status
+      const { data: product, error: fetchErr } = await supabase
+        .from("products")
+        .select("slug, status")
+        .eq("id", id)
+        .single();
+      if (fetchErr || !product) throw new Error(fetchErr?.message || "Product not found");
+
+      // 2. Check if product has order items
+      const { count, error: countErr } = await supabase
+        .from("order_items")
+        .select("*", { count: "exact", head: true })
+        .eq("product_id", id);
+      if (countErr) throw countErr;
+
+      if (count && count > 0) {
+        // Soft delete: set status to 'deleted', is_published to false, and change slug to unique one
+        const uniqueSuffix = Math.random().toString(36).substring(2, 8);
+        const { error: updateErr } = await supabase
+          .from("products")
+          .update({
+            status: "deleted",
+            is_published: false,
+            slug: `${product.slug}-deleted-${uniqueSuffix}`,
+          })
+          .eq("id", id);
+        if (updateErr) throw updateErr;
+      } else {
+        // Hard delete
+        const { error: deleteErr } = await supabase.from("products").delete().eq("id", id);
+        if (deleteErr) throw deleteErr;
+      }
     },
     onSuccess: (_, id) => {
       qc.invalidateQueries({ queryKey: ["admin-products"] });
@@ -102,8 +133,38 @@ function AdminProducts() {
 
   const bulkDelete = useMutation({
     mutationFn: async (ids: string[]) => {
-      const { error } = await supabase.from("products").delete().in("id", ids);
-      if (error) throw error;
+      for (const id of ids) {
+        // 1. Fetch product slug and status
+        const { data: product, error: fetchErr } = await supabase
+          .from("products")
+          .select("slug, status")
+          .eq("id", id)
+          .single();
+        if (fetchErr || !product) continue;
+
+        // 2. Check if product has order items
+        const { count, error: countErr } = await supabase
+          .from("order_items")
+          .select("*", { count: "exact", head: true })
+          .eq("product_id", id);
+        if (countErr) continue;
+
+        if (count && count > 0) {
+          // Soft delete
+          const uniqueSuffix = Math.random().toString(36).substring(2, 8);
+          await supabase
+            .from("products")
+            .update({
+              status: "deleted",
+              is_published: false,
+              slug: `${product.slug}-deleted-${uniqueSuffix}`,
+            })
+            .eq("id", id);
+        } else {
+          // Hard delete
+          await supabase.from("products").delete().eq("id", id);
+        }
+      }
     },
     onSuccess: (_, variables) => {
       qc.invalidateQueries({ queryKey: ["admin-products"] });

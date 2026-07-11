@@ -53,7 +53,9 @@ function CartPage() {
     }
   }, []);
 
-  const [variations, setVariations] = useState<Record<string, { size: string; price_cents: number }>>({});
+  const [variations, setVariations] = useState<
+    Record<string, { size: string; price_cents: number }>
+  >({});
 
   // Fetch cart items (guest or signed-in)
   const { data: items = [], isLoading } = useQuery({
@@ -258,7 +260,8 @@ function CartPage() {
                             </Link>
                           </h3>
                           <p className="text-xs text-muted-foreground">
-                            Unit price: {inr(variations[it.product.id]?.price_cents ?? it.product.price_cents)}
+                            Unit price:{" "}
+                            {inr(variations[it.product.id]?.price_cents ?? it.product.price_cents)}
                           </p>
                           {it.product.stock <= 3 && (
                             <p className="text-[10px] text-rose-500 font-bold">
@@ -297,7 +300,9 @@ function CartPage() {
 
                             {/* Save for later trigger */}
                             <button
-                              onClick={() => saveForLater.mutate({ item: it, product: it.product as any })}
+                              onClick={() =>
+                                saveForLater.mutate({ item: it, product: it.product as any })
+                              }
                               disabled={saveForLater.isPending}
                               className="text-xs text-accent hover:underline flex items-center gap-1 cursor-pointer font-semibold"
                             >
@@ -322,8 +327,8 @@ function CartPage() {
             {/* Right Column: Coupon & Order Summary */}
             <aside className="lg:col-span-4 space-y-6 sticky top-24">
               {/* Coupon Center Box */}
-              <div className="p-6 rounded-3xl border border-border bg-card shadow-sm space-y-3">
-                <h3 className="font-display text-base font-bold flex items-center gap-1.5">
+              <div className="p-6 rounded-2xl border border-border/60 bg-card shadow-soft space-y-4">
+                <h3 className="font-display text-base font-bold flex items-center gap-1.5 text-foreground">
                   <Tag className="h-4.5 w-4.5 text-accent" /> Coupon Code
                 </h3>
                 <div className="flex gap-2">
@@ -332,7 +337,7 @@ function CartPage() {
                     placeholder="Voucher code (FIRST10)"
                     value={couponInput}
                     onChange={(e) => setCouponInput(e.target.value)}
-                    className="flex-1 px-4 py-2.5 rounded-full bg-background border border-border focus:border-accent outline-none text-xs"
+                    className="flex-1 px-4 py-2.5 rounded-full bg-background border border-border/80 focus:border-accent focus:ring-1 focus:ring-accent/30 outline-none text-xs transition-all"
                   />
                   <button
                     onClick={applyCoupon}
@@ -347,15 +352,15 @@ function CartPage() {
                     {Math.round(discountRate * 100)}% discount applied).
                   </p>
                 )}
-                <div className="text-[10px] text-muted-foreground pt-1.5">
+                <div className="text-[10px] text-muted-foreground pt-1">
                   Available vouchers: <strong>FIRST10</strong> (10% Off keepsakes),{" "}
                   <strong>PRESERVE5</strong> (5% Off).
                 </div>
               </div>
 
               {/* Invoice breakdown summary */}
-              <div className="p-6 rounded-3xl border border-border bg-card shadow-sm space-y-4">
-                <h3 className="font-display text-xl font-bold border-b border-border pb-3 mb-2">
+              <div className="p-6 rounded-2xl border border-border/60 bg-card shadow-soft space-y-4">
+                <h3 className="font-display text-xl font-bold border-b border-border/40 pb-3 mb-2">
                   Order Summary
                 </h3>
 
@@ -366,7 +371,7 @@ function CartPage() {
                 <Row label="Shipping Delivery" value={shipping === 0 ? "Free" : inr(shipping)} />
                 <Row label="GST (18% inclusive)" value={inr(tax)} />
 
-                <div className="border-t border-border pt-4 mt-2">
+                <div className="border-t border-border/40 pt-4 mt-2">
                   <div className="flex justify-between items-baseline">
                     <span className="font-display text-lg font-bold">Total Amount</span>
                     <span className="font-display text-2xl font-extrabold text-accent">
@@ -377,7 +382,7 @@ function CartPage() {
 
                 <button
                   onClick={handleCheckoutSubmit}
-                  className="w-full mt-4 py-3.5 rounded-full bg-primary hover:bg-foreground text-primary-foreground hover:scale-101 transition-all text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer shadow-md"
+                  className="w-full mt-4 py-3.5 rounded-full bg-primary hover:bg-foreground text-primary-foreground hover:scale-[1.01] transition-all text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer shadow-md"
                 >
                   Proceed to Secure Checkout <ArrowRight className="h-4.5 w-4.5" />
                 </button>
@@ -394,15 +399,15 @@ function CartPage() {
 
         {/* 14. Save For Later List Grid */}
         {savedItems.length > 0 && (
-          <div className="mt-20 border-t border-border pt-12">
-            <h2 className="font-display text-2xl font-bold mb-6 flex items-center gap-2">
+          <div className="mt-20 border-t border-border/50 pt-12">
+            <h2 className="font-display text-2xl font-bold mb-6 flex items-center gap-2 text-foreground">
               <Bookmark className="h-5.5 w-5.5 text-accent" /> Saved For Later ({savedItems.length})
             </h2>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
               {savedItems.map((item) => (
                 <div
                   key={item.id}
-                  className="bg-card border border-border/60 rounded-3xl p-4 flex flex-col justify-between shadow-sm hover:border-accent/10 transition-all text-center"
+                  className="bg-card border border-border/60 rounded-2xl p-4 flex flex-col justify-between shadow-sm hover:border-accent/40 hover:shadow-soft transition-all text-center"
                 >
                   <div>
                     <Link

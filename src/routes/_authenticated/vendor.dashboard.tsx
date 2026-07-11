@@ -3,7 +3,11 @@ import { useAuth } from "@/hooks/use-auth";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { inr } from "@/utils/format";
-import { parseProductDescription, serializeProductDescription, type SizeOption } from "@/utils/product-variations";
+import {
+  parseProductDescription,
+  serializeProductDescription,
+  type SizeOption,
+} from "@/utils/product-variations";
 import { useState, useEffect, useRef } from "react";
 import { toast } from "sonner";
 import { CloudinaryUpload } from "@/components/ui/CloudinaryUpload";
@@ -54,6 +58,7 @@ import {
   MessageCircle,
   AlertCircle,
   Star, // Added Star here
+  RotateCcw,
 } from "lucide-react";
 import {
   ResponsiveContainer,
@@ -193,6 +198,7 @@ type TabId =
   | "inventory"
   | "preservation"
   | "orders"
+  | "returns"
   | "customers"
   | "marketing"
   | "financials"
@@ -259,10 +265,187 @@ function VendorDashboard() {
         .eq("read", false);
       if (error) throw error;
     },
-    onSuccess: () => {
-      refetchNotifications();
-      toast.success("All notifications marked as read");
+  });
+
+  // ============ VENDOR RETURN MANAGEMENT STATES, QUERIES & MUTATIONS ============
+  const [selectedVendorReturnId, setSelectedVendorReturnId] = useState<string | null>(null);
+  const [vendorRecommendComment, setVendorRecommendComment] = useState("");
+  const [vendorCommentText, setVendorCommentText] = useState("");
+
+  // Fetch Vendor Returns
+  const { data: vendorReturns = [], refetch: refetchVendorReturns } = useQuery({
+    queryKey: ["vendor-returns", vendor?.id],
+    enabled: !!vendor,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("returns")
+        .select(
+          "*, return_items(*, order_item:order_items(*)), return_images(*), return_timeline(*), return_comments(*)",
+        )
+        .eq("vendor_id", vendor!.id)
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data ?? [];
     },
+  });
+
+  // Recommend Approval or Rejection mutation
+  const recommendReturnResolution = useMutation({
+    mutationFn: async ({
+      returnId,
+      action,
+      comments,
+    }: {
+      returnId: string;
+      action: "approve" | "reject";
+      comments: string;
+    }) => {
+      // 1. Update return request status to 'admin_review' (recommending to admin for final approval)
+      const { error: updateErr } = await supabase
+        .from("returns")
+        .update({
+          status: "admin_review",
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", returnId);
+      if (updateErr) throw updateErr;
+
+      // 2. Insert Timeline Step
+      const timelineAction =
+        action === "approve" ? "Vendor Recommended Approval" : "Vendor Recommended Rejection";
+      const { error: timelineErr } = await supabase.from("return_timeline").insert({
+        return_id: returnId,
+        status: "admin_review",
+        actor_id: user!.id,
+        actor_role: "vendor",
+        action: timelineAction,
+        comments: comments,
+      });
+      if (timelineErr) throw timelineErr;
+
+      // 3. Insert public comment
+      const { error: commentErr } = await supabase.from("return_comments").insert({
+        return_id: returnId,
+        author_id: user!.id,
+        author_role: "vendor",
+        comment: `[Recommendation] Vendor recommends to ${action.toUpperCase()}: "${comments}"`,
+        is_internal: false,
+      });
+      if (commentErr) throw commentErr;
+
+      // 4. Notify Admins
+      try {
+        const { data: ret } = await supabase
+          .from("returns")
+          .select("return_number")
+          .eq("id", returnId)
+          .single();
+        const retNum = ret?.return_number || "Return Request";
+        const { data: admins } = await supabase
+          .from("user_roles")
+          .select("user_id")
+          .eq("role", "admin");
+        if (admins) {
+          await (supabase as any).from("notifications").insert(
+            admins.map((adm) => ({
+              receiver_id: adm.user_id,
+              receiver_role: "admin",
+              title: `Vendor Return Recommendation: ${retNum}`,
+              message: `Vendor recommended to ${action} Return ${retNum}. Notes: ${comments}`,
+              notification_type: "return_recommendation",
+              order_id: null,
+            })),
+          );
+        }
+
+        // Trigger Emails
+        const { sendReturnStatusUpdateEmail } = await import("@/api/email.functions");
+        if (admins && admins.length > 0) {
+          await sendReturnStatusUpdateEmail({
+            data: {
+              returnNumber: retNum,
+              recipientId: admins[0].user_id,
+              title: "Vendor Return Recommendation",
+              message: `Vendor has recommended that Return Request ${retNum} be ${action.toUpperCase()}ED. Comments: ${comments}`,
+            },
+          });
+        }
+      } catch (e) {
+        console.warn("Notifications / emails failed:", e);
+      }
+    },
+    onSuccess: () => {
+      refetchVendorReturns();
+      setVendorRecommendComment("");
+      toast.success("Recommendation submitted to Admin successfully!");
+    },
+    onError: (e) => toast.error(e.message),
+  });
+
+  // Add vendor comment mutation
+  const addVendorReturnComment = useMutation({
+    mutationFn: async ({ returnId, comment }: { returnId: string; comment: string }) => {
+      const { error } = await supabase.from("return_comments").insert({
+        return_id: returnId,
+        author_id: user!.id,
+        author_role: "vendor",
+        comment: comment,
+        is_internal: false,
+      });
+      if (error) throw error;
+
+      // Add timeline entry
+      await supabase.from("return_timeline").insert({
+        return_id: returnId,
+        status: "comment_added",
+        actor_id: user!.id,
+        actor_role: "vendor",
+        action: "Vendor Commented",
+        comments: comment.substring(0, 100) + (comment.length > 100 ? "..." : ""),
+      });
+
+      // Fetch return details for notifications
+      const { data: ret } = await supabase
+        .from("returns")
+        .select("user_id, return_number")
+        .eq("id", returnId)
+        .single();
+      if (ret) {
+        // Notify Customer
+        await (supabase as any).from("notifications").insert({
+          receiver_id: ret.user_id,
+          receiver_role: "customer",
+          title: "New Message on Return Request",
+          message: `Vendor added a comment on Return Request ${ret.return_number}.`,
+          notification_type: "return_comment",
+          order_id: null,
+        });
+
+        // Notify Admins
+        const { data: admins } = await supabase
+          .from("user_roles")
+          .select("user_id")
+          .eq("role", "admin");
+        if (admins) {
+          await (supabase as any).from("notifications").insert(
+            admins.map((adm) => ({
+              receiver_id: adm.user_id,
+              receiver_role: "admin",
+              title: "New Message on Return Request",
+              message: `Vendor added a comment on Return Request ${ret.return_number}.`,
+              notification_type: "return_comment",
+              order_id: null,
+            })),
+          );
+        }
+      }
+    },
+    onSuccess: () => {
+      refetchVendorReturns();
+      setVendorCommentText("");
+      toast.success("Message sent successfully!");
+    },
+    onError: (e) => toast.error(e.message),
   });
 
   if (isLoadingVendor) {
@@ -341,6 +524,7 @@ function VendorDashboard() {
     { id: "inventory" as TabId, label: "Inventory", icon: Layers },
     { id: "preservation" as TabId, label: "Preservation Services", icon: Sparkles },
     { id: "orders" as TabId, label: "Orders", icon: ShoppingBag },
+    { id: "returns" as TabId, label: "Returns", icon: RotateCcw },
     { id: "shipping" as TabId, label: "Shipping Management", icon: Truck },
     { id: "customers" as TabId, label: "Customers", icon: Users },
     { id: "marketing" as TabId, label: "Marketing", icon: Gift },
@@ -352,21 +536,16 @@ function VendorDashboard() {
   ];
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex transition-colors duration-300">
+    <div className="min-h-screen bg-background text-foreground flex transition-colors duration-300 antialiased">
       {/* SIDEBAR - DESKTOP */}
       <aside
-        className={`fixed inset-y-0 left-0 z-40 w-64 bg-card/60 backdrop-blur-xl border-r border-border/80 flex flex-col justify-between transform transition-transform duration-300 xl:translate-x-0 xl:static xl:flex shrink-0 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
+        className={`fixed inset-y-0 left-0 z-40 w-64 bg-card backdrop-blur-xl border-r border-border/60 flex flex-col justify-between transform transition-transform duration-300 xl:translate-x-0 xl:static xl:flex shrink-0 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
       >
         <div>
           {/* Brand header */}
-          <div className="h-16 flex items-center justify-between px-6 border-b border-border/60">
+          <div className="h-16 flex items-center justify-between px-6 border-b border-border/50">
             <Link to="/" className="flex items-center gap-2">
-              <span className="h-8 w-8 rounded-lg bg-gradient-to-br from-violet-600 to-indigo-600 flex items-center justify-center text-white font-bold shadow-lg shadow-indigo-500/20">
-                R
-              </span>
-              <span className="font-display font-bold text-lg tracking-tight bg-gradient-to-r from-violet-600 to-indigo-600 dark:from-violet-400 dark:to-indigo-400 bg-clip-text text-transparent">
-                Seller Center
-              </span>
+              <Logo />
             </Link>
             <button
               onClick={() => setSidebarOpen(false)}
@@ -377,9 +556,9 @@ function VendorDashboard() {
           </div>
 
           {/* Store Quick Info */}
-          <div className="p-4 border-b border-border/60 bg-muted/20">
+          <div className="p-4 border-b border-border/50 bg-muted/15">
             <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-lg bg-indigo-100 dark:bg-indigo-950/40 text-indigo-600 border border-indigo-200 dark:border-indigo-900/60 overflow-hidden flex items-center justify-center shrink-0">
+              <div className="h-10 w-10 rounded-lg bg-accent/10 text-accent border border-accent/20 overflow-hidden flex items-center justify-center shrink-0">
                 {vendor.logo_url ? (
                   <img
                     src={vendor.logo_url}
@@ -394,7 +573,7 @@ function VendorDashboard() {
                 <p className="font-medium text-sm truncate" title={vendor.store_name}>
                   {vendor.store_name}
                 </p>
-                <span className="inline-flex items-center text-[10px] uppercase font-bold tracking-wider text-indigo-500 dark:text-indigo-400">
+                <span className="inline-flex items-center text-[10px] uppercase font-bold tracking-wider text-accent">
                   Reseller Mode
                 </span>
               </div>
@@ -405,6 +584,7 @@ function VendorDashboard() {
           <nav className="p-3 space-y-1 overflow-y-auto max-h-[calc(100vh-12rem)]">
             {tabs.map((tab) => {
               const Icon = tab.icon;
+              const isActive = activeTab === tab.id;
               return (
                 <button
                   key={tab.id}
@@ -412,14 +592,14 @@ function VendorDashboard() {
                     setActiveTab(tab.id);
                     setSidebarOpen(false);
                   }}
-                  className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium tracking-wide transition-all ${
-                    activeTab === tab.id
-                      ? "bg-gradient-to-r from-violet-500/10 to-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-l-4 border-indigo-500 pl-3 font-semibold"
-                      : "text-muted-foreground hover:text-foreground hover:bg-muted/40 border-l-4 border-transparent"
+                  className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
+                    isActive
+                      ? "bg-primary text-primary-foreground border-l-4 border-accent pl-3.5 font-semibold shadow-sm"
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted/60 border-l-4 border-transparent"
                   }`}
                 >
                   <Icon
-                    className={`h-4.5 w-4.5 ${activeTab === tab.id ? "text-indigo-500" : ""}`}
+                    className={`h-4.5 w-4.5 ${isActive ? "text-accent" : ""}`}
                   />
                   {tab.label}
                 </button>
@@ -618,6 +798,13 @@ function VendorDashboard() {
           {activeTab === "inventory" && <InventoryManagementView vendor={vendor} />}
           {activeTab === "preservation" && <PreservationServicesView vendor={vendor} />}
           {activeTab === "orders" && <OrderManagementView vendor={vendor} />}
+          {activeTab === "returns" && (
+            <VendorReturnsView
+              vendor={vendor}
+              returns={vendorReturns}
+              onSelect={setSelectedVendorReturnId}
+            />
+          )}
           {activeTab === "shipping" && <VendorShippingView vendor={vendor} />}
           {activeTab === "customers" && <CustomersView vendor={vendor} />}
           {activeTab === "marketing" && <MarketingView vendor={vendor} />}
@@ -627,6 +814,317 @@ function VendorDashboard() {
           {activeTab === "reports" && <ReportsView vendor={vendor} />}
           {activeTab === "settings" && <SettingsView vendor={vendor} />}
         </main>
+
+        {/* Vendor Return Detail & Chat Modal */}
+        {(() => {
+          if (!selectedVendorReturnId) return null;
+          const ret = vendorReturns.find((r: any) => r.id === selectedVendorReturnId);
+          if (!ret) return null;
+
+          const isPending = ret.status === "pending";
+          return (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+              <div
+                className="fixed inset-0 bg-black/60"
+                onClick={() => setSelectedVendorReturnId(null)}
+              />
+              <div className="relative w-full max-w-4xl bg-card border border-border shadow-2xl rounded-3xl p-6 sm:p-8 z-10 animate-in zoom-in-95 duration-200 text-xs flex flex-col max-h-[90vh] overflow-hidden">
+                {/* Header */}
+                <div className="flex justify-between items-center border-b border-border pb-4 mb-4">
+                  <div>
+                    <h3 className="font-display text-lg font-bold text-foreground">
+                      Vendor Return Panel
+                    </h3>
+                    <p className="text-[10px] text-muted-foreground mt-0.5">
+                      ID:{" "}
+                      <strong className="font-mono text-indigo-500 font-bold">
+                        {ret.return_number}
+                      </strong>{" "}
+                      &bull; Customer Phone: {ret.phone}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setSelectedVendorReturnId(null)}
+                    className="p-1 hover:bg-muted rounded-full transition-colors cursor-pointer"
+                  >
+                    <X className="h-5 w-5" />
+                  </button>
+                </div>
+
+                {/* Grid content */}
+                <div className="grid md:grid-cols-12 gap-6 overflow-y-auto flex-1 pr-1 font-sans">
+                  {/* Left Column: Return Details & Evidence */}
+                  <div className="md:col-span-7 space-y-4">
+                    <div className="grid sm:grid-cols-2 gap-4 bg-muted/20 p-4 rounded-2xl border border-border/40">
+                      <div>
+                        <p className="text-[9px] uppercase font-bold text-muted-foreground tracking-wider">
+                          Current Status
+                        </p>
+                        <span className="inline-block mt-1 font-semibold text-foreground uppercase tracking-wide">
+                          {ret.status.replace("_", " ")}
+                        </span>
+                      </div>
+                      <div>
+                        <p className="text-[9px] uppercase font-bold text-muted-foreground tracking-wider">
+                          Preferred Resolution
+                        </p>
+                        <span className="inline-block mt-1 font-semibold text-indigo-500 uppercase">
+                          {ret.preferred_resolution}
+                        </span>
+                      </div>
+                      <div>
+                        <p className="text-[9px] uppercase font-bold text-muted-foreground tracking-wider">
+                          Request Date
+                        </p>
+                        <p className="mt-1 font-medium text-foreground">
+                          {new Date(ret.created_at).toLocaleString()}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-[9px] uppercase font-bold text-muted-foreground tracking-wider">
+                          Pickup Address
+                        </p>
+                        <p
+                          className="mt-1 font-medium text-foreground line-clamp-2"
+                          title={(ret.pickup_address as any)?.address}
+                        >
+                          {(ret.pickup_address as any)?.address || "N/A"}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Return Items */}
+                    <div className="space-y-2">
+                      <h4 className="font-bold text-xs uppercase tracking-wider text-muted-foreground">
+                        Returned Products
+                      </h4>
+                      <div className="border border-border/60 rounded-2xl overflow-hidden bg-background">
+                        {ret.return_items?.map((item: any) => (
+                          <div
+                            key={item.id}
+                            className="p-3 border-b border-border/40 last:border-b-0 flex justify-between items-center gap-4"
+                          >
+                            <div>
+                              <p className="font-semibold text-foreground truncate max-w-[200px] sm:max-w-md">
+                                {item.order_item?.title || "Item"}
+                              </p>
+                              <p className="text-[10px] text-muted-foreground mt-0.5">
+                                Reason: {item.reason}
+                              </p>
+                            </div>
+                            <div className="text-right shrink-0">
+                              <span className="text-xs font-bold text-foreground">
+                                Qty: {item.quantity}
+                              </span>
+                              {item.description && (
+                                <p className="text-[9px] text-muted-foreground italic mt-0.5 max-w-[200px] truncate">
+                                  "{item.description}"
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Media proof */}
+                    <div className="space-y-2">
+                      <h4 className="font-bold text-xs uppercase tracking-wider text-muted-foreground">
+                        Evidence Proof
+                      </h4>
+                      <div className="flex flex-wrap gap-2.5">
+                        {ret.return_images?.length === 0 && !ret.video_url && (
+                          <p className="text-[10px] text-muted-foreground italic">
+                            No image or video evidence uploaded.
+                          </p>
+                        )}
+                        {ret.return_images?.map((img: any) => (
+                          <a
+                            key={img.id}
+                            href={img.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="h-16 w-16 rounded-xl border border-border overflow-hidden group relative shrink-0"
+                          >
+                            <img
+                              src={img.url}
+                              alt="Evidence"
+                              className="h-full w-full object-cover group-hover:scale-105 transition-transform"
+                            />
+                          </a>
+                        ))}
+                        {ret.video_url && (
+                          <video
+                            src={ret.video_url}
+                            controls
+                            className="h-32 max-w-xs rounded-xl border border-border bg-black object-contain shrink-0"
+                          />
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Recommend actions if pending */}
+                    {isPending && (
+                      <div className="p-4 bg-indigo-500/5 border border-indigo-500/25 rounded-2xl space-y-3">
+                        <h4 className="font-bold text-xs text-indigo-600 dark:text-indigo-400 uppercase tracking-wider">
+                          Recommend Action to Admin
+                        </h4>
+                        <p className="text-[10px] text-muted-foreground">
+                          Recommend approval or rejection. Your response will notify the Admin for
+                          final review.
+                        </p>
+                        <textarea
+                          placeholder="Write your recommendation notes..."
+                          value={vendorRecommendComment}
+                          onChange={(e) => setVendorRecommendComment(e.target.value)}
+                          className="w-full min-h-[60px] p-2.5 bg-background border border-border rounded-xl outline-none text-[11px] resize-none text-foreground bg-card"
+                        />
+                        <div className="flex justify-end gap-2">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (!vendorRecommendComment.trim()) {
+                                toast.error("Please add recommendation notes.");
+                                return;
+                              }
+                              recommendReturnResolution.mutate({
+                                returnId: ret.id,
+                                action: "reject",
+                                comments: vendorRecommendComment,
+                              });
+                            }}
+                            disabled={recommendReturnResolution.isPending}
+                            className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-[10px] font-bold uppercase cursor-pointer transition-colors"
+                          >
+                            Recommend Reject
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (!vendorRecommendComment.trim()) {
+                                toast.error("Please add recommendation notes.");
+                                return;
+                              }
+                              recommendReturnResolution.mutate({
+                                returnId: ret.id,
+                                action: "approve",
+                                comments: vendorRecommendComment,
+                              });
+                            }}
+                            disabled={recommendReturnResolution.isPending}
+                            className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-[10px] font-bold uppercase cursor-pointer transition-colors"
+                          >
+                            Recommend Approve
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Right Column: Timeline & Comments chat */}
+                  <div className="md:col-span-5 flex flex-col gap-4 overflow-hidden">
+                    {/* Timeline History */}
+                    <div className="border border-border/60 rounded-2xl p-4 bg-background max-h-[220px] overflow-y-auto space-y-3">
+                      <h4 className="font-bold text-xs uppercase tracking-wider text-muted-foreground border-b border-border/40 pb-2">
+                        Tracking History
+                      </h4>
+                      <div className="relative pl-4 border-l border-border/80 space-y-4">
+                        {ret.return_timeline?.map((step: any) => (
+                          <div key={step.id} className="relative">
+                            <span className="absolute -left-[21px] top-1 h-2 w-2 rounded-full bg-indigo-500" />
+                            <p className="font-bold text-[10px] text-foreground">{step.action}</p>
+                            <p className="text-[9px] text-muted-foreground">
+                              {new Date(step.created_at).toLocaleString()} &bull;{" "}
+                              {step.actor_role.toUpperCase()}
+                            </p>
+                            {step.comments && (
+                              <p className="text-[9px] text-muted-foreground bg-muted/40 p-1.5 rounded-lg border border-border/30 mt-1 italic">
+                                "{step.comments}"
+                              </p>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Discussion Chat */}
+                    <div className="flex-1 flex flex-col border border-border/60 rounded-2xl bg-background overflow-hidden min-h-[200px]">
+                      <h4 className="font-bold text-xs uppercase tracking-wider text-muted-foreground border-b border-border/40 p-3 bg-muted/10">
+                        Discussion Hub
+                      </h4>
+
+                      <div className="flex-1 p-3 overflow-y-auto space-y-2.5 max-h-[220px]">
+                        {ret.return_comments?.filter((c: any) => !c.is_internal).length === 0 ? (
+                          <p className="text-[10px] text-muted-foreground italic text-center py-6">
+                            No discussions yet. Type a message below to coordinate.
+                          </p>
+                        ) : (
+                          ret.return_comments
+                            ?.filter((c: any) => !c.is_internal)
+                            .map((c: any) => {
+                              const isVendor = c.author_role === "vendor";
+                              return (
+                                <div
+                                  key={c.id}
+                                  className={`flex flex-col max-w-[85%] ${isVendor ? "ml-auto items-end" : "mr-auto items-start"}`}
+                                >
+                                  <span className="text-[8px] text-muted-foreground font-semibold uppercase px-1">
+                                    {c.author_role.toUpperCase()}
+                                  </span>
+                                  <div
+                                    className={`p-2.5 rounded-2xl text-[10px] leading-relaxed border ${
+                                      isVendor
+                                        ? "bg-indigo-600 text-white border-indigo-600 rounded-tr-none"
+                                        : "bg-muted text-foreground border-border/60 rounded-tl-none"
+                                    }`}
+                                  >
+                                    {c.comment}
+                                  </div>
+                                  <span className="text-[8px] text-muted-foreground mt-0.5 px-1">
+                                    {new Date(c.created_at).toLocaleTimeString([], {
+                                      hour: "2-digit",
+                                      minute: "2-digit",
+                                    })}
+                                  </span>
+                                </div>
+                              );
+                            })
+                        )}
+                      </div>
+
+                      <form
+                        onSubmit={(e) => {
+                          e.preventDefault();
+                          if (!vendorCommentText.trim()) return;
+                          addVendorReturnComment.mutate({
+                            returnId: ret.id,
+                            comment: vendorCommentText,
+                          });
+                        }}
+                        className="p-2 border-t border-border/40 flex gap-2 items-center bg-muted/20"
+                      >
+                        <input
+                          type="text"
+                          placeholder="Type a message to customer/admin..."
+                          value={vendorCommentText}
+                          onChange={(e) => setVendorCommentText(e.target.value)}
+                          className="flex-1 p-2 bg-background border border-border rounded-xl focus:border-indigo-500 outline-none text-[11px]"
+                        />
+                        <button
+                          type="submit"
+                          disabled={addVendorReturnComment.isPending || !vendorCommentText.trim()}
+                          className="px-4.5 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-40 text-white font-bold rounded-xl text-[10px] uppercase cursor-pointer"
+                        >
+                          Send
+                        </button>
+                      </form>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+        })()}
       </div>
     </div>
   );
@@ -639,7 +1137,13 @@ function DashboardHomeView({ vendor }: { vendor: any }) {
   const { data: products = [] } = useQuery({
     queryKey: ["vendor-products", vendor.id],
     queryFn: async () =>
-      (await supabase.from("products").select("*").eq("vendor_id", vendor.id)).data ?? [],
+      (
+        await supabase
+          .from("products")
+          .select("*")
+          .eq("vendor_id", vendor.id)
+          .neq("status", "deleted")
+      ).data ?? [],
   });
 
   const { data: orderItems = [] } = useQuery({
@@ -768,67 +1272,67 @@ function DashboardHomeView({ vendor }: { vendor: any }) {
           icon={DollarSign}
           label="Total Revenue"
           value={inr(totalRevenue)}
-          color="from-violet-500/10 to-indigo-500/10 text-indigo-500 border-indigo-500/20"
+          color="from-accent/15 to-primary/5 text-accent border-accent/25 hover:shadow-soft transition-all duration-300"
         />
         <AnalyticsCard
           icon={ShoppingBag}
           label="Total Sales"
           value={String(totalSales)}
-          color="from-purple-500/10 to-pink-500/10 text-purple-500 border-purple-500/20"
+          color="from-primary/15 to-accent/5 text-primary border-primary/20 hover:shadow-soft transition-all duration-300"
         />
         <AnalyticsCard
           icon={FileText}
           label="Total Orders"
           value={String(totalOrders)}
-          color="from-blue-500/10 to-cyan-500/10 text-blue-500 border-blue-500/20"
+          color="from-accent/15 to-primary/5 text-accent border-accent/25 hover:shadow-soft transition-all duration-300"
         />
         <AnalyticsCard
           icon={Users}
           label="Total Customers"
           value={String(uniqueCustomers || 0)}
-          color="from-emerald-500/10 to-teal-500/10 text-emerald-500 border-emerald-500/20"
+          color="from-primary/15 to-accent/5 text-primary border-primary/20 hover:shadow-soft transition-all duration-300"
         />
 
         <AnalyticsCard
           icon={Clock}
           label="Pending Orders"
           value={String(pendingOrders)}
-          color="from-amber-500/10 to-orange-500/10 text-amber-500 border-amber-500/20"
+          color="from-accent/15 to-primary/5 text-accent border-accent/25 hover:shadow-soft transition-all duration-300"
         />
         <AnalyticsCard
           icon={Check}
           label="Completed Orders"
           value={String(completedOrders)}
-          color="from-emerald-500/10 to-green-500/10 text-emerald-500 border-emerald-500/20"
+          color="from-primary/15 to-accent/5 text-primary border-primary/20 hover:shadow-soft transition-all duration-300"
         />
         <AnalyticsCard
           icon={TrendingUp}
           label="Monthly Revenue"
           value={inr(totalRevenue * 0.8)}
-          color="from-indigo-500/10 to-blue-500/10 text-indigo-500 border-indigo-500/20"
+          color="from-accent/15 to-primary/5 text-accent border-accent/25 hover:shadow-soft transition-all duration-300"
         />
         <AnalyticsCard
           icon={Percent}
           label="Commission Paid"
           value={inr(earnings?.platform_commission_cents || commissionPaid)}
-          color="from-rose-500/10 to-red-500/10 text-rose-500 border-rose-500/20"
+          color="from-primary/15 to-accent/5 text-primary border-primary/20 hover:shadow-soft transition-all duration-300"
         />
       </div>
 
       {/* Charts Grid */}
       <div className="grid md:grid-cols-3 gap-6">
-        <div className="p-5 rounded-2xl border border-border bg-card/60 backdrop-blur-md shadow-sm col-span-2">
+        <div className="p-5 rounded-2xl border border-border/60 bg-card/50 backdrop-blur-md shadow-soft col-span-2">
           <div className="flex justify-between items-center mb-4">
             <h3 className="font-semibold text-sm tracking-wide">Revenue & Sales Trends</h3>
-            <span className="text-[10px] font-bold text-indigo-500 uppercase">Monthly Report</span>
+            <span className="text-[10px] font-bold text-accent uppercase">Monthly Report</span>
           </div>
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={chartsData}>
                 <defs>
                   <linearGradient id="colorRev" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#6366f1" stopOpacity={0.2} />
-                    <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
+                    <stop offset="5%" stopColor="#c8a165" stopOpacity={0.2} />
+                    <stop offset="95%" stopColor="#c8a165" stopOpacity={0} />
                   </linearGradient>
                 </defs>
                 <XAxis
@@ -850,7 +1354,7 @@ function DashboardHomeView({ vendor }: { vendor: any }) {
                 <Area
                   type="monotone"
                   dataKey="Revenue"
-                  stroke="#6366f1"
+                  stroke="#c8a165"
                   strokeWidth={2}
                   fillOpacity={1}
                   fill="url(#colorRev)"
@@ -858,7 +1362,7 @@ function DashboardHomeView({ vendor }: { vendor: any }) {
                 <Area
                   type="monotone"
                   dataKey="Sales"
-                  stroke="#d946ef"
+                  stroke="#7a5c3e"
                   strokeWidth={2}
                   fill="transparent"
                 />
@@ -867,10 +1371,10 @@ function DashboardHomeView({ vendor }: { vendor: any }) {
           </div>
         </div>
 
-        <div className="p-5 rounded-2xl border border-border bg-card/60 backdrop-blur-md shadow-sm">
+        <div className="p-5 rounded-2xl border border-border/60 bg-card/50 backdrop-blur-md shadow-soft">
           <div className="flex justify-between items-center mb-4">
             <h3 className="font-semibold text-sm tracking-wide">Orders Trend</h3>
-            <span className="text-[10px] font-bold text-amber-500 uppercase">Fulfillment</span>
+            <span className="text-[10px] font-bold text-accent uppercase">Fulfillment</span>
           </div>
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
@@ -891,7 +1395,7 @@ function DashboardHomeView({ vendor }: { vendor: any }) {
                     fontSize: "12px",
                   }}
                 />
-                <Bar dataKey="Orders" fill="#f59e0b" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="Orders" fill="#c8a165" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -902,7 +1406,7 @@ function DashboardHomeView({ vendor }: { vendor: any }) {
       <div className="grid xl:grid-cols-2 gap-6">
         {/* Low Stock Alerts & Best Sellers */}
         <div className="space-y-6">
-          <div className="p-6 rounded-2xl border border-border bg-card/60 backdrop-blur-md shadow-sm">
+          <div className="p-6 rounded-2xl border border-border/60 bg-card/50 backdrop-blur-md shadow-soft">
             <h3 className="font-semibold text-sm tracking-wide mb-4 text-rose-500 flex items-center gap-2">
               <AlertOctagon className="h-4.5 w-4.5" /> Low Stock Alerts
             </h3>
@@ -1650,6 +2154,7 @@ function ProductManagementView({ vendor }: { vendor: any }) {
           .from("products")
           .select("*")
           .eq("vendor_id", vendor.id)
+          .neq("status", "deleted")
           .order("created_at", { ascending: false })
       ).data ?? [],
   });
@@ -1662,8 +2167,38 @@ function ProductManagementView({ vendor }: { vendor: any }) {
   // Product mutations
   const deleteProduct = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from("products").delete().eq("id", id);
-      if (error) throw error;
+      // 1. Fetch product slug and status
+      const { data: product, error: fetchErr } = await supabase
+        .from("products")
+        .select("slug, status")
+        .eq("id", id)
+        .single();
+      if (fetchErr || !product) throw new Error(fetchErr?.message || "Product not found");
+
+      // 2. Check if product has order items
+      const { count, error: countErr } = await supabase
+        .from("order_items")
+        .select("*", { count: "exact", head: true })
+        .eq("product_id", id);
+      if (countErr) throw countErr;
+
+      if (count && count > 0) {
+        // Soft delete: set status to 'deleted', is_published to false, and change slug to unique one
+        const uniqueSuffix = Math.random().toString(36).substring(2, 8);
+        const { error: updateErr } = await supabase
+          .from("products")
+          .update({
+            status: "deleted",
+            is_published: false,
+            slug: `${product.slug}-deleted-${uniqueSuffix}`,
+          })
+          .eq("id", id);
+        if (updateErr) throw updateErr;
+      } else {
+        // Hard delete
+        const { error: deleteErr } = await supabase.from("products").delete().eq("id", id);
+        if (deleteErr) throw deleteErr;
+      }
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["vendor-products"] });
@@ -2067,9 +2602,10 @@ function ProductManagementView({ vendor }: { vendor: any }) {
                 const finalDescription = serializeProductDescription(descVal, sizeOptions);
 
                 const priceVal = fd.get("price") as string;
-                const basePriceCents = sizeOptions.length > 0
-                  ? Math.round(sizeOptions[0].price * 100)
-                  : Math.round(parseFloat(priceVal || "0") * 100);
+                const basePriceCents =
+                  sizeOptions.length > 0
+                    ? Math.round(sizeOptions[0].price * 100)
+                    : Math.round(parseFloat(priceVal || "0") * 100);
 
                 const data = {
                   title: fd.get("title"),
@@ -2139,7 +2675,11 @@ function ProductManagementView({ vendor }: { vendor: any }) {
                   </label>
                   <textarea
                     name="description"
-                    defaultValue={editProduct ? parseProductDescription(editProduct.description).description : ""}
+                    defaultValue={
+                      editProduct
+                        ? parseProductDescription(editProduct.description).description
+                        : ""
+                    }
                     rows={3}
                     className="mt-1 w-full px-4 py-2.5 rounded-xl bg-background border border-border text-sm outline-none focus:border-indigo-500"
                   />
@@ -2514,6 +3054,7 @@ function InventoryManagementView({ vendor }: { vendor: any }) {
           .from("products")
           .select("*")
           .eq("vendor_id", vendor.id)
+          .neq("status", "deleted")
           .order("stock", { ascending: true })
       ).data ?? [],
   });
@@ -2690,7 +3231,7 @@ function PreservationServicesView({ vendor }: { vendor: any }) {
         .select("*")
         .order("created_at", { ascending: false });
 
-      let requestsList = (reqs || []).map((r) => ({
+      const requestsList = (reqs || []).map((r) => ({
         ...r,
         profiles: profiles?.find((p) => p.id === r.user_id) || null,
       }));
@@ -3321,11 +3862,15 @@ function OrderManagementView({ vendor }: { vendor: any }) {
       }
 
       if (finalStatus === "shipped" || finalStatus === "delivered") {
-        sendOrderStatusEmail({ data: { orderId: variables.id, status: finalStatus } }).catch((err) => {
-          console.error("Order status update email failed:", err);
-        });
+        sendOrderStatusEmail({ data: { orderId: variables.id, status: finalStatus } }).catch(
+          (err) => {
+            console.error("Order status update email failed:", err);
+          },
+        );
       } else if (finalStatus === "cancelled") {
-        sendVendorOrderCancelledEmail({ data: { orderId: variables.id, reason: "Cancelled/Rejected by Artisan" } }).catch((err) => {
+        sendVendorOrderCancelledEmail({
+          data: { orderId: variables.id, reason: "Cancelled/Rejected by Artisan" },
+        }).catch((err) => {
           console.error("Vendor order cancellation email failed:", err);
         });
       }
@@ -4041,7 +4586,7 @@ function FinancialsView({ vendor }: { vendor: any }) {
   const [showWithdrawal, setShowWithdrawal] = useState(false);
 
   // Fetch Vendor Earnings
-  const { data: earnings, isLoading: isLoadingEarnings } = useQuery({
+  const { data: earnings } = useQuery({
     queryKey: ["vendor-earnings", vendor.id],
     queryFn: async () =>
       (
@@ -4064,6 +4609,26 @@ function FinancialsView({ vendor }: { vendor: any }) {
           .eq("vendor_id", vendor.id)
           .order("requested_at", { ascending: false })
       ).data ?? [],
+  });
+
+  // Fetch Vendor Payments
+  const { data: payments = [] } = useQuery({
+    queryKey: ["vendor-payments", vendor.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("payments")
+        .select("*, profiles:customer_id(full_name, email)")
+        .eq("vendor_id", vendor.id)
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
+  // Fetch Vendor Order Items
+  const { data: orderItems = [] } = useQuery({
+    queryKey: ["vendor-order-items-financials", vendor.id],
+    queryFn: () => fetchVendorOrderItems(vendor.id),
   });
 
   const requestWithdrawal = useMutation({
@@ -4104,6 +4669,38 @@ function FinancialsView({ vendor }: { vendor: any }) {
     onError: (e) => toast.error(e.message),
   });
 
+  // Metrics Calculations
+  const advanceReceived = payments
+    .filter((p: any) => p.status === "captured" && p.payment_type === "advance")
+    .reduce((sum: number, p: any) => sum + p.amount_cents, 0);
+
+  const remainingBalance = orderItems
+    .filter(
+      (oi: any) =>
+        oi.orders?.payment_type === "split" &&
+        oi.orders?.payment_status === "advance_paid" &&
+        oi.orders?.status !== "cancelled",
+    )
+    .reduce((sum: number, oi: any) => sum + (oi.orders?.remaining_balance_cents || 0), 0);
+
+  const finalPaymentPending = orderItems
+    .filter(
+      (oi: any) =>
+        oi.orders?.payment_type === "split" &&
+        oi.orders?.payment_status === "advance_paid" &&
+        oi.orders?.status !== "cancelled",
+    )
+    .reduce((sum: number, oi: any) => sum + (oi.orders?.remaining_balance_cents || 0), 0);
+
+  const paidOrdersCount = orderItems.filter(
+    (oi: any) => oi.orders?.status === "paid" || oi.orders?.payment_status === "fully_paid",
+  ).length;
+
+  const settlementAmount =
+    payments
+      .filter((p: any) => p.status === "captured")
+      .reduce((sum: number, p: any) => sum + p.amount_cents, 0) * 0.9; // 90% net after platform commission
+
   return (
     <div className="space-y-8 animate-in fade-in duration-300">
       {/* Earnings metrics grids */}
@@ -4112,26 +4709,62 @@ function FinancialsView({ vendor }: { vendor: any }) {
           icon={DollarSign}
           label="Total Earnings"
           value={inr(earnings?.total_earnings_cents || 0)}
-          color="from-violet-500/10 to-indigo-500/10 text-indigo-500 border-indigo-500/20"
+          color="from-accent/15 to-primary/5 text-accent border-accent/25 hover:shadow-soft transition-all duration-300"
         />
         <AnalyticsCard
           icon={Check}
           label="Available Balance"
           value={inr(earnings?.available_balance_cents || 0)}
-          color="from-emerald-500/10 to-teal-500/10 text-emerald-500 border-emerald-500/20"
+          color="from-primary/15 to-accent/5 text-primary border-primary/20 hover:shadow-soft transition-all duration-300"
         />
         <AnalyticsCard
           icon={Clock}
           label="Pending Balance"
           value={inr(earnings?.pending_balance_cents || 0)}
-          color="from-amber-500/10 to-orange-500/10 text-amber-500 border-amber-500/20"
+          color="from-accent/15 to-primary/5 text-accent border-accent/25 hover:shadow-soft transition-all duration-300"
         />
         <AnalyticsCard
           icon={Briefcase}
           label="Withdrawn Amount"
           value={inr(earnings?.withdrawn_amount_cents || 0)}
-          color="from-blue-500/10 to-cyan-500/10 text-blue-500 border-blue-500/20"
+          color="from-primary/15 to-accent/5 text-primary border-primary/20 hover:shadow-soft transition-all duration-300"
         />
+      </div>
+
+      {/* Reseller Payment & Settlement Overview (Razorpay Integrated) */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 bg-muted/15 border border-border/80 rounded-2xl p-5 text-xs">
+        <div>
+          <span className="text-muted-foreground block mb-0.5 font-bold uppercase tracking-wider text-[9px]">
+            Settlement Amount
+          </span>
+          <span className="font-extrabold text-sm text-foreground">{inr(settlementAmount)}</span>
+        </div>
+        <div>
+          <span className="text-muted-foreground block mb-0.5 font-bold uppercase tracking-wider text-[9px]">
+            Advance Received
+          </span>
+          <span className="font-extrabold text-sm text-foreground">{inr(advanceReceived)}</span>
+        </div>
+        <div>
+          <span className="text-muted-foreground block mb-0.5 font-bold uppercase tracking-wider text-[9px]">
+            Remaining Balance
+          </span>
+          <span className="font-extrabold text-sm text-foreground">{inr(remainingBalance)}</span>
+        </div>
+        <div>
+          <span className="text-muted-foreground block mb-0.5 font-bold uppercase tracking-wider text-[9px]">
+            Final Payment Pending
+          </span>
+          <span className="font-extrabold text-sm text-amber-500">
+            {finalPaymentPending > 0 ? inr(finalPaymentPending) : "None"}
+          </span>
+        </div>
+        <div className="col-span-2 sm:col-span-4 border-t border-border/50 pt-2 flex justify-between text-muted-foreground text-[10px]">
+          <span>
+            Total Paid Orders: <strong>{paidOrdersCount}</strong>
+          </span>
+          <span>Settlements are processed automatically to verified merchant accounts.</span>
+        </div>
       </div>
 
       {/* Commission Breakdown details */}
@@ -4169,8 +4802,72 @@ function FinancialsView({ vendor }: { vendor: any }) {
         </div>
       </div>
 
+      {/* Razorpay Payments logs */}
+      <div className="space-y-4 pt-4 border-t border-border/50">
+        <h4 className="font-semibold text-sm tracking-wide">Marketplace Payments history</h4>
+        <div className="overflow-x-auto rounded-2xl border border-border bg-card/60 backdrop-blur-md shadow-sm">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="border-b border-border bg-muted/40 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                <th className="p-4">Payment ID</th>
+                <th className="p-4">Customer</th>
+                <th className="p-4">Type</th>
+                <th className="p-4 text-right">Value (₹)</th>
+                <th className="p-4 text-center">Status</th>
+                <th className="p-4">Date</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border/60 text-xs">
+              {payments.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="text-center py-12 text-muted-foreground italic">
+                    No payment history.
+                  </td>
+                </tr>
+              ) : (
+                payments.map((p: any) => (
+                  <tr key={p.id} className="hover:bg-muted/10 transition-colors">
+                    <td className="p-4 font-mono font-semibold">
+                      {p.razorpay_payment_id || "Pending"}
+                    </td>
+                    <td className="p-4">
+                      <div>{p.profiles?.full_name || "Guest Customer"}</div>
+                      <div className="text-[10px] text-muted-foreground">
+                        {p.profiles?.email || ""}
+                      </div>
+                    </td>
+                    <td className="p-4 capitalize">
+                      <span className="px-2 py-0.5 rounded bg-muted text-[10px] font-medium border border-border/40">
+                        {p.payment_type}
+                      </span>
+                    </td>
+                    <td className="p-4 text-right font-bold">{inr(p.amount_cents)}</td>
+                    <td className="p-4 text-center">
+                      <span
+                        className={`px-2.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider ${
+                          p.status === "captured"
+                            ? "bg-emerald-100 dark:bg-emerald-950/40 text-emerald-600 border border-emerald-500/20"
+                            : p.status === "refunded"
+                              ? "bg-rose-100 dark:bg-rose-950/40 text-rose-600 border border-rose-500/20"
+                              : "bg-amber-100 dark:bg-amber-950/40 text-amber-600 border border-amber-500/20"
+                        }`}
+                      >
+                        {p.status}
+                      </span>
+                    </td>
+                    <td className="p-4 text-muted-foreground">
+                      {new Date(p.created_at).toLocaleString()}
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
       {/* Withdrawals history */}
-      <div className="space-y-4">
+      <div className="space-y-4 pt-4 border-t border-border/50">
         <h4 className="font-semibold text-sm tracking-wide">Withdrawal Transaction Logs</h4>
         <div className="overflow-x-auto rounded-2xl border border-border bg-card/60 backdrop-blur-md shadow-sm">
           <table className="w-full text-left border-collapse">
@@ -4677,6 +5374,170 @@ function SettingsView({ vendor }: { vendor: any }) {
           </p>
         </div>
       </div>
+    </div>
+  );
+}
+
+// ============ VENDOR RETURNS MANAGEMENT VIEW COMPONENT ============
+function VendorReturnsView({
+  vendor,
+  returns,
+  onSelect,
+}: {
+  vendor: any;
+  returns: any[];
+  onSelect: (id: string) => void;
+}) {
+  const [returnSearch, setReturnSearch] = useState("");
+  const [filterTab, setFilterTab] = useState<
+    "all" | "pending" | "review" | "resolution" | "closed"
+  >("all");
+
+  const filteredReturns = returns.filter((ret) => {
+    // 1. Search filter
+    const matchesSearch =
+      ret.return_number.toLowerCase().includes(returnSearch.toLowerCase()) ||
+      (ret.order_id && ret.order_id.toLowerCase().includes(returnSearch.toLowerCase())) ||
+      ret.status.toLowerCase().includes(returnSearch.toLowerCase());
+
+    if (!matchesSearch) return false;
+
+    // 2. Tab filter
+    if (filterTab === "all") return true;
+    if (filterTab === "pending") return ["pending", "vendor_review"].includes(ret.status);
+    if (filterTab === "review") return ret.status === "admin_review";
+    if (filterTab === "resolution")
+      return ["approved", "picked_up", "received"].includes(ret.status);
+    if (filterTab === "closed") return ["completed", "rejected"].includes(ret.status);
+
+    return true;
+  });
+
+  return (
+    <div className="space-y-6 animate-in fade-in duration-300">
+      {/* Header and Counters */}
+      <div className="flex justify-between items-center border-b border-border/60 pb-4">
+        <div>
+          <h2 className="font-display text-2xl font-bold">Return Requests</h2>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            Coordinate customer return requests, recommend actions to Admin, and converse with
+            collectors.
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="px-3 py-1 bg-indigo-500/10 text-indigo-500 font-bold rounded-full text-xs uppercase">
+            {returns.length} requests
+          </span>
+        </div>
+      </div>
+
+      {/* Search and Tabs */}
+      <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
+        {/* Tabs switcher */}
+        <div className="flex flex-wrap gap-1.5 p-1 bg-muted/20 border border-border/60 rounded-xl select-none">
+          {[
+            { id: "all", label: "All Returns" },
+            { id: "pending", label: "Pending Recommendation" },
+            { id: "review", label: "Admin Review" },
+            { id: "resolution", label: "Resolution Phase" },
+            { id: "closed", label: "Closed" },
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setFilterTab(tab.id as any)}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold uppercase tracking-wider transition-all cursor-pointer ${
+                filterTab === tab.id
+                  ? "bg-indigo-600 text-white shadow-sm"
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Search Input */}
+        <div className="relative w-full sm:w-64">
+          <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+          <input
+            type="text"
+            placeholder="Search returns..."
+            value={returnSearch}
+            onChange={(e) => setReturnSearch(e.target.value)}
+            className="w-full pl-9 pr-4 py-2 bg-card border border-border rounded-xl text-xs outline-none focus:border-indigo-500 transition-colors text-foreground"
+          />
+        </div>
+      </div>
+
+      {/* Returns Table/Cards */}
+      {filteredReturns.length === 0 ? (
+        <div className="text-center py-12 border border-dashed border-border rounded-2xl bg-card">
+          <p className="text-xs text-muted-foreground italic">
+            No return requests match the filters.
+          </p>
+        </div>
+      ) : (
+        <div className="border border-border/60 bg-card rounded-2xl overflow-hidden shadow-sm">
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse text-left text-xs">
+              <thead>
+                <tr className="border-b border-border bg-muted/25 font-bold uppercase tracking-wider text-[10px] text-muted-foreground">
+                  <th className="p-4">Return ID</th>
+                  <th className="p-4">Order</th>
+                  <th className="p-4">Requested Resolution</th>
+                  <th className="p-4">Current Status</th>
+                  <th className="p-4">Request Date</th>
+                  <th className="p-4 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border/40 font-medium">
+                {filteredReturns.map((ret) => {
+                  return (
+                    <tr key={ret.id} className="hover:bg-muted/10 transition-colors">
+                      <td className="p-4 font-mono font-bold text-indigo-600 dark:text-indigo-400">
+                        {ret.return_number}
+                      </td>
+                      <td className="p-4">
+                        Order #{ret.order_id?.slice(0, 8).toUpperCase() || "N/A"}
+                      </td>
+                      <td className="p-4 uppercase text-[10px] font-semibold text-muted-foreground">
+                        {ret.preferred_resolution}
+                      </td>
+                      <td className="p-4">
+                        <span
+                          className={`px-2.5 py-1 rounded-full text-[9px] font-bold uppercase tracking-wider ${
+                            ret.status === "completed"
+                              ? "bg-emerald-50 text-emerald-700 border border-emerald-200/50"
+                              : ret.status === "rejected"
+                                ? "bg-rose-50 text-rose-700 border border-rose-200/50"
+                                : ret.status === "pending" || ret.status === "vendor_review"
+                                  ? "bg-amber-50 text-amber-700 border border-amber-200/50"
+                                  : "bg-blue-50 text-blue-700 border border-blue-200/50"
+                          }`}
+                        >
+                          {ret.status.replace("_", " ")}
+                        </span>
+                      </td>
+                      <td className="p-4 text-muted-foreground">
+                        {new Date(ret.created_at).toLocaleDateString()}
+                      </td>
+                      <td className="p-4 text-right">
+                        <button
+                          type="button"
+                          onClick={() => onSelect(ret.id)}
+                          className="px-4.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-bold uppercase cursor-pointer tracking-wider text-[9px] transition-colors inline-flex items-center gap-1 shadow-sm shadow-indigo-500/10"
+                        >
+                          Open Panel
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -257,7 +257,10 @@ function AuthPage() {
                   onChange={(e) => setAcceptTerms(e.target.checked)}
                   className="mt-1 h-4 w-4 rounded border-border text-accent focus:ring-accent accent-accent cursor-pointer"
                 />
-                <label htmlFor="accept-terms" className="text-xs text-muted-foreground leading-relaxed cursor-pointer">
+                <label
+                  htmlFor="accept-terms"
+                  className="text-xs text-muted-foreground leading-relaxed cursor-pointer"
+                >
                   I agree to ViaCraft's{" "}
                   <Link
                     to="/legal/$slug"

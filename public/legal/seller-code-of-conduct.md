@@ -1,12 +1,12 @@
 # Seller Code of Conduct
 
-**Effective Date:** [Effective Date]  
-**Last Updated:** [Last Updated]
+**Effective Date:** July 10, 2026  
+**Last Updated:** July 10, 2026
 
 ## 1. Introduction
 Welcome to ViaCraft. ViaCraft is a premium multi-vendor marketplace designed to connect buyers ("Customers") with independent artisans ("Vendors" or "Sellers") specializing in handmade resin crafts, jewelry, preservation items, and home decor.
 
-To maintain the premium quality of [Website URL], all registered Vendors must adhere to this Seller Code of Conduct.
+To maintain the premium quality of https://viacraft.in, all registered Vendors must adhere to this Seller Code of Conduct.
 
 ## 2. Purpose
 The purpose of this Seller Code of Conduct is to establish clear operational, ethical, and quality standards for Vendors. Compliance is mandatory to ensure Customer trust, high ratings, and the overall integrity of the Platform.
@@ -54,8 +54,8 @@ ViaCraft is not responsible for any legal or civil liability arising from Vendor
 
 ## 9. Contact Information
 For reports regarding Vendor misconduct or quality concerns:
-*   **Compliance Officer:** [Grievance Officer]
-*   **Support Email:** [Support Email]
+*   **Compliance Officer:** Mr. Om Sharma
+*   **Support Email:** support@viacraft.in
 
 ## 10. Governing Law
 This Seller Code of Conduct is governed by the laws of India, including the Consumer Protection (E-Commerce) Rules, 2020.

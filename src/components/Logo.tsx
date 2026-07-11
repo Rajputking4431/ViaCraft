@@ -7,22 +7,18 @@ interface LogoProps {
   variant?: "horizontal" | "vertical" | "icon";
 }
 
-export function Logo({ 
-  className = "", 
-  iconOnly = false,
-  variant = "horizontal"
-}: LogoProps) {
+export function Logo({ className = "", iconOnly = false, variant = "horizontal" }: LogoProps) {
   const isIcon = iconOnly || variant === "icon";
 
   if (isIcon) {
     return (
-      <div 
+      <div
         className={`h-9 w-9 overflow-hidden flex items-center justify-center rounded-full bg-white shadow-sm border border-slate-200/40 shrink-0 ${className}`}
       >
-        <img 
-          src={iconUrl} 
-          alt="ViaCraft Icon" 
-          className="h-full w-full object-contain select-none" 
+        <img
+          src={iconUrl}
+          alt="ViaCraft Icon"
+          className="h-full w-full object-contain select-none"
         />
       </div>
     );
@@ -30,12 +26,13 @@ export function Logo({
 
   if (variant === "vertical") {
     return (
-      <div className={`flex flex-col items-center select-none bg-white p-4 rounded-2xl shadow-sm border border-slate-200/40 ${className}`}>
-        <img 
-          src={logoUrl} 
-          alt="ViaCraft Logo" 
-          className="h-28 w-auto object-contain"
-        />
+      <div
+        className={`flex flex-col items-center select-none bg-white p-4 rounded-2xl shadow-sm border border-slate-200/40 ${className}`}
+      >
+        <img src={logoUrl} alt="ViaCraft Logo" className="h-28 w-auto object-contain" />
+        <span className="text-[9px] text-[#8a6d4d] tracking-wider mt-2 font-medium italic">
+          Presented by NP CASTS
+        </span>
       </div>
     );
   }
@@ -44,34 +41,33 @@ export function Logo({
   return (
     <div className={`flex items-center gap-2.5 select-none ${className}`}>
       {/* Icon App-style Circular Tile */}
-      <div 
-        className="h-9 w-9 overflow-hidden flex items-center justify-center rounded-full bg-white shadow-sm border border-slate-200/40 shrink-0"
-      >
-        <img 
-          src={iconUrl} 
-          alt="ViaCraft Icon" 
-          className="h-full w-full object-contain select-none" 
+      <div className="h-9 w-9 overflow-hidden flex items-center justify-center rounded-full bg-white shadow-sm border border-slate-200/40 shrink-0">
+        <img
+          src={iconUrl}
+          alt="ViaCraft Icon"
+          className="h-full w-full object-contain select-none"
         />
       </div>
       {/* Stylized Text */}
       <div className="flex flex-col justify-center leading-none">
         <div className="flex items-baseline font-sans text-lg tracking-wide">
-          <span className="font-extrabold text-[#2B125B] dark:text-white">
-            VIA
-          </span>
-          <span 
+          <span className="font-extrabold text-[#2B125B] dark:text-white">VIA</span>
+          <span
             className="font-black ml-0.5"
-            style={{ 
-              background: 'linear-gradient(to right, #9333EA, #EC4899, #F97316)', 
-              WebkitBackgroundClip: 'text', 
-              WebkitTextFillColor: 'transparent'
+            style={{
+              background: "linear-gradient(to right, #9333EA, #EC4899, #F97316)",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
             }}
           >
             CRAFT
           </span>
         </div>
-        <span className="text-[6px] uppercase tracking-[0.22em] text-slate-400 dark:text-slate-500 mt-1.5 font-sans font-bold">
+        <span className="text-[5px] uppercase tracking-[0.22em] text-slate-400 dark:text-slate-500 mt-1 font-sans font-bold">
           PRESERVE MEMORIES FOREVER
+        </span>
+        <span className="text-[7px] text-accent font-medium italic mt-0.5">
+          Presented by NP CASTS
         </span>
       </div>
     </div>

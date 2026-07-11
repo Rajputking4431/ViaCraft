@@ -1,12 +1,12 @@
 # Cancellation Policy
 
-**Effective Date:** [Effective Date]  
-**Last Updated:** [Last Updated]
+**Effective Date:** July 10, 2026  
+**Last Updated:** July 10, 2026
 
 ## 1. Introduction
 Welcome to ViaCraft. ViaCraft operates as a multi-vendor marketplace facilitator for resin handmade gifts, home decor, jewellery, and preservation products. 
 
-This Cancellation Policy defines the parameters under which orders placed on [Website URL] can be cancelled by Customers, Vendors, or Platform Admins.
+This Cancellation Policy defines the parameters under which orders placed on https://viacraft.in can be cancelled by Customers, Vendors, or Platform Admins.
 
 ## 2. Purpose
 This Cancellation Policy outlines the timelines, refund rules, and potential cancellation charges to prevent disruptions to our custom-artisan workflows while ensuring fair treatment for Customers.
@@ -66,8 +66,8 @@ ViaCraft is not liable for any disappointment, secondary losses, or delays resul
 
 ## 11. Grievance & Appeal
 If you believe your order was cancelled erroneously:
-*   **Email Support:** [Support Email]
-*   **Subject:** "Cancellation Appeal - Order #[Order Number]"
+*   **Email Support:** support@viacraft.in
+*   **Subject:** "Cancellation Appeal - Order #12345"
 
 ## 12. Governing Law
 This Cancellation Policy is governed by the laws of India, complying with the Consumer Protection Act, 2019.

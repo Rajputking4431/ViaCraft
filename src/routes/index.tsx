@@ -399,17 +399,17 @@ function Index() {
   const formatNumber = (num: number) => String(num).padStart(2, "0");
 
   return (
-    <div className="min-h-screen bg-[#fcfbfa] text-[#3d2712] flex flex-col antialiased">
+    <div className="min-h-screen bg-background text-foreground flex flex-col antialiased">
       {/* 1. Header Navigation */}
       <SiteHeader />
 
       <main className="flex-1 pb-16">
         {/* 2. Category Bubble Navigation (Circular Icons Slider) */}
-        <section className="bg-white border-b border-[#e2d8ca] py-4 sm:py-6 relative group select-none">
+        <section className="bg-card border-b border-border/50 py-4 sm:py-6 relative group select-none">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 relative">
             <button
               onClick={() => scrollElement(categoriesRef, "left", 180)}
-              className="absolute left-1 top-1/2 -translate-y-1/2 z-10 h-8 w-8 rounded-full bg-white border border-[#e2d8ca] hidden md:flex items-center justify-center shadow-md hover:border-[#c8a165] hover:text-[#c8a165] text-[#5a4331] cursor-pointer transition-all opacity-0 group-hover:opacity-100"
+              className="absolute left-1 top-1/2 -translate-y-1/2 z-10 h-8 w-8 rounded-full bg-card border border-border/60 hidden md:flex items-center justify-center shadow-md hover:border-accent hover:text-accent text-foreground/80 cursor-pointer transition-all opacity-0 group-hover:opacity-100 animate-in fade-in"
               aria-label="Scroll left categories"
             >
               <ChevronLeft className="h-4 w-4" />
@@ -425,16 +425,16 @@ function Index() {
                     key={idx}
                     to="/shop"
                     search={{ cat: cat.name } as any}
-                    className="flex flex-col items-center shrink-0 space-y-2 group/cat cursor-pointer"
+                    className="flex flex-col items-center shrink-0 space-y-2 group/cat cursor-pointer animate-in fade-in duration-300"
                   >
-                    <div className="h-16 w-16 sm:h-20 sm:w-20 rounded-full border border-[#ebdcc7] overflow-hidden p-0.5 bg-[#FAF7F2] transition-all group-hover/cat:border-[#c8a165] group-hover/cat:scale-105 group-hover/cat:shadow-sm">
+                    <div className="h-16 w-16 sm:h-20 sm:w-20 rounded-full border border-border/60 overflow-hidden p-0.5 bg-background transition-all group-hover/cat:border-accent group-hover/cat:scale-105 group-hover/cat:shadow-md">
                       <img
                         src={cat.img}
                         alt={cat.name}
                         className="h-full w-full object-cover rounded-full"
                       />
                     </div>
-                    <span className="text-[10px] sm:text-xs font-semibold text-[#5a4331] group-hover/cat:text-[#c8a165] transition-colors text-center w-20 leading-tight">
+                    <span className="text-[10px] sm:text-xs font-semibold text-foreground/80 group-hover/cat:text-accent transition-colors text-center w-20 leading-tight">
                       {cat.name}
                     </span>
                   </Link>
@@ -444,7 +444,7 @@ function Index() {
 
             <button
               onClick={() => scrollElement(categoriesRef, "right", 180)}
-              className="absolute right-1 top-1/2 -translate-y-1/2 z-10 h-8 w-8 rounded-full bg-white border border-[#e2d8ca] hidden md:flex items-center justify-center shadow-md hover:border-[#c8a165] hover:text-[#c8a165] text-[#5a4331] cursor-pointer transition-all opacity-0 group-hover:opacity-100"
+              className="absolute right-1 top-1/2 -translate-y-1/2 z-10 h-8 w-8 rounded-full bg-card border border-border/60 hidden md:flex items-center justify-center shadow-md hover:border-accent hover:text-accent text-foreground/80 cursor-pointer transition-all opacity-0 group-hover:opacity-100 animate-in fade-in"
               aria-label="Scroll right categories"
             >
               <ChevronRight className="h-4 w-4" />
@@ -453,14 +453,14 @@ function Index() {
         </section>
 
         {/* 3. Main Hero Slider */}
-        <section className="bg-gradient-to-b from-[#fdfcfb] to-[#fbf9f6] py-8 sm:py-12 lg:py-16 border-b border-[#ebdcc7] relative overflow-hidden select-none">
+        <section className="bg-gradient-to-b from-background to-muted/20 py-8 sm:py-12 lg:py-16 border-b border-border/50 relative overflow-hidden select-none">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-10">
             {/* Navigation Chevrons */}
             <button
               onClick={() =>
                 setHeroIndex((prev) => (prev === 0 ? HERO_SLIDES.length - 1 : prev - 1))
               }
-              className="absolute left-4 top-1/2 -translate-y-1/2 h-10 w-10 rounded-full border border-[#e2d8ca] bg-white text-[#5a4331] hover:text-[#c8a165] hidden md:flex items-center justify-center shadow-sm cursor-pointer hover:border-[#c8a165] hover:scale-105 transition-all z-20"
+              className="absolute left-4 top-1/2 -translate-y-1/2 h-10 w-10 rounded-full border border-border/60 bg-card text-foreground hover:text-accent hidden md:flex items-center justify-center shadow-sm cursor-pointer hover:border-accent hover:scale-105 transition-all z-20"
               aria-label="Previous hero slide"
             >
               <ChevronLeft className="h-5 w-5" />
@@ -468,26 +468,26 @@ function Index() {
 
             <button
               onClick={() => setHeroIndex((prev) => (prev + 1) % HERO_SLIDES.length)}
-              className="absolute right-4 top-1/2 -translate-y-1/2 h-10 w-10 rounded-full border border-[#e2d8ca] bg-white text-[#5a4331] hover:text-[#c8a165] hidden md:flex items-center justify-center shadow-sm cursor-pointer hover:border-[#c8a165] hover:scale-105 transition-all z-20"
+              className="absolute right-4 top-1/2 -translate-y-1/2 h-10 w-10 rounded-full border border-border/60 bg-card text-foreground hover:text-accent hidden md:flex items-center justify-center shadow-sm cursor-pointer hover:border-accent hover:scale-105 transition-all z-20"
               aria-label="Next hero slide"
             >
               <ChevronRight className="h-5 w-5" />
             </button>
 
             {/* Slide Content */}
-            <div className="relative w-full overflow-hidden rounded-[2rem] border border-[#ebdcc7]/60 shadow-lg bg-[#FAF7F2] lg:bg-transparent lg:border-0 lg:shadow-none">
+            <div className="relative w-full overflow-hidden rounded-[2rem] border border-border/60 shadow-luxe bg-card lg:bg-transparent lg:border-0 lg:shadow-none">
               {/* Mobile/Tablet Banner layout (hidden on desktop lg) */}
               <div className="lg:hidden relative w-full aspect-[16/10] sm:aspect-[21/9] overflow-hidden flex items-center">
                 <AnimatePresence mode="wait">
                   <motion.img
-                    key={heroIndex}
-                    src={HERO_SLIDES[heroIndex].img}
-                    alt=""
-                    initial={{ opacity: 0, scale: 1.05 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.6 }}
-                    className="absolute inset-0 w-full h-full object-cover"
+                     key={heroIndex}
+                     src={HERO_SLIDES[heroIndex].img}
+                     alt=""
+                     initial={{ opacity: 0, scale: 1.05 }}
+                     animate={{ opacity: 1, scale: 1 }}
+                     exit={{ opacity: 0 }}
+                     transition={{ duration: 0.6 }}
+                     className="absolute inset-0 w-full h-full object-cover"
                   />
                 </AnimatePresence>
                 {/* Dark overlay for text readability */}
@@ -503,7 +503,7 @@ function Index() {
                       transition={{ duration: 0.4 }}
                       className="space-y-3"
                     >
-                      <span className="inline-flex items-center gap-1.5 text-[8px] sm:text-[10px] font-bold tracking-[0.25em] uppercase text-[#c8a165]">
+                      <span className="inline-flex items-center gap-1.5 text-[8px] sm:text-[10px] font-bold tracking-[0.25em] uppercase text-accent">
                         ✨ THE ART OF PRESERVATION
                       </span>
                       <h1 className="font-display text-xl sm:text-3xl font-extrabold leading-tight text-white">
@@ -515,7 +515,7 @@ function Index() {
                       <div className="flex gap-2.5 pt-1">
                         <Link
                           to="/shop"
-                          className="px-5 py-2 rounded-full bg-[#c8a165] text-white hover:bg-[#c8a165]/90 text-[10px] font-bold uppercase tracking-wider transition-all"
+                          className="px-5 py-2 rounded-full bg-accent text-accent-foreground hover:bg-accent/90 text-[10px] font-bold uppercase tracking-wider transition-all"
                         >
                           Shop Now
                         </Link>
@@ -545,27 +545,27 @@ function Index() {
                       className="space-y-6 sm:space-y-8"
                     >
                       <div>
-                        <span className="inline-flex items-center gap-1.5 text-xs font-bold tracking-[0.2em] uppercase text-[#c8a165] mb-4">
-                          <Sparkle className="h-4 w-4 text-[#c8a165] fill-current animate-pulse" />
+                        <span className="inline-flex items-center gap-1.5 text-xs font-bold tracking-[0.2em] uppercase text-accent mb-4">
+                          <Sparkle className="h-4 w-4 text-accent fill-current animate-pulse" />
                           THE ART OF PRESERVATION
                         </span>
-                        <h1 className="font-display text-5xl lg:text-6xl font-extrabold text-[#3d2712] leading-[1.15] tracking-tight">
+                        <h1 className="font-display text-5xl lg:text-6xl font-extrabold text-foreground leading-[1.15] tracking-tight">
                           {HERO_SLIDES[heroIndex].title}
                         </h1>
                       </div>
-                      <p className="text-base text-[#5c4a3b] max-w-lg leading-relaxed">
+                      <p className="text-base text-muted-foreground max-w-lg leading-relaxed">
                         {HERO_SLIDES[heroIndex].subtitle}
                       </p>
                       <div className="flex gap-4 pt-2">
                         <Link
                           to="/shop"
-                          className="inline-flex items-center justify-center px-8 py-3.5 rounded-full bg-[#3d2712] hover:bg-[#2c1a0c] text-white text-xs font-bold uppercase tracking-wider shadow-md hover:scale-[1.02] transition-all"
+                          className="inline-flex items-center justify-center px-8 py-3.5 rounded-full bg-primary hover:bg-foreground hover:text-primary-foreground text-primary-foreground text-xs font-bold uppercase tracking-wider shadow-md hover:scale-[1.02] transition-all cursor-pointer"
                         >
                           Shop Now
                         </Link>
                         <Link
                           to="/collections"
-                          className="inline-flex items-center justify-center px-8 py-3.5 rounded-full border border-[#3d2712] text-[#3d2712] bg-transparent hover:bg-[#3d2712]/5 text-xs font-bold uppercase tracking-wider transition-all"
+                          className="inline-flex items-center justify-center px-8 py-3.5 rounded-full border border-primary text-foreground bg-transparent hover:bg-foreground/5 text-xs font-bold uppercase tracking-wider transition-all cursor-pointer"
                         >
                           Explore Collections
                         </Link>
@@ -576,7 +576,7 @@ function Index() {
 
                 {/* Right image column */}
                 <div className="lg:col-span-6 flex justify-center relative">
-                  <div className="relative w-96 h-96 rounded-full overflow-hidden border-[12px] border-[#FAF7F2] shadow-2xl flex items-center justify-center">
+                  <div className="relative w-96 h-96 rounded-full overflow-hidden border-[12px] border-card shadow-2xl flex items-center justify-center">
                     <AnimatePresence mode="wait">
                       <motion.img
                         key={heroIndex}
@@ -589,17 +589,17 @@ function Index() {
                         className="w-full h-full object-cover rounded-full"
                       />
                     </AnimatePresence>
-                    <div className="absolute inset-0 border border-[#c8a165]/35 rounded-full pointer-events-none" />
+                    <div className="absolute inset-0 border border-accent/25 rounded-full pointer-events-none" />
                   </div>
-                  <div className="absolute top-1/4 -right-2 bg-white/90 backdrop-blur-md border border-[#ebdcc7] shadow-lg rounded-2xl p-3 flex items-center gap-2">
-                    <div className="h-8 w-8 rounded-full bg-[#FAF7F2] text-[#c8a165] flex items-center justify-center">
+                  <div className="absolute top-1/4 -right-2 glass-panel border border-border/50 shadow-md rounded-2xl p-3 flex items-center gap-2">
+                    <div className="h-8 w-8 rounded-full bg-background text-accent flex items-center justify-center">
                       <Sparkles className="h-4 w-4" />
                     </div>
                     <div>
-                      <p className="text-[10px] font-bold text-[#c8a165] uppercase tracking-wider">
+                      <p className="text-[10px] font-bold text-accent uppercase tracking-wider">
                         Premium Quality
                       </p>
-                      <p className="text-xs font-extrabold text-[#3d2712]">Museum-Grade Finish</p>
+                      <p className="text-xs font-extrabold text-foreground">Museum-Grade Finish</p>
                     </div>
                   </div>
                 </div>
@@ -746,7 +746,6 @@ function Index() {
             </div>
           </div>
         </section>
-
 
         {/* 7. Trending Now Section */}
         <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-10 lg:py-16 select-none">

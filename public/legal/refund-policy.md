@@ -1,12 +1,12 @@
 # Refund Policy
 
-**Effective Date:** [Effective Date]  
-**Last Updated:** [Last Updated]
+**Effective Date:** July 10, 2026  
+**Last Updated:** July 10, 2026
 
 ## 1. Introduction
 Welcome to ViaCraft. ViaCraft operates as a multi-vendor marketplace facilitator for resin handmade gifts, home decor, jewellery, and preservation products. 
 
-This Refund Policy governs the eligibility criteria, process, and timelines for refund requests made on [Website URL] (the "Platform").
+This Refund Policy governs the eligibility criteria, process, and timelines for refund requests made on https://viacraft.in (the "Platform").
 
 ## 2. Purpose
 The purpose of this Refund Policy is to outline how refunds are processed, the timelines for payment gateways, the treatment of platform fees, and how refunds apply to various types of transactions (e.g. customized resin pieces vs. stock items).
@@ -29,7 +29,7 @@ Refunds will **not** be issued under these circumstances:
 
 ## 6. Refund Process & Step-by-Step Flow
 To request a refund:
-1.  **Submission:** Email [Support Email] or go to [Website URL]/refunds and submit order details, reasons for refund, and unboxing video/photo proof.
+1.  **Submission:** Email support@viacraft.in or go to https://viacraft.in/refunds and submit order details, reasons for refund, and unboxing video/photo proof.
 2.  **Investigation:** The Platform verifies the dispute with the Vendor.
 3.  **Approval/Rejection:** The Platform notifies the Customer within 3 to 5 business days of the refund decision.
 4.  **Transaction Trigger:** If approved, the refund is initiated via our payment gateway.
@@ -66,8 +66,8 @@ ViaCraft is not responsible for any banking system delays, payment gateway downt
 
 ## 13. Contact Information
 For any refund-related assistance, contact our finance team:
-*   **Support Email:** [Support Email]
-*   **Subject Line:** "Refund Request - Order #[Order Number]"
+*   **Support Email:** support@viacraft.in
+*   **Subject Line:** "Refund Request - Order #12345"
 
 ## 14. Governing Law
 This Refund Policy complies with consumer protection laws in India, including rules governing payment aggregators under the Reserve Bank of India (RBI).

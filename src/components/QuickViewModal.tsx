@@ -32,6 +32,7 @@ export function QuickViewModal({ productId, onClose }: QuickViewModalProps) {
         .from("products")
         .select("*, vendors(id, slug, store_name, location, rating)")
         .eq("id", productId!)
+        .neq("status", "deleted")
         .maybeSingle();
       return data;
     },
@@ -94,7 +95,7 @@ export function QuickViewModal({ productId, onClose }: QuickViewModalProps) {
       toast.success("Added to cart");
       qc.invalidateQueries({ queryKey: ["cart-count"] });
       qc.invalidateQueries({ queryKey: ["cart"] });
-      
+
       const trackedProduct = selectedSize
         ? { ...product!, price_cents: selectedSize.price * 100 }
         : product!;
@@ -181,19 +182,24 @@ export function QuickViewModal({ productId, onClose }: QuickViewModalProps) {
 
                 {/* Pricing info */}
                 {(() => {
-                  const { description: cleanDescription, sizes } = parseProductDescription(product.description);
-                  const activePriceCents = selectedSize ? selectedSize.price * 100 : product.price_cents;
+                  const { description: cleanDescription, sizes } = parseProductDescription(
+                    product.description,
+                  );
+                  const activePriceCents = selectedSize
+                    ? selectedSize.price * 100
+                    : product.price_cents;
                   return (
                     <>
                       <div className="flex items-baseline gap-2.5 mt-4">
                         <span className="font-display text-2xl font-bold text-foreground">
                           {inr(activePriceCents)}
                         </span>
-                        {product.compare_at_cents && product.compare_at_cents > activePriceCents && (
-                          <span className="text-sm text-muted-foreground line-through">
-                            {inr(product.compare_at_cents)}
-                          </span>
-                        )}
+                        {product.compare_at_cents &&
+                          product.compare_at_cents > activePriceCents && (
+                            <span className="text-sm text-muted-foreground line-through">
+                              {inr(product.compare_at_cents)}
+                            </span>
+                          )}
                       </div>
 
                       {/* Description */}
@@ -221,7 +227,9 @@ export function QuickViewModal({ productId, onClose }: QuickViewModalProps) {
                                 }`}
                               >
                                 <span className="font-semibold">{op.size}</span>
-                                <span className="text-[8px] text-muted-foreground mt-0.5">{op.inches}</span>
+                                <span className="text-[8px] text-muted-foreground mt-0.5">
+                                  {op.inches}
+                                </span>
                               </button>
                             ))}
                           </div>

@@ -99,7 +99,7 @@ const seedFallbackShipments = () => {
         country: "India",
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
-      }
+      },
     ];
     setLocal(KEYS.ADDRESSES, mockAddresses);
   }
@@ -148,7 +148,7 @@ export const shippingDb = {
 
     upsert: async (
       vendorId: string,
-      address: Omit<VendorPickupAddress, "id" | "vendor_id" | "created_at" | "updated_at">
+      address: Omit<VendorPickupAddress, "id" | "vendor_id" | "created_at" | "updated_at">,
     ): Promise<VendorPickupAddress> => {
       const now = new Date().toISOString();
       try {
@@ -290,7 +290,7 @@ export const shippingDb = {
         console.warn("shipments.listAll falling back to localStorage", err);
         const shipments = getLocal<Shipment[]>(KEYS.SHIPMENTS, []);
         return shipments.sort(
-          (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+          (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
         );
       }
     },
@@ -329,7 +329,7 @@ export const shippingDb = {
     },
 
     create: async (
-      shipment: Omit<Shipment, "id" | "created_at" | "updated_at">
+      shipment: Omit<Shipment, "id" | "created_at" | "updated_at">,
     ): Promise<Shipment> => {
       const now = new Date().toISOString();
       try {
@@ -431,7 +431,9 @@ export const shippingDb = {
       } catch (err) {
         console.warn("logs.listAll falling back to localStorage", err);
         const logs = getLocal<ShippingLog[]>(KEYS.LOGS, []);
-        return logs.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+        return logs.sort(
+          (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+        );
       }
     },
 

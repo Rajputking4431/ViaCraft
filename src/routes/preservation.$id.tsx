@@ -8,10 +8,8 @@ import { useState, useEffect, useRef } from "react";
 import { toast } from "sonner";
 import { inr } from "@/utils/format";
 import { CloudinaryUpload } from "@/components/ui/CloudinaryUpload";
-import {
-  sendQuoteReceivedEmail,
-  sendPreservationStageUpdateEmail,
-} from "@/api/email.functions";
+import { sendQuoteReceivedEmail, sendPreservationStageUpdateEmail } from "@/api/email.functions";
+import { initializeRazorpayPayment } from "@/utils/razorpay";
 import {
   Loader2,
   Check,
@@ -404,39 +402,88 @@ function PreservationDetailsPage() {
     },
   });
 
-  // Simulate Payment
-  const handlePaymentCheckout = () => {
+  // Fetch matching order for this preservation request from orders table
+  const { data: matchedOrder, refetch: refetchMatchedOrder } = useQuery({
+    queryKey: ["preservation-order", id],
+    queryFn: async () => {
+      const { data, error } = await (supabase as any)
+        .from("orders")
+        .select("*")
+        .eq("preservation_request_id", id)
+        .maybeSingle();
+      if (error) throw error;
+      return data as any;
+    },
+    enabled: !!id,
+  });
+
+  // Handle 50% Advance Payment via Razorpay
+  const handleAdvancePaymentCheckout = async () => {
+    if (!selectedQuoteForPayment || !user) return;
     setIsProcessingPayment(true);
-    setTimeout(() => {
-      setIsProcessingPayment(false);
-      setShowPaymentModal(false);
 
-      // Update preservation request notes stating 50% advance has been paid
-      toast.success("50% Advance Payment Successful! Project is now active.");
+    const advanceAmountCents = Math.round(
+      selectedQuoteForPayment.price_cents / 2 + selectedQuoteForPayment.shipping_cost_cents,
+    );
 
-      // We update stage to "consultation" to kickstart the workflow
-      preservationDb
-        .addStageLog(
-          id,
-          "consultation",
-          "Advance payment received. Commencing artisan consultation.",
-          [],
-        )
-        .then(() => {
+    try {
+      await initializeRazorpayPayment({
+        amountCents: advanceAmountCents,
+        preservationRequestId: id,
+        paymentType: "advance",
+        customerId: user.id,
+        vendorId: selectedQuoteForPayment.vendor_id,
+        customerName: user.user_metadata?.full_name || "Valued Customer",
+        customerEmail: user.email || "",
+        onSuccess: (payment) => {
+          setIsProcessingPayment(false);
+          setShowPaymentModal(false);
+          toast.success("50% Advance Payment Successful! Project is now active.");
           qc.invalidateQueries({ queryKey: ["preservation-request", id] });
+          refetchMatchedOrder();
           refetchLogs();
+        },
+        onFailure: (errMsg) => {
+          setIsProcessingPayment(false);
+          toast.error(`Payment failed: ${errMsg}`);
+        },
+      });
+    } catch (err: any) {
+      setIsProcessingPayment(false);
+      toast.error(err.message || "Failed to initiate advance payment.");
+    }
+  };
 
-          sendPreservationStageUpdateEmail({
-            data: {
-              requestId: id,
-              stage: "consultation",
-              note: "Advance payment received. Commencing artisan consultation.",
-            },
-          }).catch((err) => {
-            console.error("Stage update email trigger failure", err);
-          });
-        });
-    }, 2500);
+  // Handle 50% Final Payment via Razorpay
+  const handleFinalPaymentCheckout = async () => {
+    if (!matchedOrder || !user) return;
+    setIsProcessingPayment(true);
+
+    try {
+      await initializeRazorpayPayment({
+        amountCents: matchedOrder.remaining_balance_cents,
+        orderId: matchedOrder.id,
+        preservationRequestId: id,
+        paymentType: "final",
+        customerId: user.id,
+        customerName: user.user_metadata?.full_name || "Valued Customer",
+        customerEmail: user.email || "",
+        onSuccess: (payment) => {
+          setIsProcessingPayment(false);
+          toast.success("Final Payment Verified! Order is now paid in full.");
+          qc.invalidateQueries({ queryKey: ["preservation-request", id] });
+          refetchMatchedOrder();
+          refetchLogs();
+        },
+        onFailure: (errMsg) => {
+          setIsProcessingPayment(false);
+          toast.error(`Final payment failed: ${errMsg}`);
+        },
+      });
+    } catch (err: any) {
+      setIsProcessingPayment(false);
+      toast.error(err.message || "Failed to initiate final payment.");
+    }
   };
 
   // Convert raw notes payload to object safely
@@ -552,6 +599,29 @@ function PreservationDetailsPage() {
               <DollarSign className="h-4.5 w-4.5" /> Pay 50% Advance to start
             </button>
           )}
+
+          {/* Customer Remaining Final Payment Button */}
+          {isOwner &&
+            request.current_stage === "ready_to_ship" &&
+            matchedOrder &&
+            matchedOrder.payment_status === "advance_paid" && (
+              <button
+                onClick={handleFinalPaymentCheckout}
+                disabled={isProcessingPayment}
+                className="px-6 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white rounded-full font-bold text-xs shadow-lg shadow-emerald-600/25 flex items-center gap-2 cursor-pointer disabled:opacity-50 transition-colors"
+              >
+                {isProcessingPayment ? (
+                  <>
+                    <Loader2 className="h-4.5 w-4.5 animate-spin" /> Verifying Payment...
+                  </>
+                ) : (
+                  <>
+                    <DollarSign className="h-4.5 w-4.5" /> Pay Remaining{" "}
+                    {inr(matchedOrder.remaining_balance_cents)}
+                  </>
+                )}
+              </button>
+            )}
         </div>
 
         {/* Tab navigation */}
@@ -1403,14 +1473,34 @@ function PreservationDetailsPage() {
                     {request.vendors?.store_name || "Unassigned"}
                   </span>
                 </div>
-                <div className="flex justify-between items-center text-xs">
-                  <span>Advance Paid:</span>
-                  <span
-                    className={`font-bold ${request.quote_accepted ? "text-emerald-500" : "text-slate-400"}`}
-                  >
-                    {request.quote_accepted ? "50% Paid" : "Unpaid"}
-                  </span>
-                </div>
+
+                {matchedOrder ? (
+                  <>
+                    <div className="flex justify-between items-center text-xs pt-2 border-t border-border/50">
+                      <span>Payment Status:</span>
+                      <span className="font-bold uppercase text-[9px] px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+                        {matchedOrder.payment_status?.replace(/_/g, " ")}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center text-xs">
+                      <span>Advance Paid:</span>
+                      <span className="font-semibold text-slate-800 dark:text-slate-200">
+                        {inr(matchedOrder.advance_paid_cents)}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center text-xs">
+                      <span>Remaining Balance:</span>
+                      <span className="font-semibold text-slate-800 dark:text-slate-200">
+                        {inr(matchedOrder.remaining_balance_cents)}
+                      </span>
+                    </div>
+                  </>
+                ) : (
+                  <div className="flex justify-between items-center text-xs">
+                    <span>Advance Status:</span>
+                    <span className="font-semibold text-slate-400">Unpaid</span>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -1510,16 +1600,16 @@ function PreservationDetailsPage() {
 
             <div className="space-y-3">
               <button
-                onClick={handlePaymentCheckout}
+                onClick={handleAdvancePaymentCheckout}
                 disabled={isProcessingPayment}
                 className="w-full py-3 bg-indigo-600 text-white rounded-xl font-bold text-xs uppercase tracking-wider hover:bg-indigo-700 transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 shadow shadow-indigo-600/20"
               >
                 {isProcessingPayment ? (
                   <>
-                    <Loader2 className="h-4 w-4 animate-spin" /> Verifying gateway response...
+                    <Loader2 className="h-4 w-4 animate-spin" /> Launching Razorpay...
                   </>
                 ) : (
-                  "Simulate ₹ Payment Checkout"
+                  "Pay via Razorpay Secure Gateway"
                 )}
               </button>
               <button

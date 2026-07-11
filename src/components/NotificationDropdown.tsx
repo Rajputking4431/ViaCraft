@@ -35,18 +35,12 @@ function formatTimeAgo(dateString: string) {
 }
 
 export function NotificationDropdown() {
-  const {
-    notifications,
-    unreadCount,
-    markAsRead,
-    markAllAsRead,
-    deleteNotification,
-    clearAll,
-  } = useNotifications();
+  const { notifications, unreadCount, markAsRead, markAllAsRead, deleteNotification, clearAll } =
+    useNotifications();
   const { user } = useAuth();
   const { role } = useRole();
   const navigate = useNavigate();
-  
+
   const [isOpen, setIsOpen] = useState(false);
   const [swinging, setSwinging] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -178,7 +172,7 @@ export function NotificationDropdown() {
                 </span>
               )}
             </div>
-            
+
             {notifications.length > 0 && (
               <div className="flex items-center gap-3">
                 <button
@@ -229,7 +223,9 @@ export function NotificationDropdown() {
                   {/* Body Content */}
                   <div className="flex-1 min-w-0 pr-4">
                     <div className="flex items-center justify-between gap-2 mb-0.5">
-                      <p className={`text-xs truncate ${notif.is_read ? "font-semibold text-foreground/90" : "font-bold text-foreground"}`}>
+                      <p
+                        className={`text-xs truncate ${notif.is_read ? "font-semibold text-foreground/90" : "font-bold text-foreground"}`}
+                      >
                         {notif.title}
                       </p>
                       <span className="text-[9px] text-muted-foreground whitespace-nowrap">

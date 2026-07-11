@@ -957,10 +957,11 @@ function PreservationPage() {
                     {/* Wishlist Heart - positioned above card click overlay */}
                     <button
                       onClick={(e) => handleWishlistToggle(creation.id, e)}
-                      className={`absolute top-4 right-4 z-20 p-2 rounded-full border transition-all duration-300 hover:scale-105 cursor-pointer shadow-sm ${isWish
+                      className={`absolute top-4 right-4 z-20 p-2 rounded-full border transition-all duration-300 hover:scale-105 cursor-pointer shadow-sm ${
+                        isWish
                           ? "bg-rose-50 border-rose-100 text-rose-500"
                           : "bg-white/80 backdrop-blur-sm border-[#e2d8ca] text-[#5a4331] hover:text-rose-500"
-                        }`}
+                      }`}
                       aria-label="Toggle wishlist"
                     >
                       <Heart className={`h-4 w-4 ${isWish ? "fill-current" : ""}`} />
@@ -1127,7 +1128,8 @@ function PreservationPage() {
                     How & Which Products Can You Preserve?
                   </h2>
                   <p className="text-xs text-muted-foreground">
-                    Explore our preservation standards, techniques, and design inspirations before placing your custom keepsake order.
+                    Explore our preservation standards, techniques, and design inspirations before
+                    placing your custom keepsake order.
                   </p>
                 </div>
 
@@ -1138,24 +1140,27 @@ function PreservationPage() {
                       title: "1. Botanical Dehydration",
                       desc: "We extract moisture from flowers using special desiccant compounds, retaining 100% of their organic form, vivid color saturation, and shape.",
                       icon: Flower,
-                      badge: "Expert Curing"
+                      badge: "Expert Curing",
                     },
                     {
                       title: "2. Precision Deep-Pour",
                       desc: "Artisans cast crystal-clear optical-grade UV-resistant epoxy resin in thin layers, preventing overheating, shrinkage, and bubble build-ups.",
                       icon: Sparkles,
-                      badge: "Bubble-Free"
+                      badge: "Bubble-Free",
                     },
                     {
                       title: "3. Diamond Gloss Finish",
                       desc: "Every block goes through five stages of hand-sanding, polishing, and buffing to achieve a glass-like reflective sheen.",
                       icon: Award,
-                      badge: "Luxe Shine"
-                    }
+                      badge: "Luxe Shine",
+                    },
                   ].map((tech, idx) => {
                     const Icon = tech.icon;
                     return (
-                      <div key={idx} className="bg-muted/40 border border-border/60 rounded-2xl p-5 space-y-3 flex flex-col justify-between">
+                      <div
+                        key={idx}
+                        className="bg-muted/40 border border-border/60 rounded-2xl p-5 space-y-3 flex flex-col justify-between"
+                      >
                         <div className="space-y-2">
                           <div className="flex justify-between items-center">
                             <div className="p-2 bg-accent/10 text-accent rounded-xl">
@@ -1186,30 +1191,37 @@ function PreservationPage() {
                         name: "Wedding Bouquets",
                         useCase: "Bridal flowers, roses, boutonnieres",
                         tip: "Keep stems in water until shipping",
-                        img: "https://images.unsplash.com/photo-1526047932273-341f2a7631f9?w=300&auto=format&fit=crop&q=80"
+                        img: "https://images.unsplash.com/photo-1526047932273-341f2a7631f9?w=300&auto=format&fit=crop&q=80",
                       },
                       {
                         name: "Milestone Keepsakes",
                         useCase: "Baby booties, pacifiers, hospital bands",
                         tip: "Metal, fabric, or plastic inclusions",
-                        img: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=300&auto=format&fit=crop&q=80"
+                        img: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=300&auto=format&fit=crop&q=80",
                       },
                       {
                         name: "Memorial Tributes",
                         useCase: "Condolence flowers, photos, medals",
                         tip: "Dignified archival resin pours",
-                        img: "https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?w=300&auto=format&fit=crop&q=80"
+                        img: "https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?w=300&auto=format&fit=crop&q=80",
                       },
                       {
                         name: "Pet Memory Lockets",
                         useCase: "Fur locks, custom collars, name tags",
                         tip: "Sealed tightly in glass-like molds",
-                        img: "https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=300&auto=format&fit=crop&q=80"
-                      }
+                        img: "https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=300&auto=format&fit=crop&q=80",
+                      },
                     ].map((refEx, i) => (
-                      <div key={i} className="bg-background border border-border/80 rounded-2xl overflow-hidden hover:border-accent/40 transition-colors shadow-sm flex flex-col justify-between">
+                      <div
+                        key={i}
+                        className="bg-background border border-border/80 rounded-2xl overflow-hidden hover:border-accent/40 transition-colors shadow-sm flex flex-col justify-between"
+                      >
                         <div className="aspect-[4/3] w-full overflow-hidden bg-muted">
-                          <img src={refEx.img} alt={refEx.name} className="w-full h-full object-cover" />
+                          <img
+                            src={refEx.img}
+                            alt={refEx.name}
+                            className="w-full h-full object-cover"
+                          />
                         </div>
                         <div className="p-3.5 space-y-1">
                           <h4 className="font-bold text-xs text-foreground">{refEx.name}</h4>
@@ -1228,8 +1240,13 @@ function PreservationPage() {
                 {/* Direct Action Redirect Button Below Examples */}
                 <div className="pt-4 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-border/60 bg-muted/20 p-5 rounded-2xl">
                   <div className="text-left space-y-1">
-                    <h4 className="font-bold text-xs text-foreground">Ready to start preserving your milestones?</h4>
-                    <p className="text-[10px] text-muted-foreground">Continue to customize your keepsake shape, sizes, decorative foils, and delivery details.</p>
+                    <h4 className="font-bold text-xs text-foreground">
+                      Ready to start preserving your milestones?
+                    </h4>
+                    <p className="text-[10px] text-muted-foreground">
+                      Continue to customize your keepsake shape, sizes, decorative foils, and
+                      delivery details.
+                    </p>
                   </div>
                   <button
                     onClick={nextStep}
@@ -1262,10 +1279,11 @@ function PreservationPage() {
                       <button
                         key={cat.id}
                         onClick={() => setCategory(cat.id)}
-                        className={`p-5 rounded-2xl border text-left flex flex-col justify-between h-40 transition-all cursor-pointer ${isSelected
+                        className={`p-5 rounded-2xl border text-left flex flex-col justify-between h-40 transition-all cursor-pointer ${
+                          isSelected
                             ? "border-accent bg-accent/5 ring-1 ring-accent"
                             : "border-border hover:border-accent/40 bg-card"
-                          }`}
+                        }`}
                       >
                         <div className="flex justify-between items-start w-full">
                           <div
@@ -1389,10 +1407,11 @@ function PreservationPage() {
 
                 <div
                   onClick={() => fileInputRef.current?.click()}
-                  className={`border-2 border-dashed rounded-3xl p-10 text-center transition-all cursor-pointer ${dragActive
+                  className={`border-2 border-dashed rounded-3xl p-10 text-center transition-all cursor-pointer ${
+                    dragActive
                       ? "border-accent bg-accent/5"
                       : "border-border hover:border-accent bg-background"
-                    }`}
+                  }`}
                 >
                   <input
                     ref={fileInputRef}
@@ -1469,10 +1488,11 @@ function PreservationPage() {
                           <button
                             key={s.id}
                             onClick={() => setShape(s.id)}
-                            className={`p-4 rounded-2xl border text-center flex flex-col items-center justify-center transition-all cursor-pointer ${isSelected
+                            className={`p-4 rounded-2xl border text-center flex flex-col items-center justify-center transition-all cursor-pointer ${
+                              isSelected
                                 ? "border-accent bg-accent/5 ring-1 ring-accent font-bold"
                                 : "border-border hover:border-accent/40 bg-card"
-                              }`}
+                            }`}
                           >
                             <Icon
                               className={`h-5 w-5 mb-2 ${isSelected ? "text-accent" : "text-muted-foreground"}`}
@@ -1496,10 +1516,11 @@ function PreservationPage() {
                         <button
                           key={sz.id}
                           onClick={() => setSize(sz.id)}
-                          className={`p-3 rounded-xl border text-left flex flex-col justify-between h-24 transition-all cursor-pointer ${size === sz.id
+                          className={`p-3 rounded-xl border text-left flex flex-col justify-between h-24 transition-all cursor-pointer ${
+                            size === sz.id
                               ? "border-accent bg-accent/5 ring-1 ring-accent font-bold"
                               : "border-border hover:border-accent/40 bg-card"
-                            }`}
+                          }`}
                         >
                           <span className="text-xs text-foreground font-semibold leading-tight">
                             {sz.label}
@@ -1581,14 +1602,16 @@ function PreservationPage() {
                     <button
                       key={idx}
                       onClick={() => item.setter((prev) => !prev)}
-                      className={`p-4 rounded-2xl border text-left flex gap-2.5 items-start transition-all cursor-pointer ${item.state
+                      className={`p-4 rounded-2xl border text-left flex gap-2.5 items-start transition-all cursor-pointer ${
+                        item.state
                           ? "border-accent bg-accent/5 ring-1 ring-accent"
                           : "border-border hover:border-accent/40 bg-card"
-                        }`}
+                      }`}
                     >
                       <div
-                        className={`h-4 w-4 rounded border shrink-0 mt-0.5 flex items-center justify-center text-white text-[9px] ${item.state ? "bg-accent border-accent" : "border-muted-foreground/60"
-                          }`}
+                        className={`h-4 w-4 rounded border shrink-0 mt-0.5 flex items-center justify-center text-white text-[9px] ${
+                          item.state ? "bg-accent border-accent" : "border-muted-foreground/60"
+                        }`}
                       >
                         {item.state && <Check className="h-3.5 w-3.5" />}
                       </div>

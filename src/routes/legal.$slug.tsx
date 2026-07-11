@@ -1,7 +1,17 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { PageShell } from "@/layouts/PageShell";
 import { useState, useEffect, useMemo } from "react";
-import { Search, ChevronRight, Download, Printer, ShieldAlert, ArrowLeft, BookOpen, AlertCircle, Sparkles } from "lucide-react";
+import {
+  Search,
+  ChevronRight,
+  Download,
+  Printer,
+  ShieldAlert,
+  ArrowLeft,
+  BookOpen,
+  AlertCircle,
+  Sparkles,
+} from "lucide-react";
 
 // Register TanStack Start route
 export const Route = createFileRoute("/legal/$slug")({
@@ -24,18 +34,18 @@ const LEGAL_GROUPS = [
     items: [
       { id: "buyer-protection-policy", label: "Buyer Protection Policy" },
       { id: "vendor-terms", label: "Vendor Terms & Conditions" },
-      { id: "seller-code-of-conduct", label: "Seller Code of Conduct" },
-      { id: "community-guidelines", label: "Community Guidelines" },
+      { id: "seller-guidelines", label: "Seller Guidelines" },
+      { id: "vendor-commission-policy", label: "Vendor Commission Policy" },
     ],
   },
   {
-    title: "Orders & Logistics",
+    title: "Customer Support",
     items: [
+      { id: "help-center", label: "Help Center" },
+      { id: "faq", label: "Frequently Asked Questions" },
       { id: "shipping-policy", label: "Shipping Policy" },
-      { id: "return-policy", label: "Return Policy" },
-      { id: "refund-policy", label: "Refund Policy" },
+      { id: "return-refund-policy", label: "Return & Refund Policy" },
       { id: "cancellation-policy", label: "Cancellation Policy" },
-      { id: "vendor-commission-policy", label: "Vendor Commission Policy" },
     ],
   },
   {
@@ -46,10 +56,11 @@ const LEGAL_GROUPS = [
     ],
   },
   {
-    title: "About & Contact",
+    title: "About & Careers",
     items: [
       { id: "about-us", label: "About ViaCraft" },
       { id: "contact-us", label: "Contact Support & Legal" },
+      { id: "careers", label: "Careers (Coming Soon)" },
     ],
   },
 ];
@@ -63,7 +74,7 @@ function MarkdownRenderer({ content }: { content: string }) {
   let listItems: string[] = [];
   let inTable = false;
   let tableRows: string[][] = [];
-  let isHeaderRow = false;
+  const isHeaderRow = false;
 
   // Utility to parse inline elements like bold and links
   const parseInline = (text: string) => {
@@ -91,7 +102,7 @@ function MarkdownRenderer({ content }: { content: string }) {
         parsedText.push(
           <strong key={`bold-${index}-${match[1]}`} className="font-bold text-foreground">
             {match[1]}
-          </strong>
+          </strong>,
         );
         lastIndex = boldRegex.lastIndex;
       }
@@ -142,13 +153,13 @@ function MarkdownRenderer({ content }: { content: string }) {
                 className="text-amber-700 hover:text-amber-900 font-semibold underline underline-offset-4 decoration-amber-500/30 transition-colors"
               >
                 {linkText}
-              </Link>
+              </Link>,
             );
           } else {
             parsedText.push(
               <span key={`link-${index}`} className="font-semibold text-foreground">
                 {linkText}
-              </span>
+              </span>,
             );
           }
         } else {
@@ -161,7 +172,7 @@ function MarkdownRenderer({ content }: { content: string }) {
               className="text-amber-700 hover:text-amber-900 font-semibold underline underline-offset-4 decoration-amber-500/30 transition-colors"
             >
               {linkText}
-            </a>
+            </a>,
           );
         }
         lastIndex = linkRegex.lastIndex;
@@ -180,7 +191,10 @@ function MarkdownRenderer({ content }: { content: string }) {
     listItems = [];
     inList = false;
     return (
-      <ul key={`ul-${key}`} className="list-disc pl-6 mb-6 space-y-2 text-foreground/80 text-[14px]">
+      <ul
+        key={`ul-${key}`}
+        className="list-disc pl-6 mb-6 space-y-2 text-foreground/80 text-[14px]"
+      >
         {items.map((item, idx) => (
           <li key={idx} className="marker:text-amber-600/80">
             {parseInline(item)}
@@ -196,7 +210,10 @@ function MarkdownRenderer({ content }: { content: string }) {
     tableRows = [];
     inTable = false;
     return (
-      <div key={`table-wrapper-${key}`} className="overflow-x-auto border border-border/80 rounded-2xl mb-6 shadow-sm">
+      <div
+        key={`table-wrapper-${key}`}
+        className="overflow-x-auto border border-border/80 rounded-2xl mb-6 shadow-sm"
+      >
         <table className="min-w-full divide-y divide-border/60">
           <thead className="bg-muted/40">
             <tr>
@@ -240,7 +257,12 @@ function MarkdownRenderer({ content }: { content: string }) {
       inList = true;
       listItems.push(line.replace(/^\s*[\*\-]\s+/, ""));
       continue;
-    } else if (inList && !line.trim().startsWith("* ") && !line.trim().startsWith("- ") && line.trim() !== "") {
+    } else if (
+      inList &&
+      !line.trim().startsWith("* ") &&
+      !line.trim().startsWith("- ") &&
+      line.trim() !== ""
+    ) {
       // Continuation of a list item or a new block
       if (line.trim().match(/^\d+\.\s+/)) {
         renderedElements.push(flushList(i)!);
@@ -280,22 +302,31 @@ function MarkdownRenderer({ content }: { content: string }) {
     // Headers
     if (line.startsWith("# ")) {
       renderedElements.push(
-        <h1 key={i} className="font-display text-2xl sm:text-3xl font-extrabold text-foreground border-b border-border/60 pb-3 mb-6 mt-2">
+        <h1
+          key={i}
+          className="font-display text-2xl sm:text-3xl font-extrabold text-foreground border-b border-border/60 pb-3 mb-6 mt-2"
+        >
           {parseInline(line.replace("# ", ""))}
-        </h1>
+        </h1>,
       );
     } else if (line.startsWith("## ")) {
       renderedElements.push(
-        <h2 key={i} className="font-display text-lg sm:text-xl font-bold text-foreground mb-4 mt-8 flex items-center gap-2">
+        <h2
+          key={i}
+          className="font-display text-lg sm:text-xl font-bold text-foreground mb-4 mt-8 flex items-center gap-2"
+        >
           <BookOpen className="h-4.5 w-4.5 text-amber-600/70" />
           {parseInline(line.replace("## ", ""))}
-        </h2>
+        </h2>,
       );
     } else if (line.startsWith("### ")) {
       renderedElements.push(
-        <h3 key={i} className="font-display text-sm sm:text-md font-bold text-foreground/90 mb-3 mt-6">
+        <h3
+          key={i}
+          className="font-display text-sm sm:text-md font-bold text-foreground/90 mb-3 mt-6"
+        >
           {parseInline(line.replace("### ", ""))}
-        </h3>
+        </h3>,
       );
     }
     // Blockquote Alerts (> [!IMPORTANT])
@@ -314,20 +345,26 @@ function MarkdownRenderer({ content }: { content: string }) {
       }
 
       const alertStyles = {
-        important: "bg-red-50/50 dark:bg-red-950/10 border-red-500/40 text-red-950 dark:text-red-200",
-        warning: "bg-amber-50/50 dark:bg-amber-950/10 border-amber-500/40 text-amber-950 dark:text-amber-200",
+        important:
+          "bg-red-50/50 dark:bg-red-950/10 border-red-500/40 text-red-950 dark:text-red-200",
+        warning:
+          "bg-amber-50/50 dark:bg-amber-950/10 border-amber-500/40 text-amber-950 dark:text-amber-200",
         note: "bg-blue-50/50 dark:bg-blue-950/10 border-blue-500/40 text-blue-950 dark:text-blue-200",
       };
 
-      const AlertIcon = alertType === "important" || alertType === "warning" ? ShieldAlert : AlertCircle;
+      const AlertIcon =
+        alertType === "important" || alertType === "warning" ? ShieldAlert : AlertCircle;
 
       renderedElements.push(
-        <div key={i} className={`flex gap-3.5 p-4 rounded-2xl border mb-6 shadow-xs leading-relaxed ${alertStyles[alertType]}`}>
+        <div
+          key={i}
+          className={`flex gap-3.5 p-4 rounded-2xl border mb-6 shadow-xs leading-relaxed ${alertStyles[alertType]}`}
+        >
           <AlertIcon className="h-5 w-5 shrink-0 mt-0.5" />
           <div className="text-xs sm:text-sm font-medium">
             {parseInline(alertText.trim() || line.replace(/^\s*>\s*\[!.*?\]/, "").trim())}
           </div>
-        </div>
+        </div>,
       );
     }
     // Ordered Lists (1. Item)
@@ -336,9 +373,11 @@ function MarkdownRenderer({ content }: { content: string }) {
       const textOnly = line.trim().replace(/^\d+\.\s+/, "");
       renderedElements.push(
         <div key={i} className="flex gap-3 mb-4 pl-2 text-foreground/80 text-[14px]">
-          <span className="font-bold text-amber-700/80 min-w-[20px]">{numMatch ? numMatch[1] : "1"}.</span>
+          <span className="font-bold text-amber-700/80 min-w-[20px]">
+            {numMatch ? numMatch[1] : "1"}.
+          </span>
           <span className="flex-1">{parseInline(textOnly)}</span>
-        </div>
+        </div>,
       );
     }
     // Default Paragraph
@@ -346,7 +385,7 @@ function MarkdownRenderer({ content }: { content: string }) {
       renderedElements.push(
         <p key={i} className="text-foreground/75 leading-relaxed text-[14px] mb-5">
           {parseInline(line)}
-        </p>
+        </p>,
       );
     }
   }
@@ -358,6 +397,23 @@ function MarkdownRenderer({ content }: { content: string }) {
   return <div className="prose-container">{renderedElements}</div>;
 }
 
+const CONFIG_VALUES: Record<string, string> = {
+  "[Effective Date]": "July 10, 2026",
+  "[Last Updated]": "July 10, 2026",
+  "[Website URL]": "https://viacraft.in",
+  "[Support Email]": "support@viacraft.in",
+  "[Contact Email]": "support@viacraft.in",
+  "[Grievance Officer]": "Mr. Om Sharma",
+  "[Phone Number]": "+91 98765 43210",
+  "[Business Address]": "ViaCraft Office, 4th Floor, Sector 62, Noida, Uttar Pradesh - 201301, India",
+  "[City/State, India]": "Noida, Uttar Pradesh, India",
+  "[GST Number]": "09AAFCV1234F1Z0",
+  "[CIN]": "U74999UP2026PTC123456",
+  "[Business Hours]": "Monday–Saturday, 10 AM – 7 PM",
+  "[Weekday/Wednesday]": "Wednesday",
+  "[Order Number]": "12345",
+};
+
 function LegalPortalPage() {
   const { slug } = Route.useParams() as { slug: string };
   const navigate = useNavigate();
@@ -365,26 +421,6 @@ function LegalPortalPage() {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<boolean>(false);
   const [searchQuery, setSearchQuery] = useState<string>("");
-
-  // Auto scroll to top on document change
-  useEffect(() => {
-    setLoading(true);
-    setError(false);
-    fetch(`/legal/${slug}.md`)
-      .then((res) => {
-        if (!res.ok) throw new Error("File not found");
-        return res.text();
-      })
-      .then((text) => {
-        setContent(text);
-        setLoading(false);
-        window.scrollTo({ top: 0, behavior: "smooth" });
-      })
-      .catch(() => {
-        setError(true);
-        setLoading(false);
-      });
-  }, [slug]);
 
   // Current document name helper
   const currentDocName = useMemo(() => {
@@ -395,6 +431,65 @@ function LegalPortalPage() {
     return "Legal Policy";
   }, [slug]);
 
+  // Dynamic Metadata updates for SEO and OG tags
+  useEffect(() => {
+    if (!slug) return;
+    const titleText = `${currentDocName} | ViaCraft Legal Center`;
+    const descText = `Read the official ${currentDocName} for ViaCraft - India's premium handcrafted resin art and multi-vendor marketplace.`;
+    const canonicalUrl = `https://viacraft.in/legal/${slug}`;
+
+    document.title = titleText;
+
+    const setMetaTag = (attr: string, value: string, content: string) => {
+      let element = document.querySelector(`meta[${attr}="${value}"]`);
+      if (!element) {
+        element = document.createElement("meta");
+        element.setAttribute(attr, value);
+        document.head.appendChild(element);
+      }
+      element.setAttribute("content", content);
+    };
+
+    setMetaTag("name", "description", descText);
+    setMetaTag("property", "og:title", titleText);
+    setMetaTag("property", "og:description", descText);
+    setMetaTag("property", "og:url", canonicalUrl);
+    setMetaTag("property", "og:type", "website");
+
+    // Canonical link
+    let linkCanonical = document.querySelector('link[rel="canonical"]');
+    if (!linkCanonical) {
+      linkCanonical = document.createElement("link");
+      linkCanonical.setAttribute("rel", "canonical");
+      document.head.appendChild(linkCanonical);
+    }
+    linkCanonical.setAttribute("href", canonicalUrl);
+  }, [slug, currentDocName]);
+
+  // Auto scroll to top on document change & fetch content with placeholder replacement
+  useEffect(() => {
+    setLoading(true);
+    setError(false);
+    fetch(`/legal/${slug}.md`)
+      .then((res) => {
+        if (!res.ok) throw new Error("File not found");
+        return res.text();
+      })
+      .then((text) => {
+        let processedText = text;
+        Object.entries(CONFIG_VALUES).forEach(([key, val]) => {
+          processedText = processedText.replaceAll(key, val);
+        });
+        setContent(processedText);
+        setLoading(false);
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      })
+      .catch(() => {
+        setError(true);
+        setLoading(false);
+      });
+  }, [slug]);
+
   // Filter sidebar navigation items based on search query
   const filteredGroups = useMemo(() => {
     if (!searchQuery.trim()) return LEGAL_GROUPS;
@@ -402,7 +497,7 @@ function LegalPortalPage() {
       const items = group.items.filter(
         (item) =>
           item.label.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          item.id.toLowerCase().includes(searchQuery.toLowerCase())
+          item.id.toLowerCase().includes(searchQuery.toLowerCase()),
       );
       return { ...group, items };
     }).filter((group) => group.items.length > 0);
@@ -425,7 +520,8 @@ function LegalPortalPage() {
               ViaCraft Help & Legal Center
             </h1>
             <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
-              Find transparent terms, vendor agreements, buyer protection rules, and shipping conditions modeled after leading online marketplaces.
+              Find transparent terms, vendor agreements, buyer protection rules, and shipping
+              conditions modeled after leading online marketplaces.
             </p>
           </div>
         </div>
@@ -436,7 +532,9 @@ function LegalPortalPage() {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 py-10">
         {/* Breadcrumbs */}
         <nav className="flex items-center gap-1.5 text-xs text-muted-foreground mb-8 select-none print:hidden">
-          <Link to="/" className="hover:text-accent font-medium">Home</Link>
+          <Link to="/" className="hover:text-accent font-medium">
+            Home
+          </Link>
           <ChevronRight className="h-3 w-3" />
           <span className="font-semibold text-foreground/50">Legal Policy Center</span>
           <ChevronRight className="h-3 w-3" />
@@ -455,7 +553,11 @@ function LegalPortalPage() {
               className="w-full px-4 py-3 rounded-2xl bg-card border border-border focus:border-accent text-xs font-semibold outline-none cursor-pointer shadow-sm appearance-none"
             >
               {LEGAL_GROUPS.map((group) => (
-                <optgroup key={group.title} label={group.title} className="font-bold text-muted-foreground bg-card">
+                <optgroup
+                  key={group.title}
+                  label={group.title}
+                  className="font-bold text-muted-foreground bg-card"
+                >
                   {group.items.map((item) => (
                     <option key={item.id} value={item.id} className="text-foreground font-medium">
                       {item.label}
@@ -488,7 +590,9 @@ function LegalPortalPage() {
 
             <nav className="space-y-5">
               {filteredGroups.length === 0 ? (
-                <p className="text-xs text-muted-foreground text-center py-4">No matching policies found</p>
+                <p className="text-xs text-muted-foreground text-center py-4">
+                  No matching policies found
+                </p>
               ) : (
                 filteredGroups.map((group) => (
                   <div key={group.title} className="space-y-1.5">
@@ -551,7 +655,8 @@ function LegalPortalPage() {
                 <ShieldAlert className="h-10 w-10 text-red-500 mx-auto mb-4" />
                 <h2 className="font-display text-xl font-bold mb-2">Policy Load Error</h2>
                 <p className="text-xs text-muted-foreground max-w-sm mx-auto mb-6">
-                  We are unable to load the requested legal policy. Please confirm the link is correct or contact support.
+                  We are unable to load the requested legal policy. Please confirm the link is
+                  correct or contact support.
                 </p>
                 <Link
                   to="/legal/$slug"
@@ -570,7 +675,10 @@ function LegalPortalPage() {
                   <h4 className="font-semibold text-foreground/80 mb-1 flex items-center gap-1.5">
                     <ShieldAlert className="h-3.5 w-3.5 text-accent" /> Legal Review Required
                   </h4>
-                  Disclaimer: The documents shown here are generated drafts for the ViaCraft Multi-Vendor Marketplace. Registered users are advised that these guidelines serve as operational directives and should be formally reviewed by an Indian legal practitioner prior to final platform deployment.
+                  Disclaimer: The documents shown here are generated drafts for the ViaCraft
+                  Multi-Vendor Marketplace. Registered users are advised that these guidelines serve
+                  as operational directives and should be formally reviewed by an Indian legal
+                  practitioner prior to final platform deployment.
                 </div>
               </div>
             )}

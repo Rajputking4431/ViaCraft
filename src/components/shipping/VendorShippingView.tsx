@@ -32,11 +32,13 @@ import {
 
 export function VendorShippingView({ vendor }: { vendor: any }) {
   const qc = useQueryClient();
-  const [activeSubTab, setActiveSubTab] = useState<"dashboard" | "pickup-address" | "new-shipment">("dashboard");
+  const [activeSubTab, setActiveSubTab] = useState<"dashboard" | "pickup-address" | "new-shipment">(
+    "dashboard",
+  );
   const [selectedShipment, setSelectedShipment] = useState<Shipment | null>(null);
   const [showCreateModal, setShowCreateModal] = useState<any | null>(null); // holds order item details
   const [shippingMethod, setShippingMethod] = useState<"shiprocket" | "manual">("shiprocket");
-  
+
   // Create shipment form state
   const [courierName, setCourierName] = useState("");
   const [trackingNumber, setTrackingNumber] = useState("");
@@ -48,7 +50,7 @@ export function VendorShippingView({ vendor }: { vendor: any }) {
 
   // Pickup scheduling state
   const [pickupDate, setPickupDate] = useState(
-    new Date(Date.now() + 86400000).toISOString().split("T")[0] // tomorrow
+    new Date(Date.now() + 86400000).toISOString().split("T")[0], // tomorrow
   );
 
   // Status updating state (for simulation/testing)
@@ -98,7 +100,9 @@ export function VendorShippingView({ vendor }: { vendor: any }) {
 
   // Address Save mutation
   const saveAddress = useMutation({
-    mutationFn: async (addr: Omit<VendorPickupAddress, "id" | "vendor_id" | "created_at" | "updated_at">) => {
+    mutationFn: async (
+      addr: Omit<VendorPickupAddress, "id" | "vendor_id" | "created_at" | "updated_at">,
+    ) => {
       return shippingDb.pickupAddress.upsert(vendor.id, addr);
     },
     onSuccess: () => {
@@ -229,7 +233,8 @@ export function VendorShippingView({ vendor }: { vendor: any }) {
           </p>
           <h1 className="text-3xl font-display font-bold tracking-tight">Shipping Management</h1>
           <p className="text-sm text-muted-foreground mt-2">
-            Configure warehouse locations, assign couriers via Shiprocket, generate tracking AWBs, and monitor deliveries.
+            Configure warehouse locations, assign couriers via Shiprocket, generate tracking AWBs,
+            and monitor deliveries.
           </p>
         </div>
 
@@ -265,7 +270,8 @@ export function VendorShippingView({ vendor }: { vendor: any }) {
           <div className="space-y-1">
             <h5 className="font-bold text-sm">Action Required: Setup Pickup Address</h5>
             <p className="text-xs leading-relaxed opacity-90">
-              Before you can dispatch orders or generate Shiprocket logistics, you must declare your pickup warehouse address. Couriers will arrive at this address to pick up parcels.
+              Before you can dispatch orders or generate Shiprocket logistics, you must declare your
+              pickup warehouse address. Couriers will arrive at this address to pick up parcels.
             </p>
             <button
               onClick={() => setActiveSubTab("pickup-address")}
@@ -287,7 +293,9 @@ export function VendorShippingView({ vendor }: { vendor: any }) {
           <form onSubmit={handleAddressSubmit} className="space-y-5">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <label className="text-xs font-semibold text-muted-foreground">Contact Person</label>
+                <label className="text-xs font-semibold text-muted-foreground">
+                  Contact Person
+                </label>
                 <input
                   type="text"
                   name="contact_person"
@@ -346,7 +354,9 @@ export function VendorShippingView({ vendor }: { vendor: any }) {
                 />
               </div>
               <div className="space-y-2 col-span-3 sm:col-span-1">
-                <label className="text-xs font-semibold text-muted-foreground">Postal Pin Code</label>
+                <label className="text-xs font-semibold text-muted-foreground">
+                  Postal Pin Code
+                </label>
                 <input
                   type="text"
                   name="postal_code"
@@ -382,7 +392,6 @@ export function VendorShippingView({ vendor }: { vendor: any }) {
       {/* VIEW: LOGISTICS DASHBOARD */}
       {activeSubTab === "dashboard" && (
         <div className="space-y-8 animate-in fade-in duration-300">
-          
           {/* Section: Pending Shipments */}
           <div className="bg-card border border-border rounded-2xl p-6">
             <h3 className="text-lg font-bold flex items-center gap-2 mb-4">
@@ -412,9 +421,10 @@ export function VendorShippingView({ vendor }: { vendor: any }) {
                   <tbody className="divide-y divide-border/60">
                     {pendingShippingOrders.map((item: any) => {
                       const addr = item.orders?.shipping_address || {};
-                      const formattedAddr = typeof addr === "string" 
-                        ? addr 
-                        : `${addr.street || ""}, ${addr.city || ""}, ${addr.state || ""} - ${addr.zip || addr.postal_code || ""}`;
+                      const formattedAddr =
+                        typeof addr === "string"
+                          ? addr
+                          : `${addr.street || ""}, ${addr.city || ""}, ${addr.state || ""} - ${addr.zip || addr.postal_code || ""}`;
 
                       return (
                         <tr key={item.id} className="hover:bg-muted/30 transition-colors">
@@ -422,14 +432,25 @@ export function VendorShippingView({ vendor }: { vendor: any }) {
                             {item.orders?.order_number || "RV-MOCK"}
                           </td>
                           <td className="py-3 px-4">
-                            <p className="font-semibold text-xs">{item.orders?.profiles?.full_name || "Guest Buyer"}</p>
-                            <p className="text-[10px] text-muted-foreground">{item.orders?.profiles?.phone || "N/A"}</p>
+                            <p className="font-semibold text-xs">
+                              {item.orders?.profiles?.full_name || "Guest Buyer"}
+                            </p>
+                            <p className="text-[10px] text-muted-foreground">
+                              {item.orders?.profiles?.phone || "N/A"}
+                            </p>
                           </td>
                           <td className="py-3 px-4">
-                            <p className="font-medium text-xs truncate max-w-[200px]">{item.title}</p>
-                            <p className="text-[10px] text-indigo-500">Qty: {item.quantity} &bull; {inr(item.subtotal_cents)}</p>
+                            <p className="font-medium text-xs truncate max-w-[200px]">
+                              {item.title}
+                            </p>
+                            <p className="text-[10px] text-indigo-500">
+                              Qty: {item.quantity} &bull; {inr(item.subtotal_cents)}
+                            </p>
                           </td>
-                          <td className="py-3 px-4 text-xs max-w-[220px] truncate" title={formattedAddr}>
+                          <td
+                            className="py-3 px-4 text-xs max-w-[220px] truncate"
+                            title={formattedAddr}
+                          >
                             {formattedAddr}
                           </td>
                           <td className="py-3 px-4 text-right">
@@ -488,8 +509,12 @@ export function VendorShippingView({ vendor }: { vendor: any }) {
                   <tbody className="divide-y divide-border/60">
                     {shipments.map((ship: Shipment) => {
                       // Match order number
-                      const matchedItem = orderItems.find((oi: any) => oi.order_id === ship.order_id);
-                      const orderNum = matchedItem?.orders?.order_number || `RV-ORD-${ship.order_id.slice(0, 8).toUpperCase()}`;
+                      const matchedItem = orderItems.find(
+                        (oi: any) => oi.order_id === ship.order_id,
+                      );
+                      const orderNum =
+                        matchedItem?.orders?.order_number ||
+                        `RV-ORD-${ship.order_id.slice(0, 8).toUpperCase()}`;
 
                       return (
                         <tr key={ship.id} className="hover:bg-muted/30 transition-colors">
@@ -518,22 +543,26 @@ export function VendorShippingView({ vendor }: { vendor: any }) {
                             )}
                           </td>
                           <td className="py-3 px-4">
-                            <span className={`inline-flex px-2 py-0.5 rounded text-[10px] uppercase font-bold tracking-wide border ${
-                              ship.shipping_method === "shiprocket" 
-                                ? "bg-indigo-500/10 text-indigo-500 border-indigo-500/20" 
-                                : "bg-teal-500/10 text-teal-500 border-teal-500/20"
-                            }`}>
+                            <span
+                              className={`inline-flex px-2 py-0.5 rounded text-[10px] uppercase font-bold tracking-wide border ${
+                                ship.shipping_method === "shiprocket"
+                                  ? "bg-indigo-500/10 text-indigo-500 border-indigo-500/20"
+                                  : "bg-teal-500/10 text-teal-500 border-teal-500/20"
+                              }`}
+                            >
                               {ship.shipping_method}
                             </span>
                           </td>
                           <td className="py-3 px-4">
-                            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold border ${
-                              ship.status === "delivered"
-                                ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
-                                : ship.status === "cancelled"
-                                  ? "bg-rose-500/10 text-rose-500 border-rose-500/20"
-                                  : "bg-amber-500/10 text-amber-500 border-amber-500/20"
-                            }`}>
+                            <span
+                              className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold border ${
+                                ship.status === "delivered"
+                                  ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
+                                  : ship.status === "cancelled"
+                                    ? "bg-rose-500/10 text-rose-500 border-rose-500/20"
+                                    : "bg-amber-500/10 text-amber-500 border-amber-500/20"
+                              }`}
+                            >
                               {ship.status.replace(/_/g, " ")}
                             </span>
                           </td>
@@ -566,7 +595,8 @@ export function VendorShippingView({ vendor }: { vendor: any }) {
                 <Truck className="h-5 w-5 text-indigo-500" /> Generate Shipment
               </SheetTitle>
               <SheetDescription className="text-xs text-muted-foreground mt-1">
-                Configure parcel parameters and courier details for order #{showCreateModal.orders?.order_number}.
+                Configure parcel parameters and courier details for order #
+                {showCreateModal.orders?.order_number}.
               </SheetDescription>
             </SheetHeader>
 
@@ -612,7 +642,9 @@ export function VendorShippingView({ vendor }: { vendor: any }) {
                   </h4>
                   <div className="grid grid-cols-4 gap-3">
                     <div className="space-y-1.5">
-                      <label className="text-[10px] font-semibold text-muted-foreground">L (cm)</label>
+                      <label className="text-[10px] font-semibold text-muted-foreground">
+                        L (cm)
+                      </label>
                       <input
                         type="number"
                         min="1"
@@ -623,7 +655,9 @@ export function VendorShippingView({ vendor }: { vendor: any }) {
                       />
                     </div>
                     <div className="space-y-1.5">
-                      <label className="text-[10px] font-semibold text-muted-foreground">W (cm)</label>
+                      <label className="text-[10px] font-semibold text-muted-foreground">
+                        W (cm)
+                      </label>
                       <input
                         type="number"
                         min="1"
@@ -634,7 +668,9 @@ export function VendorShippingView({ vendor }: { vendor: any }) {
                       />
                     </div>
                     <div className="space-y-1.5">
-                      <label className="text-[10px] font-semibold text-muted-foreground">H (cm)</label>
+                      <label className="text-[10px] font-semibold text-muted-foreground">
+                        H (cm)
+                      </label>
                       <input
                         type="number"
                         min="1"
@@ -645,7 +681,9 @@ export function VendorShippingView({ vendor }: { vendor: any }) {
                       />
                     </div>
                     <div className="space-y-1.5">
-                      <label className="text-[10px] font-semibold text-muted-foreground">Wt (kg)</label>
+                      <label className="text-[10px] font-semibold text-muted-foreground">
+                        Wt (kg)
+                      </label>
                       <input
                         type="number"
                         step="0.01"
@@ -659,7 +697,8 @@ export function VendorShippingView({ vendor }: { vendor: any }) {
                   </div>
                   <p className="text-[10px] text-muted-foreground flex items-center gap-1.5">
                     <Info className="h-3.5 w-3.5 text-indigo-500 shrink-0" />
-                    Shiprocket automatically rates the best local carrier based on dimensions and pickup warehouse location.
+                    Shiprocket automatically rates the best local carrier based on dimensions and
+                    pickup warehouse location.
                   </p>
                 </div>
               ) : (
@@ -669,7 +708,9 @@ export function VendorShippingView({ vendor }: { vendor: any }) {
                   </h4>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-1.5">
-                      <label className="text-xs font-semibold text-muted-foreground">Courier Name</label>
+                      <label className="text-xs font-semibold text-muted-foreground">
+                        Courier Name
+                      </label>
                       <input
                         type="text"
                         required
@@ -680,7 +721,9 @@ export function VendorShippingView({ vendor }: { vendor: any }) {
                       />
                     </div>
                     <div className="space-y-1.5">
-                      <label className="text-xs font-semibold text-muted-foreground">Tracking Number</label>
+                      <label className="text-xs font-semibold text-muted-foreground">
+                        Tracking Number
+                      </label>
                       <input
                         type="text"
                         required
@@ -695,7 +738,9 @@ export function VendorShippingView({ vendor }: { vendor: any }) {
               )}
 
               <div className="space-y-2">
-                <label className="text-xs font-semibold text-muted-foreground">Notes / Handover Instructions</label>
+                <label className="text-xs font-semibold text-muted-foreground">
+                  Notes / Handover Instructions
+                </label>
                 <textarea
                   placeholder="e.g. Fragile resin art glass, handle with care."
                   value={notes}
@@ -717,7 +762,9 @@ export function VendorShippingView({ vendor }: { vendor: any }) {
                   disabled={createShipmentMutation.isPending}
                   className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
                 >
-                  {createShipmentMutation.isPending && <Loader2 className="h-4.5 w-4.5 animate-spin" />}
+                  {createShipmentMutation.isPending && (
+                    <Loader2 className="h-4.5 w-4.5 animate-spin" />
+                  )}
                   Assign Logistics & Ship
                 </button>
               </div>
@@ -740,16 +787,21 @@ export function VendorShippingView({ vendor }: { vendor: any }) {
             </SheetHeader>
 
             <div className="space-y-6">
-              
               {/* Quick Details Card */}
               <div className="bg-muted/40 p-5 rounded-2xl border border-border/60 space-y-3">
                 <div className="flex justify-between items-center">
                   <div>
-                    <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">Courier Carrier</p>
-                    <p className="font-bold text-sm text-foreground">{selectedShipment.courier_name || "Unassigned"}</p>
+                    <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">
+                      Courier Carrier
+                    </p>
+                    <p className="font-bold text-sm text-foreground">
+                      {selectedShipment.courier_name || "Unassigned"}
+                    </p>
                   </div>
                   <div className="text-right">
-                    <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">Status</p>
+                    <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">
+                      Status
+                    </p>
                     <span className="inline-flex px-2 py-0.5 rounded-full text-xs font-semibold bg-indigo-600/10 text-indigo-500 border border-indigo-500/20">
                       {selectedShipment.status.replace(/_/g, " ")}
                     </span>
@@ -765,7 +817,9 @@ export function VendorShippingView({ vendor }: { vendor: any }) {
                   </div>
                   <div>
                     <span className="text-muted-foreground block">Method:</span>
-                    <p className="font-semibold text-foreground uppercase">{selectedShipment.shipping_method}</p>
+                    <p className="font-semibold text-foreground uppercase">
+                      {selectedShipment.shipping_method}
+                    </p>
                   </div>
                 </div>
 
@@ -790,7 +844,8 @@ export function VendorShippingView({ vendor }: { vendor: any }) {
                     <Calendar className="h-4.5 w-4.5" /> Schedule Carrier Pickup
                   </h4>
                   <p className="text-xs text-muted-foreground leading-relaxed">
-                    Select a date for the courier truck to arrive at your pickup address and collect this package.
+                    Select a date for the courier truck to arrive at your pickup address and collect
+                    this package.
                   </p>
                   <div className="flex gap-3">
                     <input
@@ -809,7 +864,9 @@ export function VendorShippingView({ vendor }: { vendor: any }) {
                       disabled={schedulePickupMutation.isPending}
                       className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold uppercase tracking-wider flex items-center gap-1 cursor-pointer disabled:opacity-50"
                     >
-                      {schedulePickupMutation.isPending && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+                      {schedulePickupMutation.isPending && (
+                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      )}
                       Confirm Pickup
                     </button>
                   </div>
@@ -819,10 +876,12 @@ export function VendorShippingView({ vendor }: { vendor: any }) {
               {/* SIMULATION CONTROLS FOR SELLER TESTING */}
               <div className="bg-rose-500/5 border border-rose-500/10 rounded-2xl p-5 space-y-4">
                 <h4 className="text-xs uppercase tracking-wider font-bold text-rose-500 flex items-center gap-1.5">
-                  <RefreshCw className="h-4.5 w-4.5" /> Simulated Logistics Updates (Developer Test Panel)
+                  <RefreshCw className="h-4.5 w-4.5" /> Simulated Logistics Updates (Developer Test
+                  Panel)
                 </h4>
                 <p className="text-xs text-muted-foreground">
-                  Simulate cargo movement tracking updates. Triggering these will automatically update the tracking logs and dispatch customer email alerts.
+                  Simulate cargo movement tracking updates. Triggering these will automatically
+                  update the tracking logs and dispatch customer email alerts.
                 </p>
                 <div className="space-y-3">
                   <div className="grid grid-cols-2 gap-3">
@@ -874,7 +933,9 @@ export function VendorShippingView({ vendor }: { vendor: any }) {
                   Cargo Transit Events History
                 </h4>
                 {logs.length === 0 ? (
-                  <p className="text-xs text-muted-foreground italic">No logistics events recorded yet.</p>
+                  <p className="text-xs text-muted-foreground italic">
+                    No logistics events recorded yet.
+                  </p>
                 ) : (
                   <div className="relative border-l border-border pl-4 space-y-6">
                     {logs.map((log: any) => (
@@ -889,7 +950,11 @@ export function VendorShippingView({ vendor }: { vendor: any }) {
                             {new Date(log.created_at).toLocaleString()}
                           </span>
                         </div>
-                        {log.notes && <p className="text-muted-foreground mt-0.5 leading-relaxed">{log.notes}</p>}
+                        {log.notes && (
+                          <p className="text-muted-foreground mt-0.5 leading-relaxed">
+                            {log.notes}
+                          </p>
+                        )}
                         {log.reason && (
                           <p className="text-rose-500 mt-0.5 font-medium">Reason: {log.reason}</p>
                         )}
@@ -901,12 +966,10 @@ export function VendorShippingView({ vendor }: { vendor: any }) {
                   </div>
                 )}
               </div>
-
             </div>
           </SheetContent>
         </Sheet>
       )}
-
     </div>
   );
 }

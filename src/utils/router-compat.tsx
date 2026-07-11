@@ -33,9 +33,7 @@ export function Link({ to, params, search, activeProps, activeOptions, className
   // Convert TanStack Router dynamic segments (e.g. /products/$slug or /preservation/$id)
   if (params && typeof params === "object") {
     Object.entries(params).forEach(([key, val]) => {
-      resolvedTo = resolvedTo
-        .replace(`:${key}`, String(val))
-        .replace(`$${key}`, String(val));
+      resolvedTo = resolvedTo.replace(`:${key}`, String(val)).replace(`$${key}`, String(val));
     });
   }
 
@@ -57,7 +55,7 @@ export function Link({ to, params, search, activeProps, activeOptions, className
   }
 
   const getClassName = (navLinkProps: any) => {
-    let baseClass = typeof className === "function" ? className(navLinkProps) : (className || "");
+    let baseClass = typeof className === "function" ? className(navLinkProps) : className || "";
     if (navLinkProps.isActive && activeProps?.className) {
       baseClass += " " + activeProps.className;
     }
@@ -65,7 +63,8 @@ export function Link({ to, params, search, activeProps, activeOptions, className
   };
 
   const getStyle = (navLinkProps: any) => {
-    let baseStyle = typeof props.style === "function" ? props.style(navLinkProps) : (props.style || {});
+    let baseStyle =
+      typeof props.style === "function" ? props.style(navLinkProps) : props.style || {};
     if (navLinkProps.isActive && activeProps?.style) {
       baseStyle = { ...baseStyle, ...activeProps.style };
     }
@@ -75,13 +74,7 @@ export function Link({ to, params, search, activeProps, activeOptions, className
   const end = activeOptions?.exact ?? false;
 
   return (
-    <RouterLink
-      to={resolvedTo}
-      className={getClassName}
-      style={getStyle}
-      end={end}
-      {...props}
-    />
+    <RouterLink to={resolvedTo} className={getClassName} style={getStyle} end={end} {...props} />
   );
 }
 
@@ -104,9 +97,7 @@ export function useNavigate() {
 
     if (options.params && typeof options.params === "object") {
       Object.entries(options.params).forEach(([key, val]) => {
-        resolvedTo = resolvedTo
-          .replace(`:${key}`, String(val))
-          .replace(`$${key}`, String(val));
+        resolvedTo = resolvedTo.replace(`:${key}`, String(val)).replace(`$${key}`, String(val));
       });
     }
 

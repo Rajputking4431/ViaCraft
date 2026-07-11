@@ -1,12 +1,12 @@
 # Terms & Conditions
 
-**Effective Date:** [Effective Date]  
-**Last Updated:** [Last Updated]
+**Effective Date:** July 10, 2026  
+**Last Updated:** July 10, 2026
 
 ## 1. Introduction
 Welcome to ViaCraft ("we," "our," "us," or "Platform"). ViaCraft is a multi-vendor online marketplace designed to facilitate the sale of handcrafted resin products, custom preservation orders, resin gifts, jewellery, home decor, and other handmade crafts.
 
-By accessing or using our website [Website URL], you agree to be bound by these Terms & Conditions. If you do not agree to these terms, please do not use the Platform.
+By accessing or using our website https://viacraft.in, you agree to be bound by these Terms & Conditions. If you do not agree to these terms, please do not use the Platform.
 
 ## 2. Purpose
 These Terms & Conditions establish a legally binding agreement between you (as a Customer, Vendor, or Platform visitor) and ViaCraft. They govern your access to the Platform, transactional processes, dispute resolution, and specify the relationship between all parties.
@@ -65,12 +65,12 @@ To the maximum extent permitted by law, ViaCraft, its directors, and employees s
 If a dispute arises between a Customer and a Vendor, the parties are encouraged to resolve the matter amicably. If unresolved, either party may file a complaint with our support team. ViaCraft will facilitate communication but does not guarantee a specific outcome.
 
 ## 14. Governing Law
-These Terms & Conditions are governed by and construed in accordance with the laws of India. Any disputes arising out of these terms shall be subject to the exclusive jurisdiction of the courts in [City/State, India].
+These Terms & Conditions are governed by and construed in accordance with the laws of India. Any disputes arising out of these terms shall be subject to the exclusive jurisdiction of the courts in Noida, Uttar Pradesh, India.
 
 ## 15. Grievance Redressal
 In compliance with the Information Technology Act, 2000, and rules made thereunder, any complaints can be addressed to our Grievance Officer:
-*   **Grievance Officer:** [Grievance Officer]
-*   **Contact Email:** [Support Email]
+*   **Grievance Officer:** Mr. Om Sharma
+*   **Contact Email:** support@viacraft.in
 
 ## 16. Changes to Terms
 We reserve the right to update these Terms & Conditions at any time. The revised terms will take effect immediately upon posting. Your continued use of the Platform signifies your acceptance of the updated terms.

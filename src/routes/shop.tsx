@@ -227,14 +227,14 @@ function ShopPage() {
               value={q}
               onChange={(e) => setQ(e.target.value)}
               placeholder="Search pieces by title..."
-              className="w-full pl-11 pr-4 py-2.5 rounded-full bg-card border border-border focus:border-accent outline-none text-xs shadow-inner"
+              className="w-full pl-11 pr-4 py-2.5 rounded-full bg-card border border-border/80 focus:border-accent outline-none text-xs shadow-inner focus:ring-1 focus:ring-accent/30 transition-all"
             />
           </div>
 
           <div className="flex items-center gap-3 justify-between md:justify-end">
             <button
               onClick={() => setIsMobileFiltersOpen(true)}
-              className="flex items-center gap-1.5 px-4.5 py-2.5 bg-card border border-border hover:border-accent rounded-full text-xs font-semibold lg:hidden cursor-pointer"
+              className="flex items-center gap-1.5 px-4.5 py-2.5 bg-card border border-border/80 hover:border-accent rounded-full text-xs font-semibold lg:hidden cursor-pointer shadow-sm transition-all"
             >
               <Filter className="h-4 w-4" /> Filters
             </button>
@@ -245,7 +245,7 @@ function ShopPage() {
                 <select
                   value={sort}
                   onChange={(e) => setSort(e.target.value as any)}
-                  className="pl-9 pr-6 py-2.5 rounded-full bg-card border border-border outline-none text-xs font-medium cursor-pointer appearance-none"
+                  className="pl-9 pr-8 py-2.5 rounded-full bg-card border border-border/80 focus:border-accent outline-none text-xs font-medium cursor-pointer appearance-none shadow-sm focus:ring-1 focus:ring-accent/30 transition-all"
                 >
                   <option value="newest">Sort: Newest</option>
                   <option value="price_asc">Price: Low → High</option>
@@ -257,7 +257,7 @@ function ShopPage() {
               </div>
 
               {/* Grid / List view toggle */}
-              <div className="hidden sm:flex border border-border rounded-full p-1 bg-card">
+              <div className="hidden sm:flex border border-border/60 rounded-full p-1 bg-card shadow-sm">
                 <button
                   onClick={() => setIsListView(false)}
                   className={`p-1.5 rounded-full transition-colors cursor-pointer ${!isListView ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}
@@ -279,7 +279,7 @@ function ShopPage() {
 
         <div className="grid lg:grid-cols-4 gap-8 items-start">
           {/* Collapsible Sidebar Filters (Desktop Only) */}
-          <aside className="hidden lg:block bg-card border border-border/80 rounded-3xl p-6 space-y-6 sticky top-24 shadow-sm">
+          <aside className="hidden lg:block bg-card border border-border/60 rounded-2xl p-6 space-y-6 sticky top-24 shadow-soft">
             <div className="flex items-center justify-between border-b border-border/40 pb-4">
               <h3 className="font-display text-lg font-bold">Filter Options</h3>
               <button
@@ -298,7 +298,7 @@ function ShopPage() {
               <div className="space-y-1.5">
                 <button
                   onClick={() => handleCatChange(null)}
-                  className={`w-full text-left px-3 py-1.5 rounded-xl text-xs transition-colors cursor-pointer ${!cat ? "bg-primary text-primary-foreground font-semibold" : "hover:bg-muted text-foreground/80"}`}
+                  className={`w-full text-left px-3 py-1.5 rounded-xl text-xs transition-colors cursor-pointer ${!cat ? "bg-primary text-primary-foreground font-semibold shadow-sm" : "hover:bg-muted text-foreground/80"}`}
                 >
                   All Categories
                 </button>
@@ -306,7 +306,7 @@ function ShopPage() {
                   <button
                     key={catName}
                     onClick={() => handleCatChange(catName)}
-                    className={`w-full text-left px-3 py-1.5 rounded-xl text-xs transition-colors cursor-pointer ${cat === catName ? "bg-primary text-primary-foreground font-semibold" : "hover:bg-muted text-foreground/80"}`}
+                    className={`w-full text-left px-3 py-1.5 rounded-xl text-xs transition-colors cursor-pointer ${cat === catName ? "bg-primary text-primary-foreground font-semibold shadow-sm" : "hover:bg-muted text-foreground/80"}`}
                   >
                     {catName}
                   </button>
@@ -329,7 +329,7 @@ function ShopPage() {
                 onChange={(e) => setPriceMax(Number(e.target.value))}
                 className="w-full accent-accent bg-muted h-1 rounded-full cursor-pointer"
               />
-              <div className="flex justify-between text-[10px] text-muted-foreground mt-1">
+              <div className="flex justify-between text-[10px] text-muted-foreground mt-1.5">
                 <span>₹500</span>
                 <span>₹30,000+</span>
               </div>
@@ -345,13 +345,13 @@ function ShopPage() {
                   <button
                     key={stars}
                     onClick={() => setRatingMin(ratingMin === stars ? null : stars)}
-                    className={`w-full flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs cursor-pointer ${ratingMin === stars ? "bg-accent/15 text-accent font-semibold" : "hover:bg-muted text-foreground/85"}`}
+                    className={`w-full flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs cursor-pointer transition-colors ${ratingMin === stars ? "bg-accent/15 text-accent font-semibold" : "hover:bg-muted text-foreground/85"}`}
                   >
                     <div className="flex items-center text-amber-500">
                       {Array.from({ length: 5 }).map((_, i) => (
                         <Star
                           key={i}
-                          className={`h-3 w-3 ${i < stars ? "fill-current" : "text-muted"}`}
+                          className={`h-3 w-3 ${i < stars ? "fill-current animate-pulse" : "text-muted/40"}`}
                         />
                       ))}
                     </div>
@@ -363,24 +363,24 @@ function ShopPage() {
 
             {/* Availability */}
             <div className="space-y-3 pt-2">
-              <label className="flex items-center gap-2 cursor-pointer text-xs select-none">
+              <label className="flex items-center gap-2.5 cursor-pointer text-xs select-none hover:text-accent transition-colors">
                 <input
                   type="checkbox"
                   checked={inStock}
                   onChange={(e) => setInStock(e.target.checked)}
                   className="rounded border-border text-accent focus:ring-accent h-4 w-4 accent-accent"
                 />
-                <span className="font-semibold">In Stock Items Only</span>
+                <span className="font-semibold text-foreground/85">In Stock Items Only</span>
               </label>
 
-              <label className="flex items-center gap-2 cursor-pointer text-xs select-none">
+              <label className="flex items-center gap-2.5 cursor-pointer text-xs select-none hover:text-accent transition-colors">
                 <input
                   type="checkbox"
                   checked={customizable === true}
                   onChange={(e) => setCustomizable(customizable === true ? null : true)}
                   className="rounded border-border text-accent focus:ring-accent h-4 w-4 accent-accent"
                 />
-                <span className="font-semibold">Supports Custom Text</span>
+                <span className="font-semibold text-foreground/85">Supports Custom Text</span>
               </label>
             </div>
           </aside>
@@ -390,20 +390,27 @@ function ShopPage() {
             {isLoading ? (
               <div className="grid grid-cols-2 md:grid-cols-3 gap-5">
                 {Array.from({ length: 6 }).map((_, i) => (
-                  <div key={i} className="aspect-square bg-muted rounded-3xl animate-pulse" />
+                  <div key={i} className="bg-card border border-border/40 rounded-2xl p-4 flex flex-col h-full gap-4 shadow-sm animate-pulse">
+                    <div className="aspect-square w-full bg-muted/65 rounded-xl animate-pulse" />
+                    <div className="space-y-2 mt-2">
+                      <div className="h-2.5 w-1/4 bg-muted/70 rounded animate-pulse" />
+                      <div className="h-3.5 w-3/4 bg-muted/70 rounded animate-pulse" />
+                      <div className="h-3 w-1/2 bg-muted/70 rounded animate-pulse" />
+                    </div>
+                  </div>
                 ))}
               </div>
             ) : products.length === 0 ? (
-              <div className="text-center py-24 border border-dashed border-border rounded-3xl bg-card">
+              <div className="text-center py-24 border border-dashed border-border/80 rounded-2xl bg-card shadow-sm animate-in fade-in duration-300">
                 <SlidersHorizontal className="h-10 w-10 text-muted-foreground mx-auto mb-4" />
-                <p className="font-display text-2xl font-bold mb-2">No matching pieces found</p>
+                <p className="font-display text-2xl font-bold mb-2 text-foreground">No matching pieces found</p>
                 <p className="text-xs text-muted-foreground max-w-sm mx-auto mb-6">
                   Try adjusting filters or changing search keywords to discover premium resin
                   collections.
                 </p>
                 <button
                   onClick={resetFilters}
-                  className="px-6 py-2.5 bg-primary text-primary-foreground rounded-full text-xs font-semibold cursor-pointer shadow"
+                  className="px-6 py-2.5 bg-primary hover:bg-foreground text-primary-foreground rounded-full text-xs font-semibold cursor-pointer shadow transition-all hover:scale-[1.02]"
                 >
                   Clear All Filters
                 </button>
