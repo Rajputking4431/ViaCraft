@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { PageShell } from "@/layouts/PageShell";
 import { ProductCard } from "@/components/ProductCard";
+import { SEO } from "@/components/SEO";
 import { useAuth } from "@/hooks/use-auth";
 import { fetchWishlistEntries, removeWishlistEntry } from "@/api/wishlist";
 import { Heart, ShoppingBag } from "lucide-react";
@@ -34,6 +35,11 @@ function WishlistPage() {
 
   return (
     <PageShell>
+      <SEO
+        title="Saved Wishlist"
+        description="View your saved keepsakes, custom resin art, and favorite flower preservation projects on ViaCraft."
+        noIndex={true}
+      />
       <section className="mx-auto max-w-7xl px-4 sm:px-6 py-12">
         <h1 className="font-display text-4xl font-extrabold mb-2 text-foreground">Wishlist</h1>
         <p className="text-xs text-muted-foreground mb-8">

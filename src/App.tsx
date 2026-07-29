@@ -46,6 +46,11 @@ const StoreSlugRouteComponent = lazyRoute(() => import("./routes/store.$slug"));
 const ProductsSlugRouteComponent = lazyRoute(() => import("./routes/products.$slug"));
 const LegalSlugRouteComponent = lazyRoute(() => import("./routes/legal.$slug"));
 
+// Blog subtree
+const BlogRouteComponent = lazyRoute(() => import("./routes/blog"));
+const BlogIndexRouteComponent = lazyRoute(() => import("./routes/blog.index"));
+const BlogSlugRouteComponent = lazyRoute(() => import("./routes/blog.$slug"));
+
 // Preservation subtree
 const PreservationRouteComponent = lazyRoute(() => import("./routes/preservation"));
 const PreservationIndexRouteComponent = lazyRoute(() => import("./routes/preservation.index"));
@@ -110,6 +115,106 @@ function ScrollToTop() {
   return null;
 }
 
+// Subdomain routing configurations
+function AppRoutes() {
+  const hostname = typeof window !== "undefined" ? window.location.hostname : "";
+  const isSubdomainAdmin = hostname.startsWith("admin.") || hostname.includes("admin-dev.");
+  const isSubdomainVendor = hostname.startsWith("vendor.") || hostname.includes("vendor-dev.");
+
+  if (isSubdomainAdmin) {
+    return (
+      <Routes>
+        {/* Admin layout as the root route */}
+        <Route path="/" element={<AdminRouteComponent />}>
+          <Route index element={<AdminIndexRouteComponent />} />
+          <Route path="analytics" element={<AdminAnalyticsRouteComponent />} />
+          <Route path="categories" element={<AdminCategoriesRouteComponent />} />
+          <Route path="dashboard" element={<AdminDashboardRouteComponent />} />
+          <Route path="orders" element={<AdminOrdersRouteComponent />} />
+          <Route path="returns" element={<AdminReturnsRouteComponent />} />
+          <Route path="preservation" element={<AdminPreservationRouteComponent />} />
+          <Route path="products" element={<AdminProductsRouteComponent />} />
+          <Route path="settings" element={<AdminSettingsRouteComponent />} />
+          <Route path="vendors" element={<AdminVendorsRouteComponent />} />
+          <Route path="users" element={<AdminUsersRouteComponent />} />
+          <Route path="shipping" element={<AdminShippingRouteComponent />} />
+        </Route>
+        <Route path="*" element={<NotFoundComponent />} />
+      </Routes>
+    );
+  }
+
+  if (isSubdomainVendor) {
+    return (
+      <Routes>
+        {/* Authenticated layout with vendor dashboard as root */}
+        <Route element={<AuthenticatedRouteComponent />}>
+          <Route path="/" element={<VendorDashboardRouteComponent />} />
+        </Route>
+        <Route path="*" element={<NotFoundComponent />} />
+      </Routes>
+    );
+  }
+
+  // Standard main website routing
+  return (
+    <Routes>
+      {/* Public Routes */}
+      <Route path="/" element={<IndexRouteComponent />} />
+      <Route path="/auth" element={<AuthRouteComponent />} />
+      <Route path="/cart" element={<CartRouteComponent />} />
+      <Route path="/checkout" element={<CheckoutRouteComponent />} />
+      <Route path="/collections" element={<CollectionsRouteComponent />} />
+      <Route path="/custom-order" element={<CustomOrderRouteComponent />} />
+      <Route path="/reset-password" element={<ResetPasswordRouteComponent />} />
+      <Route path="/sell" element={<SellRouteComponent />} />
+      <Route path="/shop" element={<ShopRouteComponent />} />
+      <Route path="/wishlist" element={<WishlistRouteComponent />} />
+      <Route path="/tracking/:id" element={<TrackingIdRouteComponent />} />
+      <Route path="/store/:slug" element={<StoreSlugRouteComponent />} />
+      <Route path="/products/:slug" element={<ProductsSlugRouteComponent />} />
+      <Route path="/legal/:slug" element={<LegalSlugRouteComponent />} />
+
+      {/* Preservation Subtree */}
+      <Route path="/preservation" element={<PreservationRouteComponent />}>
+        <Route index element={<PreservationIndexRouteComponent />} />
+        <Route path=":id" element={<PreservationIdRouteComponent />} />
+      </Route>
+
+      {/* Blog Subtree */}
+      <Route path="/blog" element={<BlogRouteComponent />}>
+        <Route index element={<BlogIndexRouteComponent />} />
+        <Route path=":slug" element={<BlogSlugRouteComponent />} />
+      </Route>
+
+      {/* Admin Layout (Subdirectory fallback) */}
+      <Route path="/admin" element={<AdminRouteComponent />}>
+        <Route index element={<AdminIndexRouteComponent />} />
+        <Route path="analytics" element={<AdminAnalyticsRouteComponent />} />
+        <Route path="categories" element={<AdminCategoriesRouteComponent />} />
+        <Route path="dashboard" element={<AdminDashboardRouteComponent />} />
+        <Route path="orders" element={<AdminOrdersRouteComponent />} />
+        <Route path="returns" element={<AdminReturnsRouteComponent />} />
+        <Route path="preservation" element={<AdminPreservationRouteComponent />} />
+        <Route path="products" element={<AdminProductsRouteComponent />} />
+        <Route path="settings" element={<AdminSettingsRouteComponent />} />
+        <Route path="vendors" element={<AdminVendorsRouteComponent />} />
+        <Route path="users" element={<AdminUsersRouteComponent />} />
+        <Route path="shipping" element={<AdminShippingRouteComponent />} />
+      </Route>
+
+      {/* Authenticated Layout Subtree */}
+      <Route element={<AuthenticatedRouteComponent />}>
+        <Route path="/dashboard" element={<DashboardRouteComponent />} />
+        <Route path="/vendor/dashboard" element={<VendorDashboardRouteComponent />} />
+      </Route>
+
+      {/* Catch-all 404 */}
+      <Route path="*" element={<NotFoundComponent />} />
+    </Routes>
+  );
+}
+
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
@@ -119,54 +224,7 @@ export default function App() {
             <AnalyticsTracker />
             <AuthInvalidator />
             <ScrollToTop />
-            <Routes>
-              {/* Public Routes */}
-              <Route path="/" element={<IndexRouteComponent />} />
-              <Route path="/auth" element={<AuthRouteComponent />} />
-              <Route path="/cart" element={<CartRouteComponent />} />
-              <Route path="/checkout" element={<CheckoutRouteComponent />} />
-              <Route path="/collections" element={<CollectionsRouteComponent />} />
-              <Route path="/custom-order" element={<CustomOrderRouteComponent />} />
-              <Route path="/reset-password" element={<ResetPasswordRouteComponent />} />
-              <Route path="/sell" element={<SellRouteComponent />} />
-              <Route path="/shop" element={<ShopRouteComponent />} />
-              <Route path="/wishlist" element={<WishlistRouteComponent />} />
-              <Route path="/tracking/:id" element={<TrackingIdRouteComponent />} />
-              <Route path="/store/:slug" element={<StoreSlugRouteComponent />} />
-              <Route path="/products/:slug" element={<ProductsSlugRouteComponent />} />
-              <Route path="/legal/:slug" element={<LegalSlugRouteComponent />} />
-
-              {/* Preservation Subtree */}
-              <Route path="/preservation" element={<PreservationRouteComponent />}>
-                <Route index element={<PreservationIndexRouteComponent />} />
-                <Route path=":id" element={<PreservationIdRouteComponent />} />
-              </Route>
-
-              {/* Admin Layout */}
-              <Route path="/admin" element={<AdminRouteComponent />}>
-                <Route index element={<AdminIndexRouteComponent />} />
-                <Route path="analytics" element={<AdminAnalyticsRouteComponent />} />
-                <Route path="categories" element={<AdminCategoriesRouteComponent />} />
-                <Route path="dashboard" element={<AdminDashboardRouteComponent />} />
-                <Route path="orders" element={<AdminOrdersRouteComponent />} />
-                <Route path="returns" element={<AdminReturnsRouteComponent />} />
-                <Route path="preservation" element={<AdminPreservationRouteComponent />} />
-                <Route path="products" element={<AdminProductsRouteComponent />} />
-                <Route path="settings" element={<AdminSettingsRouteComponent />} />
-                <Route path="vendors" element={<AdminVendorsRouteComponent />} />
-                <Route path="users" element={<AdminUsersRouteComponent />} />
-                <Route path="shipping" element={<AdminShippingRouteComponent />} />
-              </Route>
-
-              {/* Authenticated Layout Subtree */}
-              <Route element={<AuthenticatedRouteComponent />}>
-                <Route path="/dashboard" element={<DashboardRouteComponent />} />
-                <Route path="/vendor/dashboard" element={<VendorDashboardRouteComponent />} />
-              </Route>
-
-              {/* Catch-all 404 */}
-              <Route path="*" element={<NotFoundComponent />} />
-            </Routes>
+            <AppRoutes />
             <Toaster position="top-right" richColors closeButton />
           </BrowserRouter>
         </NotificationsProvider>

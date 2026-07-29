@@ -7,6 +7,18 @@ import {
   Outlet as RouterOutlet,
 } from "react-router-dom";
 
+// Helper to determine active subdomain routing overrides
+export function getSubdomainInfo() {
+  if (typeof window === "undefined") {
+    return { isSubdomainAdmin: false, isSubdomainVendor: false };
+  }
+  const hostname = window.location.hostname;
+  // Support admin.* and vendor.* subdomains, as well as dev hosts containing subdomains
+  const isSubdomainAdmin = hostname.startsWith("admin.") || hostname.includes("admin-dev.");
+  const isSubdomainVendor = hostname.startsWith("vendor.") || hostname.includes("vendor-dev.");
+  return { isSubdomainAdmin, isSubdomainVendor };
+}
+
 // 1. Shimming createFileRoute
 export function createFileRoute(path: string) {
   return function (options: { component: React.ComponentType<any>; [key: string]: any }) {
@@ -54,6 +66,14 @@ export function Link({ to, params, search, activeProps, activeOptions, className
     }
   }
 
+  // Subdomain normalization: strip prefixes if accessed via corresponding subdomains
+  const { isSubdomainAdmin, isSubdomainVendor } = getSubdomainInfo();
+  if (isSubdomainAdmin && resolvedTo.startsWith("/admin")) {
+    resolvedTo = resolvedTo.substring(6) || "/";
+  } else if (isSubdomainVendor && resolvedTo.startsWith("/vendor")) {
+    resolvedTo = resolvedTo.substring(7) || "/";
+  }
+
   const getClassName = (navLinkProps: any) => {
     let baseClass = typeof className === "function" ? className(navLinkProps) : className || "";
     if (navLinkProps.isActive && activeProps?.className) {
@@ -84,7 +104,14 @@ export function useNavigate() {
 
   return (options: any) => {
     if (typeof options === "string") {
-      navigate(options);
+      let resolvedTo = options;
+      const { isSubdomainAdmin, isSubdomainVendor } = getSubdomainInfo();
+      if (isSubdomainAdmin && resolvedTo.startsWith("/admin")) {
+        resolvedTo = resolvedTo.substring(6) || "/";
+      } else if (isSubdomainVendor && resolvedTo.startsWith("/vendor")) {
+        resolvedTo = resolvedTo.substring(7) || "/";
+      }
+      navigate(resolvedTo);
       return;
     }
 
@@ -115,6 +142,13 @@ export function useNavigate() {
           resolvedTo += (resolvedTo.includes("?") ? "&" : "?") + queryString;
         }
       }
+    }
+
+    const { isSubdomainAdmin, isSubdomainVendor } = getSubdomainInfo();
+    if (isSubdomainAdmin && resolvedTo.startsWith("/admin")) {
+      resolvedTo = resolvedTo.substring(6) || "/";
+    } else if (isSubdomainVendor && resolvedTo.startsWith("/vendor")) {
+      resolvedTo = resolvedTo.substring(7) || "/";
     }
 
     navigate(resolvedTo, { replace: options.replace });

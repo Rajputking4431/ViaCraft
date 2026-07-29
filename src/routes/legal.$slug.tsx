@@ -1,6 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { PageShell } from "@/layouts/PageShell";
 import { useState, useEffect, useMemo } from "react";
+import { SEO } from "@/components/SEO";
 import {
   Search,
   ChevronRight,
@@ -431,41 +432,6 @@ function LegalPortalPage() {
     return "Legal Policy";
   }, [slug]);
 
-  // Dynamic Metadata updates for SEO and OG tags
-  useEffect(() => {
-    if (!slug) return;
-    const titleText = `${currentDocName} | ViaCraft Legal Center`;
-    const descText = `Read the official ${currentDocName} for ViaCraft - India's premium handcrafted resin art and multi-vendor marketplace.`;
-    const canonicalUrl = `https://viacraft.in/legal/${slug}`;
-
-    document.title = titleText;
-
-    const setMetaTag = (attr: string, value: string, content: string) => {
-      let element = document.querySelector(`meta[${attr}="${value}"]`);
-      if (!element) {
-        element = document.createElement("meta");
-        element.setAttribute(attr, value);
-        document.head.appendChild(element);
-      }
-      element.setAttribute("content", content);
-    };
-
-    setMetaTag("name", "description", descText);
-    setMetaTag("property", "og:title", titleText);
-    setMetaTag("property", "og:description", descText);
-    setMetaTag("property", "og:url", canonicalUrl);
-    setMetaTag("property", "og:type", "website");
-
-    // Canonical link
-    let linkCanonical = document.querySelector('link[rel="canonical"]');
-    if (!linkCanonical) {
-      linkCanonical = document.createElement("link");
-      linkCanonical.setAttribute("rel", "canonical");
-      document.head.appendChild(linkCanonical);
-    }
-    linkCanonical.setAttribute("href", canonicalUrl);
-  }, [slug, currentDocName]);
-
   // Auto scroll to top on document change & fetch content with placeholder replacement
   useEffect(() => {
     setLoading(true);
@@ -507,8 +473,49 @@ function LegalPortalPage() {
     window.print();
   };
 
+  const legalSchemas = [
+    {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      "@id": `https://viacraft.com/legal/${slug}/#webpage`,
+      "name": `${currentDocName} — ViaCraft Help & Legal`,
+      "description": `Read the official ${currentDocName} for ViaCraft - India's premium handcrafted resin art and multi-vendor marketplace.`,
+      "url": `https://viacraft.com/legal/${slug}`
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://viacraft.com"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Legal Center",
+          "item": `https://viacraft.com/legal/about-us`
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": currentDocName,
+          "item": `https://viacraft.com/legal/${slug}`
+        }
+      ]
+    }
+  ];
+
   return (
     <PageShell>
+      <SEO
+        title={`${currentDocName} — ViaCraft Legal Center`}
+        description={`Read the official ${currentDocName} for ViaCraft - India's premium handcrafted resin art and multi-vendor marketplace.`}
+        keywords={["legal", currentDocName, "terms", "policies", "ViaCraft trust"]}
+        schemaMarkup={legalSchemas}
+      />
       {/* Banner / Header */}
       <div className="bg-gradient-hero border-b border-border/60 py-10 relative overflow-hidden select-none print:hidden">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 relative z-10">

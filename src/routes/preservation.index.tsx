@@ -1,5 +1,6 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useState, useRef } from "react";
+import { SEO } from "@/components/SEO";
 import { motion, AnimatePresence } from "framer-motion";
 import { PageShell } from "@/layouts/PageShell";
 import { useAuth } from "@/hooks/use-auth";
@@ -7,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useMutation } from "@tanstack/react-query";
 import { uploadToCloudinary } from "@/services/cloudinary";
+import banner4 from "../assets/cat-preservation.jpg";
 import {
   Loader2,
   Check,
@@ -333,9 +335,83 @@ function PreservationPage() {
     toast.info("Image removed");
   };
 
+  const preservationSchemas = [
+    {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      "@id": "https://viacraft.com/preservation/#webpage",
+      "name": "Professional Flower Bouquet Preservation Services | ViaCraft",
+      "description": "Transform your wedding flowers, memorial roses, baby booties, or anniversary bouquets into crystal clear museum-grade resin art shapes. Work with certified artisans.",
+      "url": "https://viacraft.com/preservation"
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://viacraft.com"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Preservation",
+          "item": "https://viacraft.com/preservation"
+        }
+      ]
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "HowTo",
+      "name": "How to Book Flower Preservation",
+      "description": "Learn how to preserve your wedding flower bouquets or memorial flowers in crystal clear resin keepsakes.",
+      "step": [
+        {
+          "@type": "HowToStep",
+          "name": "Choose shapes & sizes",
+          "text": "Select your desired resin preservation shape (e.g. hex block, square block, heart, sphere or tealight holder) and size.",
+          "url": "https://viacraft.com/preservation"
+        },
+        {
+          "@type": "HowToStep",
+          "name": "Submit details & checkout",
+          "text": "Provide information about your event date, custom notes, and place the booking order with secure payment.",
+          "url": "https://viacraft.com/preservation"
+        },
+        {
+          "@type": "HowToStep",
+          "name": "Ship flowers to the artisan",
+          "text": "Follow our bouquet packing instructions and ship your fresh or dried flowers directly to the certified artisan's studio.",
+          "url": "https://viacraft.com/preservation"
+        },
+        {
+          "@type": "HowToStep",
+          "name": "Casting and creation",
+          "text": "The artisan carefully dries your flowers, arranges them, and pours museum-grade UV-resistant resin in multiple layers.",
+          "url": "https://viacraft.com/preservation"
+        },
+        {
+          "@type": "HowToStep",
+          "name": "Receive keepsake",
+          "text": "Once fully cured and hand-polished, your crystal clear resin block is shipped back to your home.",
+          "url": "https://viacraft.com/preservation"
+        }
+      ]
+    }
+  ];
+
   return (
     <PageShell>
+      <SEO
+        title="Wedding Bouquet & Keepsake Flower Preservation"
+        description="Transform your wedding flowers, memorial roses, baby booties, or anniversary bouquets into crystal clear museum-grade resin art shapes. Work with certified artisans."
+        keywords={["flower preservation", "wedding bouquet preservation", "preserve flowers in resin", "resin bouquet block", "dried flower resin", "keepsake preservation India"]}
+        schemaMarkup={preservationSchemas}
+      />
       {!showWizard ? (
+
         /* ================================================= */
         /* PREMIUM SERVICES LANDING PAGE */
         /* ================================================= */
@@ -348,7 +424,7 @@ function PreservationPage() {
                 {/* Mobile/Tablet Banner layout (hidden on desktop lg) */}
                 <div className="lg:hidden relative w-full aspect-[16/10] sm:aspect-[21/9] overflow-hidden flex items-center">
                   <img
-                    src="https://images.unsplash.com/photo-1526047932273-341f2a7631f9?w=800&auto=format&fit=crop"
+                    src={banner4}
                     alt="Preservation Artwork"
                     className="absolute inset-0 w-full h-full object-cover"
                   />
@@ -481,27 +557,27 @@ function PreservationPage() {
               <div className="grid grid-cols-2 md:grid-cols-4 gap-6 divide-y md:divide-y-0 md:divide-x divide-[#eddcc8]">
                 {[
                   {
-                    label: "Completion Time",
-                    text: "4-6 Weeks",
-                    sub: "Delivery & curing",
+                    label: "HANDCRAFTED",
+                    text: "Artisan Made",
+                    sub: "Every piece is individually handcrafted with care.",
                     icon: Clock,
                   },
                   {
-                    label: "Secure Packaging",
-                    text: "Safe & Sturdy",
-                    sub: "Damage-free transit",
+                    label: "QUALITY ASSURED",
+                    text: "Secure Packaging",
+                    sub: "Thoughtfully packed for a safe journey",
                     icon: ShieldCheck,
                   },
                   {
-                    label: "Live Order Tracking",
-                    text: "Stay Updated",
-                    sub: "Check progress live",
+                    label: "STAY INFORMED",
+                    text: "Live Order Tracking",
+                    sub: "Follow your keepsake every step of the way.",
                     icon: Compass,
                   },
                   {
-                    label: "24/7 Support",
-                    text: "We're Here to Help",
-                    sub: "Friendly assistance",
+                    label: "CUSTOMER FIRST",
+                    text: "Dedicated Support",
+                    sub: "Friendly assistance whenever you need it.",
                     icon: HelpCircle,
                   },
                 ].map((stat, idx) => {
@@ -542,27 +618,27 @@ function PreservationPage() {
                 {
                   title: "Wedding Bouquet",
                   desc: "Preserve your bridal bouquet beautifully forever.",
-                  img: "https://images.unsplash.com/photo-1526047932273-341f2a7631f9?w=400&auto=format&fit=crop&q=80",
+                  img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRXKWHLApUbHa8rptzgEjP65n_w_tVo-o9HDlrf8ksmDw&s=10",
                 },
                 {
                   title: "Engagement Flowers",
                   desc: "Keep your engagement flowers as a timeless memory.",
-                  img: "https://images.unsplash.com/photo-1518199266791-5375a83190b7?w=400&auto=format&fit=crop&q=80",
-                },
-                {
-                  title: "Anniversary Flowers",
-                  desc: "Celebrate your love, preserve your memories.",
-                  img: "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=400&auto=format&fit=crop&q=80",
+                  img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSGyMPastzE1thEfUQIqHbuM4j3SjBQd7nBEOCVLM8vwQ&s=10",
                 },
                 {
                   title: "Baby Memories",
-                  desc: "Preserve your baby's special moments and milestones.",
-                  img: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=400&auto=format&fit=crop&q=80",
+                  desc: "Capture your baby's tiny moments forever.",
+                  img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTbs8c6wuefJieIHSrn6n_jWyKPKjtHaROASB0RW32lbw&s=10",
+                },
+                {
+                  title: "Achievement Preservation",
+                  desc: "Turn your accomplishments into memories that last a lifetime.",
+                  img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTOzbFniQrdiSHAy60Rxh_YalrPdPrOFtzsCvSxPHPWLg&s=10",
                 },
                 {
                   title: "Pet Memories",
                   desc: "Cherish your pet's memories forever in resin.",
-                  img: "https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=400&auto=format&fit=crop&q=80",
+                  img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQR2kIEaY9rSEEnQgruQeHUjdVomwFK336dxdq9IGvqNA&s=10",
                 },
                 {
                   title: "Memorial Keepsakes",
@@ -656,19 +732,19 @@ function PreservationPage() {
                   {[
                     {
                       label: "Initial Art",
-                      img: "https://images.unsplash.com/photo-1526047932273-341f2a7631f9?w=300&auto=format&fit=crop&q=80",
+                      img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTb8C3WUJ1rqRKbm2QjAZpmSYxsDM2f_U73ZyGQqUhoLg&s=10",
                     },
                     {
                       label: "Name Art",
-                      img: "https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?w=300&auto=format&fit=crop&q=80",
+                      img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSFztsl26tjEGh7OjJZcElpyQFdqjvbRHJuA34ES2hCuw&s=10",
                     },
                     {
-                      label: "Theme Art",
-                      img: "https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=300&auto=format&fit=crop&q=80",
+                      label: "Candle Art",
+                      img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRyfJXEoJ33LYODI494j_wdautbLFTs1U1KzaGo23Ir-Q&s=10",
                     },
                     {
                       label: "Photo Art",
-                      img: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=300&auto=format&fit=crop&q=80",
+                      img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSoLYWSdvOLS5sm7SODaK0wUHCHyQqyaon0z-1Z9895Ww&s=10",
                     },
                   ].map((arch, i) => (
                     <div
@@ -844,51 +920,51 @@ function PreservationPage() {
                   price: "₹4,499",
                   originalPrice: "₹5,499",
                   discount: "21% OFF",
-                  img: "https://images.unsplash.com/photo-1526047932273-341f2a7631f9?w=400&auto=format&fit=crop&q=80",
+                  img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTb8C3WUJ1rqRKbm2QjAZpmSYxsDM2f_U73ZyGQqUhoLg&s=10",
                 },
                 {
                   id: "p2",
-                  title: "Floral Preservation Clock",
+                  title: "Preservation Clock",
                   tag: "Top Rated",
                   rating: 4.8,
                   reviews: 95,
-                  price: "₹3,499",
-                  originalPrice: "₹4,999",
-                  discount: "30% OFF",
-                  img: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=400&auto=format&fit=crop&q=80",
+                  price: "₹1,499",
+                  originalPrice: "₹1,999",
+                  discount: "25% OFF",
+                  img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT5SAtpfAqVytm_YT5lWaQDoV7MuU2x6N31g4uWyrPkTg&s=10",
                 },
                 {
                   id: "p3",
-                  title: "Preserved Floral Initial",
+                  title: "Preserved Jwellary",
                   tag: "New",
                   rating: 4.9,
                   reviews: 76,
-                  price: "₹2,299",
-                  originalPrice: "₹3,199",
+                  price: "699",
+                  originalPrice: "899",
                   discount: "28% OFF",
-                  img: "https://images.unsplash.com/photo-1582139329536-e7284fece509?w=400&auto=format&fit=crop&q=80",
+                  img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQPnYRHM_J44KANgs95gtEv36f8VnuZcVbAQFUuNril4A&s=10",
                 },
                 {
                   id: "p4",
-                  title: "Heart Bouquet Preservation",
+                  title: "Baby Preservation",
                   tag: "Bestseller",
                   rating: 4.8,
                   reviews: 112,
-                  price: "₹3,299",
-                  originalPrice: "₹4,699",
+                  price: "₹1,699",
+                  originalPrice: "₹2,099",
                   discount: "26% OFF",
-                  img: "https://images.unsplash.com/photo-1518199266791-5375a83190b7?w=400&auto=format&fit=crop&q=80",
+                  img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQSXR_uV6K6iJJ23A6NYua7-XpsKJUXmABgrvVCDvpxoA&s=10",
                 },
                 {
                   id: "p5",
-                  title: "Preserved Floral Jewelry Box",
+                  title: "Preserved Bracelet",
                   tag: "New",
                   rating: 4.9,
                   reviews: 88,
-                  price: "₹2,999",
-                  originalPrice: "₹4,299",
+                  price: "₹299",
+                  originalPrice: "₹499",
                   discount: "30% OFF",
-                  img: "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=400&auto=format&fit=crop&q=80",
+                  img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTbz3SwH9v-bUlw5M1E3APr--hBiPcUSj2WhJTp80-XgQ&s=10",
                 },
               ].map((creation) => {
                 const isWish = wishlist.includes(creation.id);
@@ -957,11 +1033,10 @@ function PreservationPage() {
                     {/* Wishlist Heart - positioned above card click overlay */}
                     <button
                       onClick={(e) => handleWishlistToggle(creation.id, e)}
-                      className={`absolute top-4 right-4 z-20 p-2 rounded-full border transition-all duration-300 hover:scale-105 cursor-pointer shadow-sm ${
-                        isWish
-                          ? "bg-rose-50 border-rose-100 text-rose-500"
-                          : "bg-white/80 backdrop-blur-sm border-[#e2d8ca] text-[#5a4331] hover:text-rose-500"
-                      }`}
+                      className={`absolute top-4 right-4 z-20 p-2 rounded-full border transition-all duration-300 hover:scale-105 cursor-pointer shadow-sm ${isWish
+                        ? "bg-rose-50 border-rose-100 text-rose-500"
+                        : "bg-white/80 backdrop-blur-sm border-[#e2d8ca] text-[#5a4331] hover:text-rose-500"
+                        }`}
                       aria-label="Toggle wishlist"
                     >
                       <Heart className={`h-4 w-4 ${isWish ? "fill-current" : ""}`} />
@@ -1279,11 +1354,10 @@ function PreservationPage() {
                       <button
                         key={cat.id}
                         onClick={() => setCategory(cat.id)}
-                        className={`p-5 rounded-2xl border text-left flex flex-col justify-between h-40 transition-all cursor-pointer ${
-                          isSelected
-                            ? "border-accent bg-accent/5 ring-1 ring-accent"
-                            : "border-border hover:border-accent/40 bg-card"
-                        }`}
+                        className={`p-5 rounded-2xl border text-left flex flex-col justify-between h-40 transition-all cursor-pointer ${isSelected
+                          ? "border-accent bg-accent/5 ring-1 ring-accent"
+                          : "border-border hover:border-accent/40 bg-card"
+                          }`}
                       >
                         <div className="flex justify-between items-start w-full">
                           <div
@@ -1407,11 +1481,10 @@ function PreservationPage() {
 
                 <div
                   onClick={() => fileInputRef.current?.click()}
-                  className={`border-2 border-dashed rounded-3xl p-10 text-center transition-all cursor-pointer ${
-                    dragActive
-                      ? "border-accent bg-accent/5"
-                      : "border-border hover:border-accent bg-background"
-                  }`}
+                  className={`border-2 border-dashed rounded-3xl p-10 text-center transition-all cursor-pointer ${dragActive
+                    ? "border-accent bg-accent/5"
+                    : "border-border hover:border-accent bg-background"
+                    }`}
                 >
                   <input
                     ref={fileInputRef}
@@ -1488,11 +1561,10 @@ function PreservationPage() {
                           <button
                             key={s.id}
                             onClick={() => setShape(s.id)}
-                            className={`p-4 rounded-2xl border text-center flex flex-col items-center justify-center transition-all cursor-pointer ${
-                              isSelected
-                                ? "border-accent bg-accent/5 ring-1 ring-accent font-bold"
-                                : "border-border hover:border-accent/40 bg-card"
-                            }`}
+                            className={`p-4 rounded-2xl border text-center flex flex-col items-center justify-center transition-all cursor-pointer ${isSelected
+                              ? "border-accent bg-accent/5 ring-1 ring-accent font-bold"
+                              : "border-border hover:border-accent/40 bg-card"
+                              }`}
                           >
                             <Icon
                               className={`h-5 w-5 mb-2 ${isSelected ? "text-accent" : "text-muted-foreground"}`}
@@ -1516,11 +1588,10 @@ function PreservationPage() {
                         <button
                           key={sz.id}
                           onClick={() => setSize(sz.id)}
-                          className={`p-3 rounded-xl border text-left flex flex-col justify-between h-24 transition-all cursor-pointer ${
-                            size === sz.id
-                              ? "border-accent bg-accent/5 ring-1 ring-accent font-bold"
-                              : "border-border hover:border-accent/40 bg-card"
-                          }`}
+                          className={`p-3 rounded-xl border text-left flex flex-col justify-between h-24 transition-all cursor-pointer ${size === sz.id
+                            ? "border-accent bg-accent/5 ring-1 ring-accent font-bold"
+                            : "border-border hover:border-accent/40 bg-card"
+                            }`}
                         >
                           <span className="text-xs text-foreground font-semibold leading-tight">
                             {sz.label}
@@ -1602,16 +1673,14 @@ function PreservationPage() {
                     <button
                       key={idx}
                       onClick={() => item.setter((prev) => !prev)}
-                      className={`p-4 rounded-2xl border text-left flex gap-2.5 items-start transition-all cursor-pointer ${
-                        item.state
-                          ? "border-accent bg-accent/5 ring-1 ring-accent"
-                          : "border-border hover:border-accent/40 bg-card"
-                      }`}
+                      className={`p-4 rounded-2xl border text-left flex gap-2.5 items-start transition-all cursor-pointer ${item.state
+                        ? "border-accent bg-accent/5 ring-1 ring-accent"
+                        : "border-border hover:border-accent/40 bg-card"
+                        }`}
                     >
                       <div
-                        className={`h-4 w-4 rounded border shrink-0 mt-0.5 flex items-center justify-center text-white text-[9px] ${
-                          item.state ? "bg-accent border-accent" : "border-muted-foreground/60"
-                        }`}
+                        className={`h-4 w-4 rounded border shrink-0 mt-0.5 flex items-center justify-center text-white text-[9px] ${item.state ? "bg-accent border-accent" : "border-muted-foreground/60"
+                          }`}
                       >
                         {item.state && <Check className="h-3.5 w-3.5" />}
                       </div>

@@ -19,6 +19,7 @@
  */
 
 @theme inline {
+  --breakpoint-xs: 375px;
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -64,19 +65,24 @@
 :root {
   --radius: 0.5rem;
   /* ViaCraft palette — cream, sand, antique gold, walnut, ink */
-  --background: oklch(0.972 0.012 85); /* #F8F5F0 cream */
-  --foreground: oklch(0.18 0.01 60); /* #1F1F1F ink */
+  --background: oklch(0.972 0.012 85);
+  /* #F8F5F0 cream */
+  --foreground: oklch(0.18 0.01 60);
+  /* #1F1F1F ink */
   --card: oklch(0.985 0.008 85);
   --card-foreground: oklch(0.18 0.01 60);
   --popover: oklch(0.985 0.008 85);
   --popover-foreground: oklch(0.18 0.01 60);
-  --primary: oklch(0.42 0.05 55); /* #7A5C3E walnut */
+  --primary: oklch(0.42 0.05 55);
+  /* #7A5C3E walnut */
   --primary-foreground: oklch(0.972 0.012 85);
-  --secondary: oklch(0.88 0.04 80); /* #E6D3B3 sand */
+  --secondary: oklch(0.88 0.04 80);
+  /* #E6D3B3 sand */
   --secondary-foreground: oklch(0.3 0.04 55);
   --muted: oklch(0.93 0.02 82);
   --muted-foreground: oklch(0.45 0.03 60);
-  --accent: oklch(0.72 0.12 75); /* #C8A165 antique gold */
+  --accent: oklch(0.72 0.12 75);
+  /* #C8A165 antique gold */
   --accent-foreground: oklch(0.18 0.01 60);
   --destructive: oklch(0.55 0.2 25);
   --destructive-foreground: oklch(0.98 0 0);
@@ -176,21 +182,46 @@
   .scrollbar-none::-webkit-scrollbar {
     display: none;
   }
+
   .scrollbar-none {
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
-  
+
   @keyframes bell-swing {
-    0% { transform: rotate(0); }
-    15% { transform: rotate(15deg); }
-    30% { transform: rotate(-12deg); }
-    45% { transform: rotate(10deg); }
-    60% { transform: rotate(-8deg); }
-    75% { transform: rotate(4deg); }
-    90% { transform: rotate(-2deg); }
-    100% { transform: rotate(0); }
+    0% {
+      transform: rotate(0);
+    }
+
+    15% {
+      transform: rotate(15deg);
+    }
+
+    30% {
+      transform: rotate(-12deg);
+    }
+
+    45% {
+      transform: rotate(10deg);
+    }
+
+    60% {
+      transform: rotate(-8deg);
+    }
+
+    75% {
+      transform: rotate(4deg);
+    }
+
+    90% {
+      transform: rotate(-2deg);
+    }
+
+    100% {
+      transform: rotate(0);
+    }
   }
+
   .animate-bell-swing {
     animation: bell-swing 1s ease-in-out;
   }
@@ -236,6 +267,7 @@
   .hover-shadow-luxe {
     transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   }
+
   .hover-shadow-luxe:hover {
     transform: translateY(-4px);
     box-shadow: var(--shadow-luxe);
@@ -247,10 +279,10 @@
     border: 1px solid var(--color-border);
     transition: all 0.2s ease-in-out;
   }
+
   .premium-input:focus {
     outline: none;
     border-color: var(--color-accent);
     box-shadow: 0 0 0 3px oklch(0.72 0.12 75 / 0.15);
   }
 }
-

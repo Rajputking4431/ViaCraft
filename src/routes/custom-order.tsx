@@ -1,5 +1,6 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useState, useRef } from "react";
+import { SEO } from "@/components/SEO";
 import { PageShell } from "@/layouts/PageShell";
 import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
@@ -191,8 +192,43 @@ function CustomOrderPage() {
     onError: (e: any) => toast.error(e.message),
   });
 
+  const customOrderSchemas = [
+    {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      "@id": "https://viacraft.com/custom-order/#webpage",
+      "name": "Design Custom Resin Art Keepsakes | ViaCraft",
+      "description": "Design and commission your own custom resin creations. Select sizes, base materials, flower inclusions, color themes, and coordinate with certified artisans.",
+      "url": "https://viacraft.com/custom-order"
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://viacraft.com"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Custom Order",
+          "item": "https://viacraft.com/custom-order"
+        }
+      ]
+    }
+  ];
+
   return (
     <PageShell>
+      <SEO
+        title="Design Custom Resin Art Keepsakes"
+        description="Design and commission your own custom resin creations. Select sizes, base materials, flower inclusions, color themes, and coordinate with certified artisans."
+        keywords={["custom resin", "resin commissions", "custom keepsakes", "commission resin art", "flower inclusion", "ViaCraft custom"]}
+        schemaMarkup={customOrderSchemas}
+      />
       <section className="mx-auto max-w-4xl px-4 sm:px-6 py-12 animate-in fade-in duration-300">
         {/* Back Link */}
         <Link

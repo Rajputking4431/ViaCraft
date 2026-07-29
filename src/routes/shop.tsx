@@ -1,5 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
+import { SEO } from "@/components/SEO";
 import { supabase } from "@/integrations/supabase/client";
 import { PageShell } from "@/layouts/PageShell";
 import { ProductCard } from "@/components/ProductCard";
@@ -189,8 +190,57 @@ function ShopPage() {
 
   const selectedCatName = cat || "All Collections";
 
+  const shopSchemas = [
+    {
+      "@context": "https://schema.org",
+      "@type": "CollectionPage",
+      "@id": `https://viacraft.com/shop${cat ? `?cat=${encodeURIComponent(cat)}` : ""}/#collectionpage`,
+      "name": cat ? `${cat} Collection | ViaCraft` : "Artisan Resin Art Shop & Collection",
+      "description": cat ? `Shop premium handcrafted ${cat} creations on ViaCraft.` : "Browse and shop handcrafted resin art pieces, clocks, trays, coasters, jewelry and gift sets.",
+      "url": window.location.origin + window.location.pathname + (cat ? `?cat=${encodeURIComponent(cat)}` : ""),
+      "mainEntity": {
+        "@type": "ItemList",
+        "itemListElement": (products || []).slice(0, 12).map((prod: any, idx: number) => ({
+          "@type": "ListItem",
+          "position": idx + 1,
+          "url": `https://viacraft.com/products/${prod.slug}`
+        }))
+      }
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://viacraft.com"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Shop",
+          "item": "https://viacraft.com/shop"
+        },
+        ...(cat ? [{
+          "@type": "ListItem",
+          "position": 3,
+          "name": cat,
+          "item": `https://viacraft.com/shop?cat=${encodeURIComponent(cat)}`
+        }] : [])
+      ]
+    }
+  ];
+
   return (
     <PageShell>
+      <SEO
+        title={cat ? `${cat} — Buy Custom Resin Art | ViaCraft` : "Shop Custom Resin Art, Jewelry & Preservation Keepsakes"}
+        description={cat ? `Browse and buy premium handcrafted ${cat} products made from high-quality epoxy resin, dried flowers, and wood by certified artisans.` : "Browse premium resin clocks, custom serving trays, coaster sets, initial keychains, and floral jewelry handcrafted by expert artisans. Safe shipping across India."}
+        keywords={cat ? ["resin art", cat, `buy ${cat}`, "custom resin", "handcrafted India"] : ["resin art", "resin clocks", "resin trays", "resin coasters", "resin jewelry", "custom gifts", "artisan market India"]}
+        schemaMarkup={shopSchemas}
+      />
       <div className="mx-auto max-w-7xl px-4 sm:px-6 py-10">
         {/* Breadcrumb Navigation */}
         <nav className="flex items-center gap-1.5 text-xs text-muted-foreground mb-6 select-none">

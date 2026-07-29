@@ -2,6 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { PageShell } from "@/layouts/PageShell";
+import { SEO } from "@/components/SEO";
 import { inr } from "@/utils/format";
 import { useAuth } from "@/hooks/use-auth";
 import { fetchUserCartItems } from "@/api/cart";
@@ -374,6 +375,11 @@ function CheckoutPage() {
 
   return (
     <PageShell>
+      <SEO
+        title="Secure Checkout"
+        description="Securely finalize your payment details, shipping information, and complete your handcrafted resin art purchase on ViaCraft."
+        noIndex={true}
+      />
       <section className="mx-auto max-w-5xl px-4 sm:px-6 py-12">
         {/* Navigation back */}
         <Link

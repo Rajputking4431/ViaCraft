@@ -7,30 +7,13 @@ import {
   sendShipmentDeliveredEmail,
   sendShipmentDelayEmail,
 } from "./email.functions";
-
-// Helper: Simulate Shiprocket API Auth
-async function getShiprocketToken(): Promise<string | null> {
-  const email = import.meta.env.VITE_SHIPROCKET_EMAIL || process.env.SHIPROCKET_EMAIL;
-  const password = import.meta.env.VITE_SHIPROCKET_PASSWORD || process.env.SHIPROCKET_PASSWORD;
-
-  if (!email || !password) {
-    return null; // Mock mode
-  }
-
-  try {
-    const res = await fetch("https://apiv2.shiprocket.in/v1/external/auth/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
-    });
-    if (!res.ok) throw new Error("Shiprocket Auth Failed");
-    const json = await res.json();
-    return json.token || null;
-  } catch (e) {
-    console.warn("Failed to authenticate with Shiprocket API, using Mock:", e);
-    return null;
-  }
-}
+import {
+  getShiprocketToken,
+  createShiprocketOrder,
+  assignShiprocketAwb,
+  generateShiprocketPickup,
+  cancelShiprocketOrder,
+} from "@/integrations/shiprocket/client";
 
 // 1. CREATE SHIPMENT
 export const createShipment = async ({
@@ -143,36 +126,14 @@ export const createShipment = async ({
             weight: input.weight || 0.5,
           };
 
-          const orderRes = await fetch(
-            "https://apiv2.shiprocket.in/v1/external/orders/create/adhoc",
-            {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${token}`,
-              },
-              body: JSON.stringify(orderPayload),
-            },
-          );
-          const orderJson = await orderRes.json();
+          const orderJson = await createShiprocketOrder(token, orderPayload);
           console.log("Shiprocket order creation response:", orderJson);
 
           if (orderJson.shipment_id) {
             shiprocketShipmentId = String(orderJson.shipment_id);
             shiprocketOrderId = String(orderJson.order_id);
 
-            const awbRes = await fetch(
-              "https://apiv2.shiprocket.in/v1/external/courier/assign/awb",
-              {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                  Authorization: `Bearer ${token}`,
-                },
-                body: JSON.stringify({ shipment_id: shiprocketShipmentId }),
-              },
-            );
-            const awbJson = await awbRes.json();
+            const awbJson = await assignShiprocketAwb(token, shiprocketShipmentId);
             console.log("Shiprocket AWB response:", awbJson);
 
             if (awbJson.response && awbJson.response.data) {
@@ -251,21 +212,7 @@ export const schedulePickup = async ({
       const token = await getShiprocketToken();
       if (token) {
         try {
-          const res = await fetch(
-            "https://apiv2.shiprocket.in/v1/external/courier/generate/pickup",
-            {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${token}`,
-              },
-              body: JSON.stringify({
-                shipment_id: [shipment.shiprocket_shipment_id],
-                pickup_date: [input.pickupDate],
-              }),
-            },
-          );
-          const json = await res.json();
+          const json = await generateShiprocketPickup(token, shipment.shiprocket_shipment_id);
           console.log("Shiprocket Pickup schedule response:", json);
           if (json.pickup_status === "scheduled") {
             pickupStatus = "scheduled";
@@ -314,15 +261,7 @@ export const cancelShipment = async ({
       const token = await getShiprocketToken();
       if (token) {
         try {
-          const res = await fetch("https://apiv2.shiprocket.in/v1/external/orders/cancel", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-            body: JSON.stringify({ ids: [shipment.shiprocket_order_id] }),
-          });
-          const json = await res.json();
+          const json = await cancelShiprocketOrder(token, shipment.shiprocket_order_id);
           console.log("Shiprocket Order cancel response:", json);
         } catch (e) {
           console.warn("Real Shiprocket cancel call failed:", e);

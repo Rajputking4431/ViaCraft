@@ -1,6 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { PageShell } from "@/layouts/PageShell";
+import { SEO } from "@/components/SEO";
 import { inr } from "@/utils/format";
 import { useAuth } from "@/hooks/use-auth";
 import {
@@ -197,6 +198,11 @@ function CartPage() {
 
   return (
     <PageShell>
+      <SEO
+        title="Shopping Cart"
+        description="Review your shopping bag, select item variations, apply discount coupons, and complete your purchase of custom resin art on ViaCraft."
+        noIndex={true}
+      />
       <section className="mx-auto max-w-7xl px-4 sm:px-6 py-12">
         <h1 className="font-display text-4xl font-extrabold mb-8 text-foreground">Shopping Bag</h1>
 

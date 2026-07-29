@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { PageShell } from "@/layouts/PageShell";
 import { inr } from "@/utils/format";
+import { SEO } from "@/components/SEO";
 
 export const Route = createFileRoute("/store/$slug")({
   head: ({ params }: any) => ({ meta: [{ title: `${params.slug} — ViaCraft` }] }),
@@ -38,8 +39,48 @@ function StorePage() {
       </PageShell>
     );
 
+  const storeSchemas = [
+    {
+      "@context": "https://schema.org",
+      "@type": "Store",
+      "@id": `https://viacraft.com/store/${vendor.slug}/#store`,
+      "name": vendor.store_name,
+      "description": vendor.tagline || `Artisan resin art and keepsake preservation studio by ${vendor.store_name}.`,
+      "url": window.location.origin + window.location.pathname,
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": vendor.location || "India",
+        "addressCountry": "IN"
+      }
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://viacraft.com"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": vendor.store_name,
+          "item": `https://viacraft.com/store/${vendor.slug}`
+        }
+      ]
+    }
+  ];
+
   return (
     <PageShell>
+      <SEO
+        title={`${vendor.store_name} — Artisan Storefront`}
+        description={vendor.tagline || `Discover custom resin arts and handcrafted keepsakes by ${vendor.store_name} on ViaCraft. Read reviews, explore collections, and order custom pieces.`}
+        keywords={["resin art", vendor.store_name, "certified artisan", "custom resin blocks", "ViaCraft store"]}
+        schemaMarkup={storeSchemas}
+      />
       <section className="relative h-64 bg-gradient-to-br from-secondary to-accent/30">
         {vendor.banner_url && (
           <img

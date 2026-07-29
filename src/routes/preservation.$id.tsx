@@ -1,5 +1,6 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { SEO } from "@/components/SEO";
 import { supabase } from "@/integrations/supabase/client";
 import { preservationDb, Quotation, StageLog } from "@/api/preservation-db";
 import { PageShell } from "@/layouts/PageShell";
@@ -534,6 +535,11 @@ function PreservationDetailsPage() {
 
   return (
     <PageShell>
+      <SEO
+        title="Preservation Request Details"
+        description="View status, timelines, quotes, and communicate with certified artisans regarding your custom flower preservation project."
+        noIndex={true}
+      />
       <section className="mx-auto max-w-7xl px-6 py-12 space-y-8 animate-in fade-in duration-300">
         {/* Completion Success Banner */}
         {request.current_stage === "delivered" && (

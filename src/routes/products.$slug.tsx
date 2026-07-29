@@ -1,5 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { SEO } from "@/components/SEO";
 import { supabase } from "@/integrations/supabase/client";
 import { PageShell } from "@/layouts/PageShell";
 import { ProductCard } from "@/components/ProductCard";
@@ -286,8 +287,85 @@ function ProductPage() {
   const standCost = includeStand ? 49900 : 0;
   const bundleTotal = basePrice + standCost + (includePolish ? 29900 : 0);
 
+  const productSchemas = [
+    {
+      "@context": "https://schema.org",
+      "@type": "Product",
+      "@id": `https://viacraft.com/products/${product.slug}/#product`,
+      "name": product.title,
+      "image": images,
+      "description": cleanDescription || "Premium resin art keepsake handcrafted by independent artisans.",
+      "sku": product.id,
+      "offers": {
+        "@type": "Offer",
+        "url": window.location.href,
+        "priceCurrency": "INR",
+        "price": (basePrice / 100).toFixed(2),
+        "priceValidUntil": "2027-12-31",
+        "itemCondition": "https://schema.org/NewCondition",
+        "availability": product.stock > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+        "seller": {
+          "@type": "Organization",
+          "name": product.vendors?.store_name || "ViaCraft Marketplace"
+        }
+      },
+      ...(reviewCount > 0 ? {
+        "aggregateRating": {
+          "@type": "AggregateRating",
+          "ratingValue": averageRating.toFixed(1),
+          "reviewCount": reviewCount
+        },
+        "review": dbReviews.slice(0, 5).map((rev: any) => ({
+          "@type": "Review",
+          "author": {
+            "@type": "Person",
+            "name": rev.profiles?.full_name || "Verified Customer"
+          },
+          "datePublished": rev.created_at || "2026-07-27",
+          "reviewBody": rev.body || "",
+          "reviewRating": {
+            "@type": "Rating",
+            "ratingValue": rev.rating
+          }
+        }))
+      } : {})
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://viacraft.com"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Shop",
+          "item": "https://viacraft.com/shop"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": product.title,
+          "item": `https://viacraft.com/products/${product.slug}`
+        }
+      ]
+    }
+  ];
+
   return (
     <PageShell>
+      <SEO
+        title={`${product.title} — Handcrafted Resin Keepsake`}
+        description={`${product.title} handcrafted by ${product.vendors?.store_name || "ViaCraft Merchant"}. ${cleanDescription?.substring(0, 140) || "Beautiful handmade resin piece, detailed and polished by certified artisans. Safe UV-inhibited casting resists yellowing."}`}
+        keywords={["resin art", product.title, `buy ${product.title}`, "custom resin", product.vendors?.store_name || "ViaCraft Merchant"]}
+        ogImage={images[0]}
+        ogType="product"
+        schemaMarkup={productSchemas}
+      />
       <section className="mx-auto max-w-7xl px-4 sm:px-6 py-12">
         {/* Breadcrumb */}
         <nav className="flex items-center gap-1.5 text-xs text-muted-foreground mb-8 select-none">
