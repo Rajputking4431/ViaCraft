@@ -8,7 +8,7 @@ Disallow: /_authenticated/
 Disallow: /reset-password/
 
 # Host
-Host: https://viacraft.com
+Host: https://viacraft.in
 
 # Sitemaps
-Sitemap: https://viacraft.com/sitemap.xml
+Sitemap: https://viacraft.in/sitemap.xml
