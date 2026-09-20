@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.10.0";
 import crypto from "node:crypto";
+import { Buffer } from "node:buffer";
 
 const CCAVENUE_MERCHANT_ID = Deno.env.get("CCAVENUE_MERCHANT_ID") || "4473425";
 const CCAVENUE_ACCESS_CODE = Deno.env.get("CCAVENUE_ACCESS_CODE") || "AVBT96NI70AW39TBWA";
@@ -21,7 +22,7 @@ function getCipherKey(workingKey: string) {
   return m.digest(); // 16-byte Buffer
 }
 
-const CCAVENUE_IV = Buffer.from([
+const CCAVENUE_IV = new Uint8Array([
   0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
   0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f,
 ]);
