@@ -4,10 +4,10 @@ import crypto from "node:crypto";
 import { Buffer } from "node:buffer";
 
 const CCAVENUE_MERCHANT_ID = Deno.env.get("CCAVENUE_MERCHANT_ID") || "4473425";
-const CCAVENUE_ACCESS_CODE = Deno.env.get("CCAVENUE_ACCESS_CODE") || "AVBT96NI70AW39TBWA";
-const CCAVENUE_WORKING_KEY = Deno.env.get("CCAVENUE_WORKING_KEY") || "20E65B6263E5925C07BAC6EBD3FA293D";
-const CCAVENUE_ENV = Deno.env.get("CCAVENUE_ENV") || "test"; // 'test' or 'production'
-const FRONTEND_URL = Deno.env.get("FRONTEND_URL") || "http://localhost:5173";
+const CCAVENUE_ACCESS_CODE = Deno.env.get("CCAVENUE_ACCESS_CODE") || "AVAJ96NI77BH11JAHB";
+const CCAVENUE_WORKING_KEY = Deno.env.get("CCAVENUE_WORKING_KEY") || "D02D83A7F6AE503A0C407471186B92B7";
+const CCAVENUE_ENV = Deno.env.get("CCAVENUE_ENV") || "production";
+const FRONTEND_URL = Deno.env.get("FRONTEND_URL") || "https://www.viacraft.in";
 
 // CCAvenue Gateway URLs
 const CCAVENUE_GATEWAY_URL =
@@ -19,7 +19,7 @@ const CCAVENUE_GATEWAY_URL =
 function getCipherKey(workingKey: string) {
   const m = crypto.createHash("md5");
   m.update(workingKey);
-  return m.digest(); // 16-byte Buffer
+  return m.digest();
 }
 
 const CCAVENUE_IV = new Uint8Array([
@@ -93,8 +93,8 @@ serve(async (req) => {
         const params = new URLSearchParams(decryptedText);
         const responseData: Record<string, string> = Object.fromEntries(params.entries());
 
-        const orderStatus = responseData.order_status; // "Success", "Failure", "Aborted", etc.
-        const trackingId = responseData.tracking_id; // CCAvenue Transaction Reference ID
+        const orderStatus = responseData.order_status;
+        const trackingId = responseData.tracking_id;
         const bankRefNo = responseData.bank_ref_no || "";
         const orderId = responseData.order_id || responseData.merchant_param5;
         const amount = parseFloat(responseData.amount || "0");
@@ -107,7 +107,7 @@ serve(async (req) => {
         const isSuccess = orderStatus === "Success";
 
         if (isSuccess) {
-          // Record payment in 'payments' table
+          // Record payment in database
           await supabaseClient.from("payments").insert({
             order_id: orderId || null,
             preservation_request_id: preservationRequestId || null,
@@ -123,73 +123,18 @@ serve(async (req) => {
             verified: true,
           });
 
-          // Update Orders or Preservation workflows
           if (paymentType === "full" && orderId) {
             await supabaseClient
               .from("orders")
               .update({ status: "paid", payment_status: "fully_paid" })
               .eq("id", orderId);
-          } else if (paymentType === "advance" && preservationRequestId) {
-            const { data: requestData } = await supabaseClient
-              .from("preservation_requests")
-              .select("*")
-              .eq("id", preservationRequestId)
-              .single();
-
-            if (requestData) {
-              const totalCents = requestData.quote_cents || amountCents * 2;
-              const remainingCents = totalCents - amountCents;
-
-              await supabaseClient
-                .from("preservation_requests")
-                .update({ quote_accepted: true, current_stage: "consultation" })
-                .eq("id", preservationRequestId);
-
-              await supabaseClient.from("preservation_stage_log").insert({
-                request_id: preservationRequestId,
-                stage: "consultation",
-                note: `Advance payment verified via CCAvenue (Ref: ${trackingId}). Commencing artisan consultation.`,
-              });
-
-              await supabaseClient.from("orders").insert({
-                user_id: customerId,
-                subtotal_cents: requestData.quote_cents || totalCents,
-                shipping_cents: 0,
-                tax_cents: 0,
-                total_cents: totalCents,
-                status: "processing",
-                payment_status: "advance_paid",
-                advance_paid_cents: amount_cents,
-                remaining_balance_cents: remainingCents,
-                payment_type: "split",
-                preservation_request_id: preservationRequestId,
-              });
-            }
-          } else if (paymentType === "final" && orderId) {
-            await supabaseClient
-              .from("orders")
-              .update({ payment_status: "fully_paid", remaining_balance_cents: 0 })
-              .eq("id", orderId);
-
-            if (preservationRequestId) {
-              await supabaseClient
-                .from("preservation_requests")
-                .update({ current_stage: "shipped" })
-                .eq("id", preservationRequestId);
-
-              await supabaseClient.from("preservation_stage_log").insert({
-                request_id: preservationRequestId,
-                stage: "shipped",
-                note: `Remaining 50% balance verified via CCAvenue (Ref: ${trackingId}). Keepsake ready for courier dispatch.`,
-              });
-            }
           }
 
-          // Redirect browser to React payment success page
+          // Redirect customer to success page
           const successRedirect = `${FRONTEND_URL}/payment/success?order_id=${orderId}&tracking_id=${trackingId}&status=Success`;
           return Response.redirect(successRedirect, 303);
         } else {
-          // Payment failed or was cancelled/aborted
+          // Redirect customer to failure page
           const failureMessage = encodeURIComponent(
             responseData.status_message || responseData.failure_message || "Payment was not successful"
           );
@@ -230,11 +175,11 @@ serve(async (req) => {
       );
     }
 
-    // Callback URLs: CCAvenue POSTs response here after customer pays
-    const redirectUrl = `${url.origin}/functions/v1/ccavenue?action=response`;
-    const cancelUrl = `${url.origin}/functions/v1/ccavenue?action=response`;
+    // CCAvenue callback URL
+    const redirectUrl = `${url.origin}/functions/v1/ccavenue/response`;
+    const cancelUrl = `${url.origin}/functions/v1/ccavenue/response`;
 
-    // Build standard CCAvenue query string
+    // Build order parameters
     const orderParams = new URLSearchParams({
       merchant_id: CCAVENUE_MERCHANT_ID,
       order_id: String(order_id),
@@ -258,7 +203,7 @@ serve(async (req) => {
       merchant_param5: String(order_id),
     }).toString();
 
-    // Encrypt parameters using CCAvenue Working Key
+    // Encrypt with Working Key
     const encRequest = encrypt(orderParams, CCAVENUE_WORKING_KEY);
 
     return new Response(
