@@ -1,0 +1,1848 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta name="theme-color" content="#211711">
+
+    <meta name="description"
+          content="ViaCraft is coming soon. Discover handcrafted resin art,
+          personalised creations, and meaningful memories preserved forever.">
+
+    <meta name="robots" content="noindex, nofollow">
+
+    <title>Coming Soon | ViaCraft — Crafted to Preserve Forever</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&display=swap"
+          rel="stylesheet">
+
+    <style>
+        /* =========================================
+           VIACRAFT — COMING SOON EXPERIENCE
+           ========================================= */
+
+        :root {
+            --bg: #211711;
+            --bg-light: #302219;
+            --brown: #493124;
+            --gold: #d6b47b;
+            --gold-light: #f0d9aa;
+            --cream: #f8f1e6;
+            --muted: #bcb0a2;
+            --white: #fffaf3;
+            --glass: rgba(255, 255, 255, 0.045);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            min-height: 100vh;
+            overflow-x: hidden;
+            font-family: "DM Sans", sans-serif;
+            color: var(--cream);
+            background: var(--bg);
+        }
+
+        body::selection {
+            background: var(--gold);
+            color: var(--bg);
+        }
+
+        a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        button,
+        input {
+            font: inherit;
+        }
+
+        button,
+        a {
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* =========================================
+           BACKGROUND
+           ========================================= */
+
+        .background {
+            position: fixed;
+            inset: 0;
+            overflow: hidden;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .background::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+
+            background:
+                radial-gradient(
+                    ellipse at 15% 15%,
+                    rgba(180, 111, 64, 0.15),
+                    transparent 40%
+                ),
+                radial-gradient(
+                    ellipse at 90% 85%,
+                    rgba(166, 94, 66, 0.13),
+                    transparent 38%
+                ),
+                linear-gradient(
+                    135deg,
+                    #211711,
+                    #2c1d15 55%,
+                    #1b120e
+                );
+        }
+
+        .glow {
+            position: absolute;
+            width: 400px;
+            height: 400px;
+            border-radius: 50%;
+            filter: blur(110px);
+            opacity: 0.15;
+            animation: glowMove 12s ease-in-out infinite alternate;
+        }
+
+        .glow-one {
+            top: -180px;
+            left: -100px;
+            background: #d6a064;
+        }
+
+        .glow-two {
+            right: -180px;
+            bottom: -180px;
+            background: #a75b49;
+            animation-delay: -6s;
+        }
+
+        .grain {
+            position: absolute;
+            inset: 0;
+            opacity: 0.12;
+
+            background-image:
+                radial-gradient(
+                    rgba(255, 255, 255, 0.35) 0.5px,
+                    transparent 0.7px
+                );
+
+            background-size: 5px 5px;
+        }
+
+        /* =========================================
+           PARTICLES
+           ========================================= */
+
+        #particles {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* =========================================
+           PAGE LAYOUT
+           ========================================= */
+
+        .page {
+            position: relative;
+            z-index: 1;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .container {
+            width: min(1200px, 90%);
+            margin: 0 auto;
+        }
+
+        /* =========================================
+           NAVBAR
+           ========================================= */
+
+        .navbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+
+            padding: 25px 0;
+
+            border-bottom: 1px solid rgba(240, 217, 170, 0.13);
+
+            animation: fadeDown 0.9s ease both;
+        }
+
+        .brand {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .brand-mark {
+            width: 46px;
+            height: 46px;
+
+            display: grid;
+            place-items: center;
+
+            border: 1px solid rgba(240, 217, 170, 0.75);
+            border-radius: 50%;
+
+            color: var(--gold-light);
+            font-family: "Playfair Display", serif;
+            font-size: 25px;
+
+            box-shadow:
+                0 0 25px rgba(214, 180, 123, 0.08),
+                inset 0 0 15px rgba(214, 180, 123, 0.06);
+        }
+
+        .brand-name {
+            font-family: "Playfair Display", serif;
+            font-size: 25px;
+            font-weight: 600;
+            letter-spacing: 2px;
+        }
+
+        .brand-name span {
+            color: var(--gold);
+        }
+
+        .brand-caption {
+            margin-top: 4px;
+            color: var(--muted);
+            font-size: 9px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .nav-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+
+            padding: 11px 16px;
+
+            border: 1px solid rgba(214, 180, 123, 0.25);
+            border-radius: 50px;
+
+            color: var(--gold-light);
+            background: rgba(255, 255, 255, 0.02);
+
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: 1.3px;
+            text-transform: uppercase;
+        }
+
+        .status-dot {
+            width: 7px;
+            height: 7px;
+
+            border-radius: 50%;
+            background: #a8d49c;
+
+            box-shadow: 0 0 12px rgba(168, 212, 156, 0.65);
+
+            animation: pulse 2s infinite;
+        }
+
+        /* =========================================
+           MAIN HERO
+           ========================================= */
+
+        .hero {
+            flex: 1;
+
+            display: grid;
+            grid-template-columns: 1.05fr 0.95fr;
+            align-items: center;
+            gap: 45px;
+
+            padding: 65px 0 70px;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+
+            animation: revealUp 1s ease both;
+        }
+
+        .eyebrow {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+
+            margin-bottom: 25px;
+
+            color: var(--gold);
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+        }
+
+        .eyebrow::before {
+            content: "";
+            width: 35px;
+            height: 1px;
+            background: var(--gold);
+        }
+
+        /* =========================================
+           MAIN COMING SOON BADGE
+           ========================================= */
+
+        .coming-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 11px;
+
+            margin-bottom: 25px;
+            padding: 12px 17px;
+
+            border: 1px solid rgba(214, 180, 123, 0.38);
+            border-radius: 50px;
+
+            background: rgba(214, 180, 123, 0.08);
+
+            color: var(--gold-light);
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 1.8px;
+
+            box-shadow: 0 0 30px rgba(214, 180, 123, 0.04);
+
+            animation: badgeGlow 3s ease-in-out infinite;
+        }
+
+        .coming-badge-dot {
+            position: relative;
+
+            width: 8px;
+            height: 8px;
+
+            border-radius: 50%;
+            background: var(--gold-light);
+        }
+
+        .coming-badge-dot::after {
+            content: "";
+            position: absolute;
+            inset: -5px;
+
+            border: 1px solid var(--gold);
+            border-radius: 50%;
+
+            animation: ripple 2s ease-out infinite;
+        }
+
+        /* =========================================
+           HEADLINE
+           ========================================= */
+
+        h1 {
+            max-width: 650px;
+
+            font-family: "Playfair Display", serif;
+            font-size: clamp(49px, 6.2vw, 82px);
+            font-weight: 400;
+            line-height: 1.08;
+            letter-spacing: -2px;
+        }
+
+        .heading-small {
+            display: block;
+
+            color: var(--cream);
+            font-size: 0.72em;
+            letter-spacing: 1px;
+        }
+
+        .heading-highlight {
+            display: block;
+
+            margin-top: 7px;
+
+            background: linear-gradient(
+                100deg,
+                #f7e7c7 5%,
+                #d6b47b 40%,
+                #fff0cf 60%,
+                #c79c60 85%
+            );
+
+            background-size: 200% auto;
+
+            color: var(--gold-light);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+
+            font-style: italic;
+            font-weight: 500;
+
+            animation: goldShimmer 6s linear infinite;
+        }
+
+        .heading-underline {
+            display: block;
+
+            width: 125px;
+            height: 2px;
+
+            margin-top: 23px;
+
+            background: linear-gradient(
+                90deg,
+                var(--gold),
+                transparent
+            );
+
+            transform-origin: left;
+            animation: expandLine 1.4s ease both;
+        }
+
+        .hero-description {
+            max-width: 470px;
+
+            margin-top: 24px;
+
+            color: var(--muted);
+            font-size: 14px;
+            line-height: 1.95;
+        }
+
+        .hero-description strong {
+            color: var(--cream);
+            font-weight: 500;
+        }
+
+        /* =========================================
+           LAUNCH MESSAGE
+           ========================================= */
+
+        .launch-card {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+
+            max-width: 410px;
+
+            margin-top: 27px;
+            padding: 16px 18px;
+
+            border: 1px solid rgba(214, 180, 123, 0.18);
+            border-radius: 8px;
+
+            background: rgba(255, 255, 255, 0.025);
+            backdrop-filter: blur(12px);
+        }
+
+        .launch-icon {
+            flex-shrink: 0;
+
+            width: 40px;
+            height: 40px;
+
+            display: grid;
+            place-items: center;
+
+            border: 1px solid rgba(214, 180, 123, 0.24);
+            border-radius: 50%;
+
+            color: var(--gold-light);
+            font-size: 19px;
+        }
+
+        .launch-title {
+            color: var(--cream);
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .launch-description {
+            margin-top: 4px;
+
+            color: var(--muted);
+            font-size: 11px;
+            line-height: 1.6;
+        }
+
+        /* =========================================
+           BUTTONS
+           ========================================= */
+
+        .hero-actions {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+
+            margin-top: 29px;
+        }
+
+        .primary-button {
+            min-height: 53px;
+
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 13px;
+
+            padding: 0 23px;
+
+            border: 1px solid var(--gold-light);
+            border-radius: 5px;
+
+            background: linear-gradient(
+                135deg,
+                #f0d9aa,
+                #d6b47b
+            );
+
+            color: #2a1b12;
+
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1px;
+
+            box-shadow: 0 8px 25px rgba(214, 180, 123, 0.08);
+
+            transition:
+                transform 0.3s ease,
+                box-shadow 0.3s ease;
+        }
+
+        .primary-button:hover {
+            transform: translateY(-3px);
+
+            box-shadow:
+                0 12px 35px rgba(214, 180, 123, 0.22);
+        }
+
+        .button-arrow {
+            font-size: 18px;
+            transition: transform 0.3s ease;
+        }
+
+        .primary-button:hover .button-arrow {
+            transform: translateX(4px);
+        }
+
+        .secondary-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 9px;
+
+            min-height: 48px;
+            padding: 0 10px;
+
+            color: var(--muted);
+            font-size: 12px;
+
+            transition: color 0.3s ease;
+        }
+
+        .secondary-button:hover {
+            color: var(--gold-light);
+        }
+
+        /* =========================================
+           BRAND PROMISES
+           ========================================= */
+
+        .brand-promises {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 22px;
+
+            margin-top: 40px;
+            padding-top: 21px;
+
+            border-top: 1px solid rgba(240, 217, 170, 0.12);
+        }
+
+        .promise {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+
+            color: var(--muted);
+            font-size: 10px;
+        }
+
+        .promise-icon {
+            color: var(--gold);
+            font-size: 15px;
+        }
+
+        /* =========================================
+           ARTWORK SECTION
+           ========================================= */
+
+        .hero-art {
+            position: relative;
+
+            min-height: 530px;
+
+            display: grid;
+            place-items: center;
+
+            animation: revealArt 1.3s ease both;
+        }
+
+        .art-aura {
+            position: absolute;
+
+            width: 340px;
+            height: 340px;
+
+            border-radius: 50%;
+
+            background: rgba(214, 180, 123, 0.08);
+            filter: blur(50px);
+
+            animation: auraPulse 5s ease-in-out infinite;
+        }
+
+        /* Decorative orbits */
+
+        .orbit {
+            position: absolute;
+
+            width: 430px;
+            height: 430px;
+
+            border: 1px solid rgba(214, 180, 123, 0.15);
+            border-radius: 50%;
+
+            animation: rotateOrbit 45s linear infinite;
+        }
+
+        .orbit::before {
+            content: "";
+            position: absolute;
+
+            top: 65px;
+            right: 45px;
+
+            width: 9px;
+            height: 9px;
+
+            border-radius: 50%;
+            background: var(--gold-light);
+
+            box-shadow: 0 0 18px var(--gold);
+        }
+
+        .orbit-two {
+            width: 345px;
+            height: 490px;
+
+            border-color: rgba(214, 180, 123, 0.11);
+
+            animation: rotateOrbitReverse 60s linear infinite;
+        }
+
+        .orbit-three {
+            width: 480px;
+            height: 310px;
+
+            border-color: rgba(214, 180, 123, 0.08);
+
+            transform: rotate(-35deg);
+        }
+
+        /* =========================================
+           RESIN ART CARD
+           ========================================= */
+
+        .artwork {
+            position: relative;
+            z-index: 2;
+
+            width: min(310px, 70vw);
+            height: 405px;
+
+            padding: 12px;
+
+            border: 1px solid rgba(240, 217, 170, 0.56);
+            border-radius: 165px 165px 10px 10px;
+
+            background: linear-gradient(
+                145deg,
+                rgba(255, 255, 255, 0.12),
+                rgba(255, 255, 255, 0.015)
+            );
+
+            box-shadow:
+                0 35px 90px rgba(0, 0, 0, 0.38),
+                inset 0 0 25px rgba(255, 255, 255, 0.035);
+
+            animation: floatArtwork 6s ease-in-out infinite;
+
+            transition:
+                box-shadow 0.5s ease,
+                border-color 0.5s ease;
+        }
+
+        .artwork:hover {
+            border-color: var(--gold-light);
+
+            box-shadow:
+                0 35px 100px rgba(0, 0, 0, 0.48),
+                0 0 45px rgba(214, 180, 123, 0.12);
+        }
+
+        .artwork-inner {
+            position: relative;
+
+            width: 100%;
+            height: 100%;
+
+            overflow: hidden;
+
+            border-radius: 155px 155px 4px 4px;
+
+            background:
+                radial-gradient(
+                    ellipse at 28% 22%,
+                    rgba(255, 237, 198, 0.95),
+                    transparent 18%
+                ),
+                radial-gradient(
+                    ellipse at 75% 30%,
+                    rgba(197, 149, 93, 0.92),
+                    transparent 24%
+                ),
+                radial-gradient(
+                    ellipse at 30% 70%,
+                    rgba(149, 90, 61, 0.95),
+                    transparent 30%
+                ),
+                radial-gradient(
+                    ellipse at 78% 76%,
+                    rgba(232, 199, 145, 0.78),
+                    transparent 23%
+                ),
+                linear-gradient(
+                    135deg,
+                    #f0d9aa 0%,
+                    #946447 30%,
+                    #42291e 55%,
+                    #d4a76d 78%,
+                    #6d4330 100%
+                );
+        }
+
+        /* Flowing resin patterns */
+
+        .resin-flow {
+            position: absolute;
+
+            width: 180%;
+            height: 120%;
+
+            left: -40%;
+            top: -10%;
+
+            border: 2px solid rgba(255, 241, 209, 0.45);
+            border-radius: 45% 55% 60% 40%;
+
+            box-shadow:
+                inset 0 0 30px rgba(255, 255, 255, 0.1),
+                0 0 15px rgba(255, 226, 172, 0.1);
+
+            transform: rotate(35deg);
+
+            animation: flowMove 10s ease-in-out infinite alternate;
+        }
+
+        .flow-two {
+            width: 155%;
+            height: 85%;
+
+            left: -20%;
+            top: 15%;
+
+            border-color: rgba(48, 26, 18, 0.72);
+
+            transform: rotate(-35deg);
+            animation-delay: -3s;
+        }
+
+        .flow-three {
+            width: 120%;
+            height: 50%;
+
+            left: -10%;
+            top: 48%;
+
+            border-color: rgba(255, 225, 171, 0.65);
+
+            transform: rotate(24deg);
+            animation-delay: -5s;
+        }
+
+        .resin-shine {
+            position: absolute;
+            inset: 0;
+
+            background: linear-gradient(
+                115deg,
+                transparent 10%,
+                rgba(255, 255, 255, 0.18) 35%,
+                transparent 43%,
+                transparent 70%,
+                rgba(255, 255, 255, 0.08) 80%,
+                transparent 90%
+            );
+
+            transform: translateX(-100%);
+
+            animation: shine 7s ease-in-out infinite;
+        }
+
+        /* =========================================
+           ARTWORK CAPTION
+           ========================================= */
+
+        .artwork-caption {
+            position: absolute;
+
+            right: -35px;
+            bottom: 28px;
+
+            max-width: 260px;
+
+            padding: 17px 21px;
+
+            border: 1px solid rgba(240, 217, 170, 0.22);
+            border-radius: 6px;
+
+            background: rgba(39, 27, 20, 0.88);
+            backdrop-filter: blur(18px);
+
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.24);
+        }
+
+        .caption-label {
+            color: var(--gold);
+            font-size: 9px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .caption-title {
+            margin-top: 6px;
+
+            color: var(--cream);
+            font-family: "Playfair Display", serif;
+            font-size: 18px;
+            line-height: 1.4;
+        }
+
+        /* =========================================
+           FLOATING DECORATIONS
+           ========================================= */
+
+        .floating-star {
+            position: absolute;
+            z-index: 2;
+
+            color: var(--gold-light);
+
+            animation: twinkle 3s ease-in-out infinite;
+        }
+
+        .star-one {
+            top: 55px;
+            right: 65px;
+            font-size: 26px;
+        }
+
+        .star-two {
+            left: 40px;
+            bottom: 85px;
+            font-size: 19px;
+            animation-delay: 1s;
+        }
+
+        .star-three {
+            top: 135px;
+            left: 40px;
+            font-size: 13px;
+            animation-delay: 1.7s;
+        }
+
+        .floating-note {
+            position: absolute;
+
+            top: 60px;
+            left: 10px;
+
+            color: var(--muted);
+            font-family: "Playfair Display", serif;
+            font-size: 13px;
+            font-style: italic;
+
+            transform: rotate(-9deg);
+        }
+
+        /* =========================================
+           FOOTER
+           ========================================= */
+
+        .footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 14px;
+
+            padding: 23px 0 27px;
+
+            border-top: 1px solid rgba(240, 217, 170, 0.12);
+
+            color: var(--muted);
+            font-size: 10px;
+        }
+
+        .footer strong {
+            color: var(--gold-light);
+            font-weight: 500;
+        }
+
+        .footer-message {
+            font-family: "Playfair Display", serif;
+            font-size: 13px;
+            font-style: italic;
+        }
+
+        .footer-heart {
+            color: var(--gold);
+        }
+
+        /* =========================================
+           ANIMATIONS
+           ========================================= */
+
+        @keyframes revealUp {
+            from {
+                opacity: 0;
+                transform: translateY(25px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes revealArt {
+            from {
+                opacity: 0;
+                transform: translateX(25px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes fadeDown {
+            from {
+                opacity: 0;
+                transform: translateY(-15px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.4;
+            }
+        }
+
+        @keyframes ripple {
+            0% {
+                transform: scale(0.7);
+                opacity: 0.9;
+            }
+
+            100% {
+                transform: scale(1.8);
+                opacity: 0;
+            }
+        }
+
+        @keyframes badgeGlow {
+            0%, 100% {
+                box-shadow: 0 0 15px rgba(214, 180, 123, 0.02);
+            }
+
+            50% {
+                box-shadow: 0 0 25px rgba(214, 180, 123, 0.10);
+            }
+        }
+
+        @keyframes goldShimmer {
+            0% {
+                background-position: 200% center;
+            }
+
+            100% {
+                background-position: -200% center;
+            }
+        }
+
+        @keyframes expandLine {
+            from {
+                transform: scaleX(0);
+            }
+
+            to {
+                transform: scaleX(1);
+            }
+        }
+
+        @keyframes floatArtwork {
+            0%, 100% {
+                translate: 0 0;
+            }
+
+            50% {
+                translate: 0 -12px;
+            }
+        }
+
+        @keyframes rotateOrbit {
+            from {
+                rotate: 0deg;
+            }
+
+            to {
+                rotate: 360deg;
+            }
+        }
+
+        @keyframes rotateOrbitReverse {
+            from {
+                rotate: 360deg;
+            }
+
+            to {
+                rotate: 0deg;
+            }
+        }
+
+        @keyframes auraPulse {
+            0%, 100% {
+                transform: scale(0.92);
+                opacity: 0.65;
+            }
+
+            50% {
+                transform: scale(1.12);
+                opacity: 1;
+            }
+        }
+
+        @keyframes flowMove {
+            0% {
+                translate: -5px -4px;
+                scale: 1;
+            }
+
+            100% {
+                translate: 8px 6px;
+                scale: 1.04;
+            }
+        }
+
+        @keyframes shine {
+            0%, 25% {
+                transform: translateX(-100%);
+            }
+
+            65%, 100% {
+                transform: translateX(100%);
+            }
+        }
+
+        @keyframes twinkle {
+            0%, 100% {
+                opacity: 0.35;
+                scale: 0.85;
+            }
+
+            50% {
+                opacity: 1;
+                scale: 1.15;
+            }
+        }
+
+        @keyframes glowMove {
+            0% {
+                transform: translate(0, 0);
+            }
+
+            100% {
+                transform: translate(80px, 50px);
+            }
+        }
+
+        /* =========================================
+           TABLET RESPONSIVENESS
+           ========================================= */
+
+        @media (max-width: 1000px) {
+            .hero {
+                grid-template-columns: 1fr 0.85fr;
+                gap: 20px;
+            }
+
+            h1 {
+                font-size: clamp(46px, 6vw, 66px);
+            }
+
+            .hero-art {
+                min-height: 460px;
+            }
+
+            .artwork {
+                width: 265px;
+                height: 355px;
+            }
+
+            .orbit {
+                width: 350px;
+                height: 350px;
+            }
+
+            .orbit-two {
+                width: 300px;
+                height: 420px;
+            }
+
+            .orbit-three {
+                width: 370px;
+                height: 250px;
+            }
+
+            .artwork-caption {
+                right: -10px;
+            }
+
+            .floating-note {
+                left: 0;
+                font-size: 11px;
+            }
+
+            .brand-promises {
+                gap: 14px;
+            }
+        }
+
+        /* =========================================
+           MOBILE RESPONSIVENESS
+           ========================================= */
+
+        @media (max-width: 700px) {
+            .container {
+                width: 88%;
+            }
+
+            .navbar {
+                padding: 19px 0;
+            }
+
+            .brand {
+                gap: 9px;
+            }
+
+            .brand-mark {
+                width: 38px;
+                height: 38px;
+                font-size: 20px;
+            }
+
+            .brand-name {
+                font-size: 20px;
+                letter-spacing: 1.5px;
+            }
+
+            .brand-caption {
+                font-size: 7px;
+                letter-spacing: 1.4px;
+            }
+
+            .nav-status {
+                gap: 7px;
+                padding: 9px 10px;
+                font-size: 8px;
+                letter-spacing: 0.5px;
+            }
+
+            .status-dot {
+                width: 6px;
+                height: 6px;
+            }
+
+            .hero {
+                grid-template-columns: 1fr;
+                gap: 15px;
+
+                padding: 46px 0 42px;
+            }
+
+            .hero-content {
+                text-align: center;
+            }
+
+            .eyebrow {
+                justify-content: center;
+                gap: 9px;
+
+                margin-bottom: 20px;
+
+                font-size: 9px;
+                letter-spacing: 2px;
+            }
+
+            .eyebrow::before {
+                width: 22px;
+            }
+
+            .coming-badge {
+                margin-bottom: 23px;
+                padding: 11px 14px;
+
+                font-size: 9px;
+                letter-spacing: 1.2px;
+            }
+
+            h1 {
+                font-size: clamp(43px, 11vw, 66px);
+                line-height: 1.1;
+                letter-spacing: -1.5px;
+            }
+
+            .heading-small {
+                font-size: 0.75em;
+            }
+
+            .heading-highlight {
+                margin-top: 8px;
+            }
+
+            .heading-underline {
+                width: 90px;
+                margin: 18px auto 0;
+            }
+
+            .hero-description {
+                max-width: 440px;
+
+                margin: 22px auto 0;
+
+                font-size: 13px;
+                line-height: 1.9;
+            }
+
+            .launch-card {
+                max-width: 400px;
+
+                margin: 23px auto 0;
+                padding: 13px;
+
+                text-align: left;
+            }
+
+            .launch-icon {
+                width: 36px;
+                height: 36px;
+            }
+
+            .hero-actions {
+                justify-content: center;
+                gap: 10px;
+
+                margin-top: 23px;
+            }
+
+            .primary-button {
+                min-height: 50px;
+                padding: 0 20px;
+            }
+
+            .secondary-button {
+                min-height: 45px;
+            }
+
+            .brand-promises {
+                justify-content: center;
+                gap: 13px 19px;
+
+                margin-top: 27px;
+                padding-top: 20px;
+            }
+
+            .promise {
+                font-size: 9px;
+            }
+
+            .hero-art {
+                min-height: 420px;
+                margin-top: 5px;
+            }
+
+            .art-aura {
+                width: 260px;
+                height: 260px;
+            }
+
+            .artwork {
+                width: min(265px, 72vw);
+                height: 345px;
+                padding: 10px;
+            }
+
+            .orbit {
+                width: min(340px, 90vw);
+                height: min(340px, 90vw);
+            }
+
+            .orbit-two {
+                width: min(280px, 75vw);
+                height: 390px;
+            }
+
+            .orbit-three {
+                width: 320px;
+                height: 220px;
+            }
+
+            .artwork-caption {
+                right: -10px;
+                bottom: 25px;
+
+                max-width: 215px;
+                padding: 13px 15px;
+            }
+
+            .caption-label {
+                font-size: 8px;
+            }
+
+            .caption-title {
+                font-size: 16px;
+            }
+
+            .floating-note {
+                top: 16px;
+                left: 0;
+
+                font-size: 11px;
+            }
+
+            .star-one {
+                top: 35px;
+                right: 25px;
+            }
+
+            .star-two {
+                left: 15px;
+                bottom: 45px;
+            }
+
+            .star-three {
+                top: 105px;
+                left: 10px;
+            }
+
+            .footer {
+                justify-content: center;
+                text-align: center;
+                padding: 20px 0 24px;
+            }
+
+            .footer-message {
+                width: 100%;
+                font-size: 12px;
+            }
+        }
+
+        /* =========================================
+           SMALL MOBILE
+           ========================================= */
+
+        @media (max-width: 380px) {
+            .brand-name {
+                font-size: 17px;
+            }
+
+            .brand-caption {
+                font-size: 6px;
+                letter-spacing: 1px;
+            }
+
+            .nav-status {
+                padding: 8px;
+                font-size: 7px;
+            }
+
+            h1 {
+                font-size: 41px;
+            }
+
+            .coming-badge {
+                font-size: 8px;
+                letter-spacing: 0.8px;
+            }
+
+            .hero-art {
+                min-height: 380px;
+            }
+
+            .artwork {
+                height: 310px;
+            }
+
+            .artwork-caption {
+                right: -5px;
+            }
+
+            .brand-promises {
+                gap: 12px;
+            }
+        }
+
+        /* =========================================
+           ACCESSIBILITY
+           ========================================= */
+
+        @media (prefers-reduced-motion: reduce) {
+            *,
+            *::before,
+            *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                scroll-behavior: auto !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Background -->
+    <div class="background" aria-hidden="true">
+        <div class="glow glow-one"></div>
+        <div class="glow glow-two"></div>
+        <div class="grain"></div>
+        <canvas id="particles"></canvas>
+    </div>
+
+    <div class="page">
+
+        <div class="container">
+
+            <!-- Navigation -->
+            <header class="navbar">
+
+                <a href="#home"
+                   class="brand"
+                   aria-label="ViaCraft Home">
+
+                    <div class="brand-mark">V</div>
+
+                    <div>
+                        <div class="brand-name">
+                            VIA<span>CRAFT</span>
+                        </div>
+
+                        <div class="brand-caption">
+                            Crafted to Preserve Forever
+                        </div>
+                    </div>
+
+                </a>
+
+                <div class="nav-status">
+                    <span class="status-dot"></span>
+                    <span>Launching Soon</span>
+                </div>
+
+            </header>
+
+            <!-- Main Content -->
+            <main class="hero" id="home">
+
+                <section class="hero-content">
+
+                    <div class="eyebrow">
+                        A NEW EXPERIENCE IS ON ITS WAY
+                    </div>
+
+                    <div class="coming-badge">
+                        <span class="coming-badge-dot"></span>
+                        <span>OUR WEBSITE IS COMING SOON</span>
+                    </div>
+
+                    <h1>
+
+                        <span class="heading-small">
+                            WE'RE
+                        </span>
+
+                        <span class="heading-highlight">
+                            COMING SOON
+                        </span>
+
+                    </h1>
+
+                    <span class="heading-underline"></span>
+
+                    <p class="hero-description">
+                        Something beautiful is on its way.
+
+                        We're creating a special experience
+                        where <strong>art meets emotion</strong>,
+                        and your most precious memories become
+                        timeless keepsakes.
+
+                        <strong>ViaCraft</strong> will be back
+                        soon with handcrafted resin art and
+                        personalised creations made with love.
+                    </p>
+
+                    <!-- Launch Message -->
+                    <div class="launch-card">
+
+                        <div class="launch-icon">
+                            ✦
+                        </div>
+
+                        <div>
+                            <div class="launch-title">
+                                We're Creating Something Special
+                            </div>
+
+                            <div class="launch-description">
+                                Our website is currently being
+                                updated. Thank you for your patience
+                                and for being part of our journey.
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="hero-actions">
+
+                        <!-- Replace with your actual business email -->
+                        <a href="mailto:YOUR_EMAIL@example.com"
+                           class="primary-button">
+
+                            GET IN TOUCH
+
+                            <span class="button-arrow">→</span>
+
+                        </a>
+
+                        <a href="https://www.instagram.com/"
+                           class="secondary-button"
+                           target="_blank"
+                           rel="noopener noreferrer">
+
+                            Follow Our Journey
+                            <span>↗</span>
+
+                        </a>
+
+                    </div>
+
+                    <!-- Brand Promises -->
+                    <div class="brand-promises">
+
+                        <div class="promise">
+                            <span class="promise-icon">✧</span>
+                            Handcrafted with Love
+                        </div>
+
+                        <div class="promise">
+                            <span class="promise-icon">♡</span>
+                            Memories That Last
+                        </div>
+
+                        <div class="promise">
+                            <span class="promise-icon">✦</span>
+                            Made Just for You
+                        </div>
+
+                    </div>
+
+                </section>
+
+                <!-- Resin-Inspired Artwork -->
+                <section class="hero-art"
+                         aria-label="ViaCraft resin-inspired artwork">
+
+                    <div class="art-aura"></div>
+
+                    <div class="orbit"></div>
+                    <div class="orbit orbit-two"></div>
+                    <div class="orbit orbit-three"></div>
+
+                    <div class="floating-star star-one">✦</div>
+                    <div class="floating-star star-two">✧</div>
+                    <div class="floating-star star-three">✦</div>
+
+                    <div class="floating-note">
+                        Every memory deserves to last.
+                    </div>
+
+                    <div class="artwork">
+
+                        <div class="artwork-inner">
+
+                            <div class="resin-flow"></div>
+                            <div class="resin-flow flow-two"></div>
+                            <div class="resin-flow flow-three"></div>
+                            <div class="resin-shine"></div>
+
+                        </div>
+
+                        <div class="artwork-caption">
+
+                            <div class="caption-label">
+                                Made with Meaning
+                            </div>
+
+                            <div class="caption-title">
+                                Crafted to Preserve Forever
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </section>
+
+            </main>
+
+            <!-- Footer -->
+            <footer class="footer">
+
+                <div>
+                    © <span id="year"></span>
+                    <strong>ViaCraft</strong>.
+                    All rights reserved.
+                </div>
+
+                <div class="footer-message">
+                    Made with <span class="footer-heart">♥</span>
+                    for memories that matter.
+                </div>
+
+            </footer>
+
+        </div>
+
+    </div>
+
+    <script>
+        /* =========================================
+           AUTOMATIC COPYRIGHT YEAR
+           ========================================= */
+
+        document.getElementById("year").textContent =
+            new Date().getFullYear();
+
+
+        /* =========================================
+           ANIMATED GOLD PARTICLES
+           ========================================= */
+
+        (() => {
+
+            const canvas = document.getElementById("particles");
+            const ctx = canvas.getContext("2d");
+
+            if (!ctx) return;
+
+            let width = 0;
+            let height = 0;
+            let particles = [];
+
+            const reducedMotion = window.matchMedia(
+                "(prefers-reduced-motion: reduce)"
+            ).matches;
+
+            function resizeCanvas() {
+
+                const dpr = Math.min(
+                    window.devicePixelRatio || 1,
+                    2
+                );
+
+                width = window.innerWidth;
+                height = window.innerHeight;
+
+                canvas.width = width * dpr;
+                canvas.height = height * dpr;
+
+                canvas.style.width = width + "px";
+                canvas.style.height = height + "px";
+
+                ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+                const particleCount = Math.min(
+                    65,
+                    Math.floor(width / 18)
+                );
+
+                particles = Array.from(
+                    { length: particleCount },
+                    () => createParticle(true)
+                );
+            }
+
+            function createParticle(randomY = false) {
+
+                return {
+                    x: Math.random() * width,
+
+                    y: randomY
+                        ? Math.random() * height
+                        : height + Math.random() * 30,
+
+                    radius: Math.random() * 1.5 + 0.4,
+
+                    speed: Math.random() * 0.35 + 0.12,
+
+                    drift: (Math.random() - 0.5) * 0.3,
+
+                    opacity: Math.random() * 0.5 + 0.15,
+
+                    phase: Math.random() * Math.PI * 2
+                };
+            }
+
+            function animateParticles(time = 0) {
+
+                ctx.clearRect(0, 0, width, height);
+
+                particles.forEach((particle) => {
+
+                    particle.y -= particle.speed;
+                    particle.x += particle.drift;
+
+                    const twinkle = reducedMotion
+                        ? 1
+                        : 0.65 + Math.sin(
+                            time * 0.001 + particle.phase
+                        ) * 0.35;
+
+                    if (particle.y < -10) {
+                        Object.assign(
+                            particle,
+                            createParticle(false)
+                        );
+                    }
+
+                    if (particle.x < -10) {
+                        particle.x = width + 5;
+                    }
+
+                    if (particle.x > width + 10) {
+                        particle.x = -5;
+                    }
+
+                    ctx.beginPath();
+
+                    ctx.arc(
+                        particle.x,
+                        particle.y,
+                        particle.radius,
+                        0,
+                        Math.PI * 2
+                    );
+
+                    ctx.fillStyle =
+                        `rgba(240, 217, 170, ${
+                            particle.opacity * twinkle
+                        })`;
+
+                    ctx.fill();
+                });
+
+                if (!reducedMotion) {
+                    requestAnimationFrame(animateParticles);
+                }
+            }
+
+            resizeCanvas();
+
+            if (!reducedMotion) {
+                requestAnimationFrame(animateParticles);
+            } else {
+                animateParticles();
+            }
+
+            let resizeTimeout;
+
+            window.addEventListener("resize", () => {
+
+                clearTimeout(resizeTimeout);
+
+                resizeTimeout = setTimeout(
+                    resizeCanvas,
+                    150
+                );
+
+                if (reducedMotion) {
+                    animateParticles();
+                }
+            });
+
+        })();
+    </script>
+
+</body>
+</html>
