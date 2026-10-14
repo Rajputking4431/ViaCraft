@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Supabase Connection Test</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body style="font-family: sans-serif; padding: 20px; background: #fafafa;">
+  <h1>Supabase Connection Test</h1>
+  <div id="status" style="padding: 10px; margin-bottom: 20px; font-weight: bold;">Initializing...</div>
+  <pre id="output" style="background: #eee; padding: 15px; border-radius: 5px; overflow-x: auto;"></pre>
+
+  <script>
+    const url = "https://qjkgrxoqrzykeokocvwc.supabase.co";
+    const apiKey = "sb_publishable_BY7I84CEsEEOS79hf7YL_g_r3Rc-sw1";
+
+    async function runTest() {
+      const statusDiv = document.getElementById("status");
+      const outputPre = document.getElementById("output");
+
+      try {
+        statusDiv.innerText = "Connecting to Supabase...";
+        statusDiv.style.color = "blue";
+
+        const supabaseClient = supabase.createClient(url, apiKey);
+        
+        statusDiv.innerText = "Querying 'categories' table...";
+        const { data, error } = await supabaseClient.from("categories").select("*");
+
+        if (error) {
+          statusDiv.innerText = "Query Failed!";
+          statusDiv.style.color = "red";
+          outputPre.innerText = JSON.stringify(error, null, 2);
+        } else {
+          statusDiv.innerText = "Query Succeeded!";
+          statusDiv.style.color = "green";
+          outputPre.innerText = "Categories count: " + (data ? data.length : 0) + "\n\nData:\n" + JSON.stringify(data, null, 2);
+        }
+      } catch (err) {
+        statusDiv.innerText = "Unexpected Error!";
+        statusDiv.style.color = "red";
+        outputPre.innerText = err.message + "\n" + err.stack;
+      }
+    }
+
+    runTest();
+  </script>
+</body>
+</html>

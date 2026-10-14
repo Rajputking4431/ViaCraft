@@ -1,0 +1,30 @@
+<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Premium luxury gold gradient -->
+    <linearGradient id="gold-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F5D061" />
+      <stop offset="30%" stop-color="#E6B325" />
+      <stop offset="70%" stop-color="#C89315" />
+      <stop offset="100%" stop-color="#9B6E05" />
+    </linearGradient>
+    <!-- Soft background glow -->
+    <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#E6B325" stop-opacity="0.15" />
+      <stop offset="100%" stop-color="#E6B325" stop-opacity="0" />
+    </radialGradient>
+  </defs>
+  <!-- Background Glow -->
+  <circle cx="50" cy="50" r="45" fill="url(#glow)" />
+  <!-- Droplet/Resin outer container (sleek geometric/organic shape) -->
+  <path d="M50 8C27 30 22 55 22 68C22 83.5 34.5 92 50 92C65.5 92 78 83.5 78 68C78 55 73 30 50 8Z" stroke="url(#gold-grad)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+  <!-- Preserve Star Sparkles -->
+  <path d="M72 32C72 32 75 35 75 38C75 35 78 32 78 32C78 32 75 29 75 26C75 29 72 32 72 32Z" fill="url(#gold-grad)" />
+  <path d="M25 45C25 45 27 47 27 49C27 47 29 45 29 45C29 45 27 43 27 41C27 43 25 45 25 45Z" fill="url(#gold-grad)" />
+  <!-- Botanical sprig / Leaf inside resin -->
+  <path d="M42 75C42 75 42 55 58 43" stroke="url(#gold-grad)" stroke-width="1.5" stroke-linecap="round" />
+  <path d="M47 65C45 61 41 61 41 61C41 61 45 63 47 65Z" fill="url(#gold-grad)" />
+  <path d="M51 57C48 54 45 55 45 55C45 55 49 56 51 57Z" fill="url(#gold-grad)" />
+  <path d="M55 50C52 48 49 50 49 50C49 50 53 50 55 50Z" fill="url(#gold-grad)" />
+  <!-- Elegant Serif 'V' integrated -->
+  <path d="M38 35L47 70H51L63 35H57.5L50 60L42.5 35H38Z" fill="url(#gold-grad)" />
+</svg>
