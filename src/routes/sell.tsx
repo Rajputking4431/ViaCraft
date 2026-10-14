@@ -102,6 +102,7 @@ function SellPage() {
   const [agreementLoading, setAgreementLoading] = useState(false);
   const [acceptedAgreement, setAcceptedAgreement] = useState(false);
   const [submittingApplication, setSubmittingApplication] = useState(false);
+  const [submissionError, setSubmissionError] = useState<string | null>(null);
 
   // Correction Resubmission State
   const [resubmittingDocType, setResubmittingDocType] = useState<DocumentType | null>(null);
@@ -235,6 +236,7 @@ function SellPage() {
       return toast.error("You must review and digitally accept the Vendor Agreement to submit");
     }
 
+    setSubmissionError(null);
     setSubmittingApplication(true);
     try {
       // 1. Generate unique slug
@@ -261,11 +263,49 @@ function SellPage() {
         ifscCode: ifscCode.trim().toUpperCase(),
       };
 
-      // 2. Insert into public.vendors with status 'pending' and onboarding_status 'submitted'
-      // Note: We DO NOT insert into user_roles here. Role activation is strictly controlled by admin approval!
-      const { data: newVendor, error: vendorError } = await supabase
+      // 2. Insert into public.vendors with status 'pending'
+      // Try full Phase 1 payload first; fall back to base schema if Phase 1 columns are not yet in the DB
+      let newVendor: any = null;
+
+      const fullVendorPayload = {
+        user_id: user.id,
+        slug,
+        store_name: storeName.trim(),
+        tagline: tagline.trim() || `${businessType} in ${city}, India`,
+        bio: bio.trim(),
+        location: `${city}, ${stateName}`,
+        status: "pending",
+        onboarding_status: "submitted",
+        business_type: businessType,
+        business_address: businessAddressObj,
+        pan_number: panNumber.trim().toUpperCase(),
+        pan_verified: false,
+        gstin: hasGst ? gstin.trim().toUpperCase() : null,
+        gstin_verified: false,
+        udyam_number: hasUdyam ? udyamNumber.trim().toUpperCase() : null,
+        bank_account_details: bankDetailsObj,
+        bank_verified: false,
+        submitted_at: new Date().toISOString(),
+      };
+
+      const { data: v1Data, error: v1Error } = await supabase
         .from("vendors")
-        .insert({
+        .insert(fullVendorPayload as any)
+        .select()
+        .single();
+
+      if (!v1Error && v1Data) {
+        newVendor = v1Data;
+      } else if (
+        v1Error &&
+        (v1Error.message.includes("column") ||
+          v1Error.message.includes("schema cache") ||
+          v1Error.message.includes("does not exist") ||
+          (v1Error as any).code === "PGRST204" ||
+          (v1Error as any).code === "42703")
+      ) {
+        console.warn("Phase 1 vendor columns pending in database. Falling back to base vendor schema:", v1Error.message);
+        const legacyVendorPayload = {
           user_id: user.id,
           slug,
           store_name: storeName.trim(),
@@ -273,23 +313,41 @@ function SellPage() {
           bio: bio.trim(),
           location: `${city}, ${stateName}`,
           status: "pending",
-          onboarding_status: "submitted",
-          business_type: businessType,
-          business_address: businessAddressObj,
-          pan_number: panNumber.trim().toUpperCase(),
-          pan_verified: false,
-          gstin: hasGst ? gstin.trim().toUpperCase() : null,
-          gstin_verified: false,
-          udyam_number: hasUdyam ? udyamNumber.trim().toUpperCase() : null,
-          bank_account_details: bankDetailsObj,
-          bank_verified: false,
-          submitted_at: new Date().toISOString(),
-        } as any)
-        .select()
-        .single();
+        };
 
-      if (vendorError || !newVendor) {
-        throw new Error(vendorError?.message || "Failed to create vendor record");
+        const { data: v2Data, error: v2Error } = await supabase
+          .from("vendors")
+          .insert(legacyVendorPayload as any)
+          .select()
+          .single();
+
+        if (v2Error || !v2Data) {
+          throw new Error(v2Error?.message || v1Error.message);
+        }
+        newVendor = v2Data;
+
+        // Persist banking, tax, and address metadata into existing vendor_profiles table
+        await (supabase as any)
+          .from("vendor_profiles")
+          .upsert({
+            vendor_id: newVendor.id,
+            contact_number: phone.trim(),
+            email: supportEmail.trim() || user.email || "",
+            address: `${streetAddress.trim()}, ${city.trim()}, ${stateName.trim()} - ${pinCode.trim()}`,
+            social_links: {
+              pan_number: panNumber.trim().toUpperCase(),
+              gstin: hasGst ? gstin.trim().toUpperCase() : null,
+              udyam_number: hasUdyam ? udyamNumber.trim().toUpperCase() : null,
+              bank_account_details: bankDetailsObj,
+              business_type: businessType,
+              agreement_version: CURRENT_VENDOR_AGREEMENT_VERSION,
+              representative_name: fullName.trim(),
+              submitted_at: new Date().toISOString(),
+            },
+          })
+          .catch((vpErr: any) => console.warn("vendor_profiles metadata backup warning:", vpErr));
+      } else if (v1Error) {
+        throw new Error(v1Error.message || "Failed to create vendor record");
       }
 
       const vendorId = newVendor.id;
@@ -344,7 +402,21 @@ function SellPage() {
       qc.invalidateQueries({ queryKey: ["my-vendor", user.id] });
       refetchVendor();
     } catch (err: any) {
-      toast.error(err.message || "Failed to submit vendor application");
+      const msg = err?.message || "";
+      if (
+        msg.includes("bank_account_details") ||
+        msg.includes("schema cache") ||
+        msg.includes("column") ||
+        msg.includes("does not exist")
+      ) {
+        const errorText =
+          "Database schema update pending: The Phase 1 Vendor Onboarding migration has not yet been applied to your Supabase project. Please execute 'supabase/migrations/20261014000000_vendor_onboarding_phase1.sql' in your Supabase SQL Editor.";
+        setSubmissionError(errorText);
+        toast.error("Database schema update required in Supabase.", { duration: 6000 });
+      } else {
+        setSubmissionError(err.message || "Failed to submit vendor application");
+        toast.error(err.message || "Failed to submit vendor application");
+      }
     } finally {
       setSubmittingApplication(false);
       setUploadingDocs(false);
@@ -1245,10 +1317,24 @@ function SellPage() {
                   </div>
                 </div>
 
+                {/* Database / Submission Error Banner */}
+                {submissionError && (
+                  <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/25 text-amber-800 dark:text-amber-200 text-xs leading-relaxed flex items-start gap-3 animate-in fade-in duration-200">
+                    <AlertCircle className="h-4 w-4 shrink-0 mt-0.5 text-amber-600 dark:text-amber-400" />
+                    <div className="space-y-1">
+                      <p className="font-semibold text-foreground">Action Required</p>
+                      <p>{submissionError}</p>
+                    </div>
+                  </div>
+                )}
+
                 <div className="flex justify-between pt-4">
                   <button
                     type="button"
-                    onClick={() => setStep(4)}
+                    onClick={() => {
+                      setSubmissionError(null);
+                      setStep(4);
+                    }}
                     disabled={submittingApplication}
                     className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-border text-sm font-semibold hover:bg-muted transition-all cursor-pointer disabled:opacity-50"
                   >

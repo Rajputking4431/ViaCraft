@@ -46,6 +46,7 @@ export function AuthPage() {
   const [emailOtpSent, setEmailOtpSent] = useState(false);
   const [emailOtpCode, setEmailOtpCode] = useState("");
   const [emailCooldown, setEmailCooldown] = useState(0);
+  const [emailConfigError, setEmailConfigError] = useState<string | null>(null);
 
   // SMS OTP state (+91 Indian numbers)
   const [mobileNumber, setMobileNumber] = useState("");
@@ -170,6 +171,8 @@ export function AuthPage() {
   // =========================================================================
   const handleRequestEmailOtp = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
+    setEmailConfigError(null);
+
     const parsed = z.string().email("Please enter a valid email address").safeParse(emailOtpAddress.trim());
     if (!parsed.success) {
       toast.error(parsed.error.issues[0].message);
@@ -192,7 +195,24 @@ export function AuthPage() {
         },
       });
 
-      if (error) throw error;
+      if (error) {
+        const errorLower = error.message.toLowerCase();
+        // Catch Supabase built-in mailer limit or Custom SMTP misconfiguration
+        if (
+          errorLower.includes("magic link") ||
+          errorLower.includes("rate limit") ||
+          errorLower.includes("provider") ||
+          errorLower.includes("smtp") ||
+          errorLower.includes("unexpected_failure") ||
+          (error as any).status === 500
+        ) {
+          const configMsg =
+            "Email OTP delivery is currently unavailable because the Supabase email rate limit was reached or Custom SMTP is not yet active. Please sign in using Password or Continue with Google.";
+          setEmailConfigError(configMsg);
+          throw new Error("Unable to dispatch verification code. Please use Password or Google sign-in.");
+        }
+        throw error;
+      }
 
       setEmailOtpSent(true);
       startEmailCooldown(60);
@@ -578,6 +598,7 @@ export function AuthPage() {
               onClick={() => {
                 setActiveTab("email-otp");
                 setEmailOtpSent(false);
+                setEmailConfigError(null);
               }}
               className={`py-2 text-xs font-semibold rounded-lg flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
                 activeTab === "email-otp"
@@ -606,7 +627,10 @@ export function AuthPage() {
             </button>
             <button
               type="button"
-              onClick={() => setActiveTab("password")}
+              onClick={() => {
+                setActiveTab("password");
+                setEmailConfigError(null);
+              }}
               className={`py-2 text-xs font-semibold rounded-lg flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
                 activeTab === "password"
                   ? "bg-card text-foreground shadow-xs"
@@ -623,6 +647,36 @@ export function AuthPage() {
           {/* ============================================================= */}
           {activeTab === "email-otp" && (
             <div className="space-y-5">
+              {emailConfigError && (
+                <div className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/25 text-amber-700 dark:text-amber-300 text-xs leading-relaxed space-y-2.5 animate-in fade-in duration-200">
+                  <div className="flex items-start gap-2.5">
+                    <AlertCircle className="h-4 w-4 shrink-0 mt-0.5 text-amber-500" />
+                    <span>{emailConfigError}</span>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2 pt-1 pl-6">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (emailOtpAddress.trim()) {
+                          setPasswordEmail(emailOtpAddress.trim());
+                        }
+                        setActiveTab("password");
+                      }}
+                      className="px-3 py-1.5 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-900 dark:text-amber-200 font-semibold text-xs transition-colors cursor-pointer"
+                    >
+                      Use Password Instead &rarr;
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setShowGoogleChooser(true)}
+                      className="px-3 py-1.5 rounded-lg bg-card hover:bg-muted text-foreground border border-border font-semibold text-xs transition-colors cursor-pointer"
+                    >
+                      Sign In with Google
+                    </button>
+                  </div>
+                </div>
+              )}
+
               {!emailOtpSent ? (
                 <form onSubmit={handleRequestEmailOtp} className="space-y-4">
                   <div>
@@ -634,7 +688,10 @@ export function AuthPage() {
                       required
                       placeholder="name@example.com"
                       value={emailOtpAddress}
-                      onChange={(e) => setEmailOtpAddress(e.target.value)}
+                      onChange={(e) => {
+                        setEmailOtpAddress(e.target.value);
+                        if (emailConfigError) setEmailConfigError(null);
+                      }}
                       className="mt-1 w-full px-4 py-3 rounded-xl bg-card border border-border focus:border-accent outline-none text-sm transition-colors"
                     />
                     <p className="mt-1 text-[11px] text-muted-foreground">

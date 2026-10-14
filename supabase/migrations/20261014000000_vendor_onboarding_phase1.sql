@@ -124,14 +124,16 @@ STABLE
 SECURITY DEFINER
 SET search_path = public, pg_temp
 AS $$
-  SELECT EXISTS (
-    SELECT 1 FROM public.user_roles 
-    WHERE user_id = _user_id AND role = _role
-  );
+  SELECT CASE 
+    WHEN _user_id IS NULL THEN false
+    ELSE EXISTS (
+      SELECT 1 FROM public.user_roles 
+      WHERE user_id = _user_id AND role = _role
+    )
+  END;
 $$;
 
-GRANT EXECUTE ON FUNCTION public.has_role(UUID, public.app_role) TO authenticated;
-REVOKE EXECUTE ON FUNCTION public.has_role(UUID, public.app_role) FROM anon, PUBLIC;
+GRANT EXECUTE ON FUNCTION public.has_role(UUID, public.app_role) TO anon, authenticated;
 
 -- --------------------------------------------------------------------
 -- 5. TRIGGER: PREVENT VENDOR STATUS TAMPERING ON INSERT & UPDATE
