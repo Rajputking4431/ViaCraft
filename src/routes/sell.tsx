@@ -263,49 +263,37 @@ function SellPage() {
         ifscCode: ifscCode.trim().toUpperCase(),
       };
 
-      // 2. Insert into public.vendors with status 'pending'
-      // Try full Phase 1 payload first; fall back to base schema if Phase 1 columns are not yet in the DB
-      let newVendor: any = null;
+      // 2. Safe & idempotent vendor insert/lookup
+      let vendorId: string | null = null;
 
-      const fullVendorPayload = {
-        user_id: user.id,
-        slug,
-        store_name: storeName.trim(),
-        tagline: tagline.trim() || `${businessType} in ${city}, India`,
-        bio: bio.trim(),
-        location: `${city}, ${stateName}`,
-        status: "pending",
-        onboarding_status: "submitted",
-        business_type: businessType,
-        business_address: businessAddressObj,
-        pan_number: panNumber.trim().toUpperCase(),
-        pan_verified: false,
-        gstin: hasGst ? gstin.trim().toUpperCase() : null,
-        gstin_verified: false,
-        udyam_number: hasUdyam ? udyamNumber.trim().toUpperCase() : null,
-        bank_account_details: bankDetailsObj,
-        bank_verified: false,
-        submitted_at: new Date().toISOString(),
-      };
-
-      const { data: v1Data, error: v1Error } = await supabase
+      // Check if this user already has a vendor row
+      const { data: existingVendor } = await supabase
         .from("vendors")
-        .insert(fullVendorPayload as any)
-        .select()
-        .single();
+        .select("id")
+        .eq("user_id", user.id)
+        .maybeSingle();
 
-      if (!v1Error && v1Data) {
-        newVendor = v1Data;
-      } else if (
-        v1Error &&
-        (v1Error.message.includes("column") ||
-          v1Error.message.includes("schema cache") ||
-          v1Error.message.includes("does not exist") ||
-          (v1Error as any).code === "PGRST204" ||
-          (v1Error as any).code === "42703")
-      ) {
-        console.warn("Phase 1 vendor columns pending in database. Falling back to base vendor schema:", v1Error.message);
-        const legacyVendorPayload = {
+      if (existingVendor?.id) {
+        vendorId = existingVendor.id;
+        // Update basic store info
+        try {
+          await supabase
+            .from("vendors")
+            .update({
+              store_name: storeName.trim(),
+              tagline: tagline.trim() || `${businessType} in ${city}, India`,
+              bio: bio.trim(),
+              location: `${city}, ${stateName}`,
+              status: "pending",
+              bank_account_details: bankDetailsObj,
+            } as any)
+            .eq("id", vendorId);
+        } catch {
+          // ignore non-critical update error
+        }
+      } else {
+        // Try insert with bank_account_details first (since the column now exists)
+        const primaryInsert: any = {
           user_id: user.id,
           slug,
           store_name: storeName.trim(),
@@ -313,24 +301,55 @@ function SellPage() {
           bio: bio.trim(),
           location: `${city}, ${stateName}`,
           status: "pending",
+          bank_account_details: bankDetailsObj,
         };
 
-        const { data: v2Data, error: v2Error } = await supabase
+        const { data: insData, error: insError } = await supabase
           .from("vendors")
-          .insert(legacyVendorPayload as any)
-          .select()
-          .single();
+          .insert(primaryInsert)
+          .select("id")
+          .maybeSingle();
 
-        if (v2Error || !v2Data) {
-          throw new Error(v2Error?.message || v1Error.message);
+        if (insData?.id) {
+          vendorId = insData.id;
+        } else {
+          // If bank_account_details or select fails, insert with bare minimum columns
+          delete primaryInsert.bank_account_details;
+          const { data: minData, error: minError } = await supabase
+            .from("vendors")
+            .insert(primaryInsert)
+            .select("id")
+            .maybeSingle();
+
+          if (minData?.id) {
+            vendorId = minData.id;
+          } else {
+            // Final check: fetch by user_id in case insert succeeded but select failed due to RLS
+            const { data: refetched } = await supabase
+              .from("vendors")
+              .select("id")
+              .eq("user_id", user.id)
+              .maybeSingle();
+
+            if (refetched?.id) {
+              vendorId = refetched.id;
+            } else {
+              throw new Error(minError?.message || insError?.message || "Failed to create vendor record");
+            }
+          }
         }
-        newVendor = v2Data;
+      }
 
-        // Persist banking, tax, and address metadata into existing vendor_profiles table
+      if (!vendorId) {
+        throw new Error("Unable to establish vendor identifier. Please try again.");
+      }
+
+      // Persist full business, address, tax and banking metadata into vendor_profiles
+      try {
         await (supabase as any)
           .from("vendor_profiles")
           .upsert({
-            vendor_id: newVendor.id,
+            vendor_id: vendorId,
             contact_number: phone.trim(),
             email: supportEmail.trim() || user.email || "",
             address: `${streetAddress.trim()}, ${city.trim()}, ${stateName.trim()} - ${pinCode.trim()}`,
@@ -340,17 +359,13 @@ function SellPage() {
               udyam_number: hasUdyam ? udyamNumber.trim().toUpperCase() : null,
               bank_account_details: bankDetailsObj,
               business_type: businessType,
-              agreement_version: CURRENT_VENDOR_AGREEMENT_VERSION,
               representative_name: fullName.trim(),
               submitted_at: new Date().toISOString(),
             },
-          })
-          .catch((vpErr: any) => console.warn("vendor_profiles metadata backup warning:", vpErr));
-      } else if (v1Error) {
-        throw new Error(v1Error.message || "Failed to create vendor record");
+          });
+      } catch (vpErr: any) {
+        console.warn("vendor_profiles metadata backup warning:", vpErr);
       }
-
-      const vendorId = newVendor.id;
 
       // 3. Upload KYC Documents to Private Supabase Storage bucket 'vendor-documents'
       setUploadingDocs(true);
