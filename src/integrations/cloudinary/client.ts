@@ -12,11 +12,17 @@ export async function uploadToCloudinary(
   file: File,
   onProgress?: (progress: number) => void,
 ): Promise<string> {
-  // 1. Validation
+  // 1. Validation & Resource Type Detection
   const isVideo = file.type.startsWith("video/");
-  const resourceType = isVideo ? "video" : "image";
+  const isPdfOrDocument =
+    file.type === "application/pdf" ||
+    file.name.toLowerCase().endsWith(".pdf") ||
+    file.type.startsWith("application/");
+
+  let resourceType: "video" | "image" | "raw" = "image";
 
   if (isVideo) {
+    resourceType = "video";
     const validVideoTypes = [
       "video/mp4",
       "video/quicktime",
@@ -34,17 +40,24 @@ export async function uploadToCloudinary(
     if (file.size > maxVideoSize) {
       throw new Error(`Video ${file.name} is too large. Maximum size is 25MB.`);
     }
+  } else if (isPdfOrDocument) {
+    resourceType = "raw";
+    const maxDocSize = 10 * 1024 * 1024; // 10MB
+    if (file.size > maxDocSize) {
+      throw new Error(`Document ${file.name} is too large. Maximum size is 10MB.`);
+    }
   } else {
-    const validImageTypes = ["image/jpeg", "image/png", "image/webp"];
-    if (!validImageTypes.includes(file.type)) {
+    resourceType = "image";
+    const validImageTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp", "image/gif"];
+    if (!validImageTypes.includes(file.type.toLowerCase())) {
       throw new Error(
-        `Unsupported image type: ${file.name}. Only JPG, PNG, and WEBP formats are supported.`,
+        `Unsupported image type: ${file.name}. Only JPG, PNG, WEBP, and PDF documents are supported.`,
       );
     }
 
-    const maxImageSize = 5 * 1024 * 1024; // 5MB
+    const maxImageSize = 10 * 1024 * 1024; // 10MB
     if (file.size > maxImageSize) {
-      throw new Error(`Image ${file.name} is too large. Maximum size is 5MB.`);
+      throw new Error(`Image ${file.name} is too large. Maximum size is 10MB.`);
     }
   }
 

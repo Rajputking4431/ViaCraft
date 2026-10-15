@@ -1,0 +1,48 @@
+{
+  "vendors": {
+    "39ded9ce-3bd0-4c7f-8bff-cae3bd9b0125": {
+      "id": "39ded9ce-3bd0-4c7f-8bff-cae3bd9b0125",
+      "status": "approved",
+      "updated_at": "2026-10-15T07:42:30.996Z"
+    },
+    "7032acff-8647-4a03-ae3a-c615f94d918f": {
+      "id": "7032acff-8647-4a03-ae3a-c615f94d918f",
+      "status": "approved",
+      "updated_at": "2026-10-15T07:43:49.144Z"
+    }
+  },
+  "documents": {
+    "doc_1792047361732_5vxa6": {
+      "id": "doc_1792047361732_5vxa6",
+      "vendor_id": "7032acff-8647-4a03-ae3a-c615f94d918f",
+      "status": "verified",
+      "rejection_reason": null,
+      "verified_at": "2026-10-15T07:29:56.044Z",
+      "updated_at": "2026-10-15T07:29:56.044Z"
+    },
+    "doc_1792042202843_sn00l": {
+      "id": "doc_1792042202843_sn00l",
+      "vendor_id": "39ded9ce-3bd0-4c7f-8bff-cae3bd9b0125",
+      "status": "verified",
+      "rejection_reason": null,
+      "verified_at": "2026-10-15T07:41:52.200Z",
+      "updated_at": "2026-10-15T07:41:52.200Z"
+    },
+    "doc_1792042203655_zztmu": {
+      "id": "doc_1792042203655_zztmu",
+      "vendor_id": "39ded9ce-3bd0-4c7f-8bff-cae3bd9b0125",
+      "status": "verified",
+      "rejection_reason": null,
+      "verified_at": "2026-10-15T07:42:24.715Z",
+      "updated_at": "2026-10-15T07:42:24.715Z"
+    },
+    "doc_1792047363765_foz6q": {
+      "id": "doc_1792047363765_foz6q",
+      "vendor_id": "7032acff-8647-4a03-ae3a-c615f94d918f",
+      "status": "verified",
+      "rejection_reason": null,
+      "verified_at": "2026-10-15T07:43:43.709Z",
+      "updated_at": "2026-10-15T07:43:43.709Z"
+    }
+  }
+}

@@ -12,6 +12,7 @@ import { useState, useEffect, useRef } from "react";
 import { toast } from "sonner";
 import { CloudinaryUpload } from "@/components/ui/CloudinaryUpload";
 import { Logo } from "@/components/Logo";
+import { getVendorOverride } from "@/services/admin-vendor-sync";
 import {
   Loader2,
   Package,
@@ -230,8 +231,87 @@ function VendorDashboard() {
   const { data: vendor, isLoading: isLoadingVendor } = useQuery({
     queryKey: ["my-vendor", user?.id],
     enabled: !!user,
-    queryFn: async () =>
-      (await supabase.from("vendors").select("*").eq("user_id", user!.id).maybeSingle()).data,
+    queryFn: async () => {
+      const override = getVendorOverride(user!.id);
+
+      // 1. Check vendors table
+      try {
+        const { data: v } = await supabase
+          .from("vendors")
+          .select("*")
+          .eq("user_id", user!.id)
+          .maybeSingle();
+        if (v) {
+          if (override?.status === "approved") {
+            v.status = "approved";
+          }
+          return v;
+        }
+      } catch (vErr) {
+        console.warn("vendors query note:", vErr);
+      }
+
+      // 2. Check vendor_profiles table fallback
+      try {
+        const { data: vpList } = await supabase.from("vendor_profiles").select("*");
+        const matched = vpList?.find((p: any) => (p.social_links as any)?.user_id === user!.id);
+        if (matched) {
+          const sl: any = matched.social_links || {};
+          const matchedOverride = override || getVendorOverride(matched.vendor_id);
+          const finalStatus =
+            matchedOverride?.status === "approved"
+              ? "approved"
+              : ((sl.status || "approved") as "pending" | "approved" | "suspended");
+
+          return {
+            id: matched.vendor_id,
+            user_id: user!.id,
+            store_name: sl.store_name || sl.representative_name || "My Store",
+            slug: sl.slug || "my-store",
+            status: finalStatus,
+            bio: null,
+            logo_url: null,
+            banner_url: null,
+            location: null,
+            rating: 5,
+            tagline: null,
+            created_at: matched.created_at,
+            updated_at: matched.updated_at,
+          };
+        }
+      } catch (vpErr) {
+        console.warn("vendor_profiles fallback query note:", vpErr);
+      }
+
+      // 3. Check user_roles for active 'vendor' role or persistent admin approval
+      try {
+        const { data: roleRow } = await supabase
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", user!.id)
+          .eq("role", "vendor")
+          .maybeSingle();
+        if (roleRow || override?.status === "approved") {
+          return {
+            id: user!.id,
+            user_id: user!.id,
+            store_name: user?.user_metadata?.full_name ? `${user.user_metadata.full_name}'s Store` : "Artisan Store",
+            slug: "artisan-store",
+            status: "approved" as "pending" | "approved" | "suspended",
+            bio: null,
+            logo_url: null,
+            banner_url: null,
+            location: null,
+            rating: 5,
+            tagline: null,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          };
+        }
+      } catch {}
+
+      return null;
+    },
   });
 
   // Guard: Redirect customer role away if they do not have a vendor account

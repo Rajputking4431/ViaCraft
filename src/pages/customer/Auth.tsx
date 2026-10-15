@@ -34,6 +34,16 @@ const passwordSchema = z.object({
   fullName: z.string().min(2, "Enter your name").optional(),
 });
 
+const signUpSchema = z.object({
+  fullName: z.string().trim().min(2, "Full Name must be at least 2 characters"),
+  mobile: z
+    .string()
+    .trim()
+    .regex(/^[6-9]\d{9}$/, "Please enter a valid 10-digit Indian mobile number"),
+  email: z.string().trim().email("Please enter a valid email address"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
+});
+
 export function AuthPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -190,13 +200,29 @@ export function AuthPage() {
       const { error } = await supabase.auth.signInWithOtp({
         email: cleanEmail,
         options: {
-          shouldCreateUser: true,
+          shouldCreateUser: false,
           emailRedirectTo: `${window.location.origin}/`,
         },
       });
 
       if (error) {
         const errorLower = error.message.toLowerCase();
+        // If account is not registered, guide user to complete registration with all required fields
+        if (
+          errorLower.includes("signups not allowed") ||
+          errorLower.includes("user not found") ||
+          errorLower.includes("user_not_found") ||
+          errorLower.includes("not registered") ||
+          errorLower.includes("invalid_grant") ||
+          (error as any).status === 400 ||
+          (error as any).status === 422
+        ) {
+          toast.error("No registered account found with this email. Please create an account first.");
+          setPasswordEmail(cleanEmail);
+          setMode("signup");
+          return;
+        }
+
         // Catch Supabase built-in mailer limit or Custom SMTP misconfiguration
         if (
           errorLower.includes("magic link") ||
@@ -310,10 +336,25 @@ export function AuthPage() {
         phone: e164Phone,
         options: {
           channel: "sms",
+          shouldCreateUser: false,
         },
       });
 
       if (error) {
+        const errorLower = error.message.toLowerCase();
+        if (
+          errorLower.includes("signups not allowed") ||
+          errorLower.includes("user not found") ||
+          errorLower.includes("not registered") ||
+          (error as any).status === 400 ||
+          (error as any).status === 422
+        ) {
+          toast.error("No registered account found with this mobile number. Please register first.");
+          setMobileNumber(validation.clean!);
+          setMode("signup");
+          return;
+        }
+
         // Clear message if SMS provider credentials are not yet configured in Supabase
         if (
           error.message.toLowerCase().includes("provider") ||
@@ -385,30 +426,111 @@ export function AuthPage() {
   // =========================================================================
   const handlePasswordSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
     if (mode === "forgot-password") {
       const emailParsed = z.string().email("Enter a valid email").safeParse(passwordEmail);
       if (!emailParsed.success) {
         toast.error(emailParsed.error.issues[0].message);
         return;
       }
-    } else {
-      const parsed = passwordSchema.safeParse({
-        email: passwordEmail,
+      setBusy(true);
+      try {
+        const result = await sendPasswordResetEmail({
+          data: {
+            email: passwordEmail,
+            redirectTo: `${window.location.origin}/reset-password`,
+          },
+        });
+        if (result?.error) throw new Error(result.error);
+        toast.success("Password reset link sent! Check your email inbox.");
+        setMode("signin");
+      } catch (err: any) {
+        toast.error(err.message || "Failed to send reset link");
+      } finally {
+        setBusy(false);
+      }
+      return;
+    }
+
+    if (mode === "signup") {
+      const cleanMobile = cleanIndianMobile(mobileNumber);
+      const parsed = signUpSchema.safeParse({
+        fullName: fullName.trim(),
+        mobile: cleanMobile,
+        email: passwordEmail.trim(),
         password,
-        fullName: mode === "signup" ? fullName : undefined,
       });
       if (!parsed.success) {
         toast.error(parsed.error.issues[0].message);
         return;
       }
-    }
+      if (!acceptTerms) {
+        toast.error("You must accept the Terms & Conditions and Privacy Policy to continue");
+        return;
+      }
 
-    if (mode === "signup" && !acceptTerms) {
-      toast.error("You must accept the Terms & Conditions and Privacy Policy to continue");
+      setBusy(true);
+      try {
+        const cleanEmail = parsed.data.email.toLowerCase();
+        const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+          email: cleanEmail,
+          password: parsed.data.password,
+          options: {
+            emailRedirectTo: `${window.location.origin}/`,
+            data: {
+              full_name: parsed.data.fullName,
+              phone: cleanMobile,
+              mobile: cleanMobile,
+            },
+          },
+        });
+
+        if (signUpError) throw signUpError;
+
+        if (signUpData?.user?.id) {
+          try {
+            await supabase.from("profiles").upsert({
+              id: signUpData.user.id,
+              full_name: parsed.data.fullName,
+              phone: cleanMobile,
+              updated_at: new Date().toISOString(),
+            });
+          } catch (pErr) {
+            console.warn("Profile sync note:", pErr);
+          }
+        }
+
+        sendWelcomeEmail({ data: { email: cleanEmail, fullName: parsed.data.fullName } }).catch((err) => {
+          console.error("Welcome email trigger failure", err);
+        });
+
+        if (signUpData?.session) {
+          toast.success("Account created and signed in successfully! Welcome to ViaCraft.");
+          const destination = redirect && redirect.startsWith("/") ? redirect : "/";
+          navigate({ to: destination });
+        } else {
+          toast.success("Account created! Check your email to confirm your account.");
+          setMode("signin");
+        }
+      } catch (err: any) {
+        toast.error(err.message || "Registration failed");
+      } finally {
+        setBusy(false);
+      }
       return;
     }
 
-    if (mode === "signin" && lockoutTime > 0) {
+    // mode === "signin"
+    const parsed = passwordSchema.safeParse({
+      email: passwordEmail,
+      password,
+    });
+    if (!parsed.success) {
+      toast.error(parsed.error.issues[0].message);
+      return;
+    }
+
+    if (lockoutTime > 0) {
       toast.error(
         isGlobalLockout
           ? `Too many failed login attempts on this device. Try again in ${lockoutTime}s.`
@@ -419,48 +541,19 @@ export function AuthPage() {
 
     setBusy(true);
     try {
-      if (mode === "signup") {
-        const { error } = await supabase.auth.signUp({
-          email: passwordEmail,
-          password,
-          options: {
-            emailRedirectTo: `${window.location.origin}/`,
-            data: { full_name: fullName },
-          },
-        });
-        if (error) throw error;
-        toast.success("Account created! Check your email to confirm.");
-
-        sendWelcomeEmail({ data: { email: passwordEmail, fullName } }).catch((err) => {
-          console.error("Welcome email trigger failure", err);
-        });
-      } else if (mode === "signin") {
-        const { error } = await supabase.auth.signInWithPassword({
-          email: passwordEmail,
-          password,
-        });
-        if (error) {
-          const limits = recordFailedAttempt(passwordEmail);
-          if (limits.emailLockoutUntil || limits.globalLockoutUntil) {
-            toast.error("Too many failed attempts. This account/device has been temporarily locked.");
-          }
-          throw error;
+      const { error } = await supabase.auth.signInWithPassword({
+        email: passwordEmail,
+        password,
+      });
+      if (error) {
+        const limits = recordFailedAttempt(passwordEmail);
+        if (limits.emailLockoutUntil || limits.globalLockoutUntil) {
+          toast.error("Too many failed attempts. This account/device has been temporarily locked.");
         }
-        resetAttempts(passwordEmail);
-        toast.success("Welcome back!");
-      } else if (mode === "forgot-password") {
-        const result = await sendPasswordResetEmail({
-          data: {
-            email: passwordEmail,
-            redirectTo: `${window.location.origin}/reset-password`,
-          },
-        });
-        if (result?.error) {
-          throw new Error(result.error);
-        }
-        toast.success("Password reset link sent! Check your email inbox.");
-        setMode("signin");
+        throw error;
       }
+      resetAttempts(passwordEmail);
+      toast.success("Welcome back!");
     } catch (err: any) {
       toast.error(err.message || "Authentication failed");
     } finally {
@@ -554,93 +647,137 @@ export function AuthPage() {
           <p className="text-xs uppercase tracking-[0.25em] text-accent mb-2 font-bold">
             Customer Authentication
           </p>
-          <h1 className="font-display text-3xl sm:text-4xl mb-6">
-            Welcome to ViaCraft
+          <h1 className="font-display text-3xl sm:text-4xl mb-2">
+            {mode === "signup" ? "Create Account" : "Welcome to ViaCraft"}
           </h1>
+          <p className="text-xs text-muted-foreground mb-6">
+            {mode === "signup"
+              ? "All 4 details (Full Name, Mobile Number, Email ID, and Password) are required to register."
+              : "Sign in with your registered account credentials or secure OTP."}
+          </p>
 
-          {/* Quick Google Sign In */}
-          <button
-            onClick={() => setShowGoogleChooser(true)}
-            disabled={busy}
-            className="w-full mb-6 py-3 rounded-full border border-border bg-card hover:border-accent transition-all text-sm font-medium flex items-center justify-center gap-3 shadow-xs cursor-pointer disabled:opacity-50"
-          >
-            <svg className="h-4 w-4" viewBox="0 0 24 24">
-              <path
-                fill="#4285F4"
-                d="M22.5 12.2c0-.7-.1-1.4-.2-2H12v3.8h5.9c-.3 1.4-1 2.5-2.2 3.3v2.7h3.5c2-1.9 3.3-4.7 3.3-7.8z"
-              />
-              <path
-                fill="#34A853"
-                d="M12 23c3 0 5.5-1 7.3-2.7l-3.5-2.7c-1 .7-2.3 1.1-3.8 1.1-2.9 0-5.4-2-6.3-4.6H2.1v2.9C3.9 20.5 7.7 23 12 23z"
-              />
-              <path
-                fill="#FBBC05"
-                d="M5.7 14.1c-.2-.7-.4-1.4-.4-2.1s.1-1.4.4-2.1V7H2.1C1.4 8.5 1 10.2 1 12s.4 3.5 1.1 5l3.6-2.9z"
-              />
-              <path
-                fill="#EA4335"
-                d="M12 5.4c1.6 0 3.1.6 4.2 1.6L19.3 4C17.5 2.3 15 1.2 12 1.2 7.7 1.2 3.9 3.7 2.1 7.4l3.6 2.9c.9-2.6 3.4-4.9 6.3-4.9z"
-              />
-            </svg>
-            Continue with Google
-          </button>
-
-          <div className="flex items-center gap-3 mb-6 text-xs uppercase tracking-wider text-muted-foreground">
-            <div className="flex-1 h-px bg-border" />
-            <span>or choose method</span>
-            <div className="flex-1 h-px bg-border" />
-          </div>
-
-          {/* Authentication Channel Tabs */}
-          <div className="grid grid-cols-3 p-1 rounded-xl bg-muted/60 border border-border mb-6">
+          {/* Mode Switcher: Sign In vs Create Account */}
+          <div className="grid grid-cols-2 p-1 rounded-2xl bg-muted/70 border border-border mb-6">
             <button
               type="button"
               onClick={() => {
-                setActiveTab("email-otp");
-                setEmailOtpSent(false);
+                setMode("signin");
                 setEmailConfigError(null);
-              }}
-              className={`py-2 text-xs font-semibold rounded-lg flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
-                activeTab === "email-otp"
-                  ? "bg-card text-foreground shadow-xs"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              <Mail className="h-3.5 w-3.5" />
-              Email OTP
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setActiveTab("sms-otp");
-                setSmsOtpSent(false);
                 setSmsConfigError(null);
               }}
-              className={`py-2 text-xs font-semibold rounded-lg flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
-                activeTab === "sms-otp"
-                  ? "bg-card text-foreground shadow-xs"
+              className={`py-2.5 text-xs sm:text-sm font-bold rounded-xl transition-all cursor-pointer ${
+                mode === "signin" || mode === "forgot-password"
+                  ? "bg-card text-foreground shadow-sm"
                   : "text-muted-foreground hover:text-foreground"
               }`}
             >
-              <Smartphone className="h-3.5 w-3.5" />
-              SMS OTP
+              Sign In
             </button>
             <button
               type="button"
               onClick={() => {
+                setMode("signup");
                 setActiveTab("password");
                 setEmailConfigError(null);
+                setSmsConfigError(null);
               }}
-              className={`py-2 text-xs font-semibold rounded-lg flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
-                activeTab === "password"
-                  ? "bg-card text-foreground shadow-xs"
+              className={`py-2.5 text-xs sm:text-sm font-bold rounded-xl transition-all cursor-pointer ${
+                mode === "signup"
+                  ? "bg-card text-foreground shadow-sm"
                   : "text-muted-foreground hover:text-foreground"
               }`}
             >
-              <KeyRound className="h-3.5 w-3.5" />
-              Password
+              Create Account (Register)
             </button>
           </div>
+
+          {mode !== "signup" && (
+            <>
+              {/* Quick Google Sign In */}
+              <button
+                onClick={() => setShowGoogleChooser(true)}
+                disabled={busy}
+                className="w-full mb-6 py-3 rounded-full border border-border bg-card hover:border-accent transition-all text-sm font-medium flex items-center justify-center gap-3 shadow-xs cursor-pointer disabled:opacity-50"
+              >
+                <svg className="h-4 w-4" viewBox="0 0 24 24">
+                  <path
+                    fill="#4285F4"
+                    d="M22.5 12.2c0-.7-.1-1.4-.2-2H12v3.8h5.9c-.3 1.4-1 2.5-2.2 3.3v2.7h3.5c2-1.9 3.3-4.7 3.3-7.8z"
+                  />
+                  <path
+                    fill="#34A853"
+                    d="M12 23c3 0 5.5-1 7.3-2.7l-3.5-2.7c-1 .7-2.3 1.1-3.8 1.1-2.9 0-5.4-2-6.3-4.6H2.1v2.9C3.9 20.5 7.7 23 12 23z"
+                  />
+                  <path
+                    fill="#FBBC05"
+                    d="M5.7 14.1c-.2-.7-.4-1.4-.4-2.1s.1-1.4.4-2.1V7H2.1C1.4 8.5 1 10.2 1 12s.4 3.5 1.1 5l3.6-2.9z"
+                  />
+                  <path
+                    fill="#EA4335"
+                    d="M12 5.4c1.6 0 3.1.6 4.2 1.6L19.3 4C17.5 2.3 15 1.2 12 1.2 7.7 1.2 3.9 3.7 2.1 7.4l3.6 2.9c.9-2.6 3.4-4.9 6.3-4.9z"
+                  />
+                </svg>
+                Continue with Google
+              </button>
+
+              <div className="flex items-center gap-3 mb-6 text-xs uppercase tracking-wider text-muted-foreground">
+                <div className="flex-1 h-px bg-border" />
+                <span>or choose sign in method</span>
+                <div className="flex-1 h-px bg-border" />
+              </div>
+
+              {/* Authentication Channel Tabs */}
+              <div className="grid grid-cols-3 p-1 rounded-xl bg-muted/60 border border-border mb-6">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setActiveTab("email-otp");
+                    setEmailOtpSent(false);
+                    setEmailConfigError(null);
+                  }}
+                  className={`py-2 text-xs font-semibold rounded-lg flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                    activeTab === "email-otp"
+                      ? "bg-card text-foreground shadow-xs"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  <Mail className="h-3.5 w-3.5" />
+                  Email OTP
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setActiveTab("sms-otp");
+                    setSmsOtpSent(false);
+                    setSmsConfigError(null);
+                  }}
+                  className={`py-2 text-xs font-semibold rounded-lg flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                    activeTab === "sms-otp"
+                      ? "bg-card text-foreground shadow-xs"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  <Smartphone className="h-3.5 w-3.5" />
+                  SMS OTP
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setActiveTab("password");
+                    setEmailConfigError(null);
+                  }}
+                  className={`py-2 text-xs font-semibold rounded-lg flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                    activeTab === "password"
+                      ? "bg-card text-foreground shadow-xs"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  <KeyRound className="h-3.5 w-3.5" />
+                  Password
+                </button>
+              </div>
+            </>
+          )}
 
           {/* ============================================================= */}
           {/* TAB 1: EMAIL OTP WORKFLOW */}
@@ -885,26 +1022,137 @@ export function AuthPage() {
           {/* ============================================================= */}
           {/* TAB 3: PASSWORD LOGIN & REGISTRATION (PRESERVED) */}
           {/* ============================================================= */}
-          {activeTab === "password" && (
-            <form onSubmit={handlePasswordSubmit} className="space-y-4">
-              {mode === "signup" && (
-                <div>
-                  <label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">
-                    Full Name
-                  </label>
-                  <input
-                    value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
-                    required
-                    placeholder="Your legal name"
-                    className="mt-1 w-full px-4 py-3 rounded-xl bg-card border border-border focus:border-accent outline-none text-sm"
-                  />
-                </div>
-              )}
+          {/* ============================================================= */}
+          {/* REGISTRATION FORM (MODE === SIGNUP): ALL 4 DETAILS MANDATORY */}
+          {/* ============================================================= */}
+          {mode === "signup" && (
+            <form onSubmit={handlePasswordSubmit} className="space-y-4 animate-in fade-in duration-200">
+              <div>
+                <label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">
+                  Full Name <span className="text-rose-500">*</span>
+                </label>
+                <input
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  required
+                  placeholder="Enter your full legal name"
+                  className="mt-1 w-full px-4 py-3 rounded-xl bg-card border border-border focus:border-accent outline-none text-sm"
+                />
+              </div>
 
               <div>
                 <label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">
-                  Email
+                  Mobile Number <span className="text-rose-500">*</span>
+                </label>
+                <div className="mt-1 relative flex items-center">
+                  <div className="absolute left-3 flex items-center gap-1.5 text-xs font-semibold text-muted-foreground bg-muted/80 px-2 py-1 rounded-md pointer-events-none border border-border/60">
+                    <span>🇮🇳</span>
+                    <span>+91</span>
+                  </div>
+                  <input
+                    type="tel"
+                    value={mobileNumber}
+                    onChange={(e) => setMobileNumber(e.target.value.replace(/\D/g, "").slice(0, 10))}
+                    required
+                    maxLength={10}
+                    placeholder="10-digit Indian mobile number"
+                    className="w-full pl-20 pr-4 py-3 rounded-xl bg-card border border-border focus:border-accent outline-none text-sm font-mono tracking-wide"
+                  />
+                </div>
+                <p className="mt-1 text-[11px] text-muted-foreground">
+                  Required for delivery tracking, order alerts, and OTP verification.
+                </p>
+              </div>
+
+              <div>
+                <label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">
+                  Email ID <span className="text-rose-500">*</span>
+                </label>
+                <input
+                  type="email"
+                  value={passwordEmail}
+                  onChange={(e) => setPasswordEmail(e.target.value)}
+                  required
+                  placeholder="name@example.com"
+                  className="mt-1 w-full px-4 py-3 rounded-xl bg-card border border-border focus:border-accent outline-none text-sm"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">
+                  Create Password <span className="text-rose-500">*</span>
+                </label>
+                <PasswordInput
+                  id="auth-signup-password"
+                  value={password}
+                  onChange={setPassword}
+                  placeholder="Create a strong password (min 6 characters)"
+                />
+              </div>
+
+              <div className="flex items-start gap-2.5 my-3 select-none">
+                <input
+                  type="checkbox"
+                  id="accept-terms"
+                  checked={acceptTerms}
+                  onChange={(e) => setAcceptTerms(e.target.checked)}
+                  className="mt-1 h-4 w-4 rounded border-border text-accent focus:ring-accent accent-accent cursor-pointer"
+                />
+                <label htmlFor="accept-terms" className="text-xs text-muted-foreground leading-relaxed cursor-pointer">
+                  I agree to ViaCraft's{" "}
+                  <Link
+                    to="/legal/$slug"
+                    params={{ slug: "terms-and-conditions" }}
+                    target="_blank"
+                    className="text-accent hover:underline font-semibold"
+                  >
+                    Terms & Conditions
+                  </Link>{" "}
+                  and{" "}
+                  <Link
+                    to="/legal/$slug"
+                    params={{ slug: "privacy-policy" }}
+                    target="_blank"
+                    className="text-accent hover:underline font-semibold"
+                  >
+                    Privacy Policy
+                  </Link>
+                  .
+                </label>
+              </div>
+
+              <button
+                type="submit"
+                disabled={busy}
+                className="w-full py-3.5 rounded-full bg-primary text-primary-foreground hover:bg-foreground transition-all text-sm font-semibold flex items-center justify-center gap-2 cursor-pointer shadow-md disabled:opacity-50"
+              >
+                {busy && <Loader2 className="h-4 w-4 animate-spin" />}
+                Create Account
+              </button>
+
+              <div className="text-center pt-2">
+                <p className="text-xs text-muted-foreground">
+                  Already have an account?{" "}
+                  <button
+                    type="button"
+                    onClick={() => setMode("signin")}
+                    className="text-accent hover:underline font-semibold cursor-pointer"
+                  >
+                    Sign in here
+                  </button>
+                </p>
+              </div>
+            </form>
+          )}
+
+          {/* ============================================================= */}
+          {/* TAB 3: PASSWORD LOGIN (MODE === SIGNIN) */}
+          {/* ============================================================= */}
+          {mode !== "signup" && activeTab === "password" && (
+            <form onSubmit={handlePasswordSubmit} className="space-y-4 animate-in fade-in duration-200">
+              <div>
+                <label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">
+                  Email Address
                 </label>
                 <input
                   type="email"
@@ -941,39 +1189,6 @@ export function AuthPage() {
                 </div>
               )}
 
-              {mode === "signup" && (
-                <div className="flex items-start gap-2.5 my-3 select-none">
-                  <input
-                    type="checkbox"
-                    id="accept-terms"
-                    checked={acceptTerms}
-                    onChange={(e) => setAcceptTerms(e.target.checked)}
-                    className="mt-1 h-4 w-4 rounded border-border text-accent focus:ring-accent accent-accent cursor-pointer"
-                  />
-                  <label htmlFor="accept-terms" className="text-xs text-muted-foreground leading-relaxed cursor-pointer">
-                    I agree to ViaCraft's{" "}
-                    <Link
-                      to="/legal/$slug"
-                      params={{ slug: "terms-and-conditions" }}
-                      target="_blank"
-                      className="text-accent hover:underline font-semibold"
-                    >
-                      Terms & Conditions
-                    </Link>{" "}
-                    and{" "}
-                    <Link
-                      to="/legal/$slug"
-                      params={{ slug: "privacy-policy" }}
-                      target="_blank"
-                      className="text-accent hover:underline font-semibold"
-                    >
-                      Privacy Policy
-                    </Link>
-                    .
-                  </label>
-                </div>
-              )}
-
               {mode === "signin" && lockoutTime > 0 && (
                 <div className="p-3 bg-red-500/10 text-red-500 rounded-xl text-xs leading-relaxed border border-red-500/20 flex items-center gap-2 animate-pulse">
                   <span className="font-semibold">Security Lockout:</span>
@@ -986,6 +1201,7 @@ export function AuthPage() {
               )}
 
               <button
+                type="submit"
                 disabled={busy || (mode === "signin" && lockoutTime > 0)}
                 className="w-full py-3.5 rounded-full bg-primary text-primary-foreground hover:bg-foreground transition-all text-sm font-semibold flex items-center justify-center gap-2 cursor-pointer shadow-md disabled:opacity-50"
               >
@@ -994,9 +1210,7 @@ export function AuthPage() {
                   ? `Locked out (${lockoutTime}s)`
                   : mode === "signin"
                     ? "Sign in with Password"
-                    : mode === "signup"
-                      ? "Create Account"
-                      : "Send Reset Link"}
+                    : "Send Reset Link"}
               </button>
 
               <div className="text-center pt-2">
@@ -1010,13 +1224,16 @@ export function AuthPage() {
                   </button>
                 ) : (
                   <p className="text-xs text-muted-foreground">
-                    {mode === "signin" ? "Need a password account?" : "Already have a password?"}{" "}
+                    Don't have an account?{" "}
                     <button
                       type="button"
-                      onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
+                      onClick={() => {
+                        setMode("signup");
+                        setActiveTab("password");
+                      }}
                       className="text-accent hover:underline font-semibold cursor-pointer"
                     >
-                      {mode === "signin" ? "Register here" : "Sign in here"}
+                      Create account here
                     </button>
                   </p>
                 )}

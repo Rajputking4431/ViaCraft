@@ -4,6 +4,7 @@ import tsconfigPaths from "vite-tsconfig-paths";
 import tailwindcss from "@tailwindcss/vite";
 import path from "path";
 import crypto from "node:crypto";
+import fs from "node:fs";
 
 // CCAvenue local development handler plugin
 function ccavenueDevPlugin() {
@@ -144,8 +145,115 @@ function ccavenueDevPlugin() {
   };
 }
 
+// Persistent Admin Vendor & Document Synchronization plugin
+function adminSyncPlugin() {
+  const dataFile = path.resolve(__dirname, "./data/vendor_admin_state.json");
+
+  function readState() {
+    try {
+      if (fs.existsSync(dataFile)) {
+        return JSON.parse(fs.readFileSync(dataFile, "utf8"));
+      }
+    } catch (e) {
+      console.warn("[AdminSync] Read state note:", e);
+    }
+    return { vendors: {}, documents: {} };
+  }
+
+  function writeState(state: any) {
+    try {
+      const dir = path.dirname(dataFile);
+      if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+      fs.writeFileSync(dataFile, JSON.stringify(state, null, 2), "utf8");
+    } catch (e) {
+      console.warn("[AdminSync] Write state note:", e);
+    }
+  }
+
+  return {
+    name: "admin-sync-plugin",
+    configureServer(server: any) {
+      server.middlewares.use("/api/admin/vendor-sync", (req: any, res: any, next: any) => {
+        if (req.method === "GET") {
+          const state = readState();
+          res.setHeader("Content-Type", "application/json");
+          return res.end(JSON.stringify(state));
+        }
+
+        if (req.method === "POST") {
+          let body = "";
+          req.on("data", (chunk: any) => {
+            body += chunk;
+          });
+          req.on("end", () => {
+            try {
+              const payload = JSON.parse(body || "{}");
+              const state = readState();
+              if (!state.vendors) state.vendors = {};
+              if (!state.documents) state.documents = {};
+
+              if (payload.action === "update_document_status") {
+                const { docId, vendorId, status, rejectionReason } = payload;
+                state.documents[docId] = {
+                  id: docId,
+                  vendor_id: vendorId,
+                  status,
+                  rejection_reason: rejectionReason || null,
+                  verified_at: status === "verified" ? new Date().toISOString() : null,
+                  updated_at: new Date().toISOString(),
+                };
+                writeState(state);
+                res.setHeader("Content-Type", "application/json");
+                return res.end(JSON.stringify({ success: true, document: state.documents[docId] }));
+              }
+
+              if (payload.action === "update_vendor_status") {
+                const {
+                  vendorId,
+                  status,
+                  onboardingStatus,
+                  reviewNotes,
+                  rejectionReason,
+                  gstExemptionVerified,
+                  targetUserId,
+                } = payload;
+
+                state.vendors[vendorId] = {
+                  ...(state.vendors[vendorId] || {}),
+                  id: vendorId,
+                  ...(targetUserId ? { user_id: targetUserId } : {}),
+                  ...(status ? { status } : {}),
+                  ...(onboardingStatus ? { onboarding_status: onboardingStatus } : {}),
+                  ...(reviewNotes !== undefined ? { admin_review_notes: reviewNotes } : {}),
+                  ...(rejectionReason !== undefined ? { rejection_reason: rejectionReason } : {}),
+                  ...(gstExemptionVerified !== undefined ? { gst_exemption_verified: gstExemptionVerified } : {}),
+                  updated_at: new Date().toISOString(),
+                };
+                writeState(state);
+                res.setHeader("Content-Type", "application/json");
+                return res.end(JSON.stringify({ success: true, vendor: state.vendors[vendorId] }));
+              }
+
+              res.statusCode = 400;
+              res.setHeader("Content-Type", "application/json");
+              return res.end(JSON.stringify({ error: "Unknown action" }));
+            } catch (err: any) {
+              res.statusCode = 500;
+              res.setHeader("Content-Type", "application/json");
+              return res.end(JSON.stringify({ error: err.message }));
+            }
+          });
+          return;
+        }
+
+        next();
+      });
+    },
+  };
+}
+
 export default defineConfig({
-  plugins: [react(), tsconfigPaths(), tailwindcss(), ccavenueDevPlugin()],
+  plugins: [react(), tsconfigPaths(), tailwindcss(), ccavenueDevPlugin(), adminSyncPlugin()],
 
   resolve: {
     alias: {

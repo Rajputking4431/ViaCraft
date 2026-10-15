@@ -35,6 +35,14 @@ export const Route = createFileRoute("/admin/dashboard")({
   component: AdminDashboard,
 });
 
+interface VendorSummary {
+  id: string;
+  status: string;
+  onboarding_status?: string | null;
+  created_at: string;
+  store_name: string;
+}
+
 function AdminDashboard() {
   // Query all essential data for metrics compiling
   const { data: profiles = [], isLoading: loadingProfiles } = useQuery({
@@ -42,10 +50,42 @@ function AdminDashboard() {
     queryFn: async () => (await supabase.from("profiles").select("id, created_at")).data ?? [],
   });
 
-  const { data: vendors = [], isLoading: loadingVendors } = useQuery({
+  const { data: vendors = [], isLoading: loadingVendors } = useQuery<VendorSummary[]>({
     queryKey: ["admin-dashboard-vendors"],
-    queryFn: async () =>
-      (await supabase.from("vendors").select("id, status, created_at, store_name")).data ?? [],
+    queryFn: async () => {
+      let list: VendorSummary[] = [];
+      try {
+        const { data, error } = await (supabase as any)
+          .from("vendors")
+          .select("id, status, onboarding_status, created_at, store_name");
+        if (!error && data) {
+          list = ((data as unknown) as VendorSummary[]) ?? [];
+        }
+      } catch {}
+
+      // Fallback & merge vendor_profiles
+      try {
+        const { data: vpData } = await supabase.from("vendor_profiles").select("*");
+        if (vpData && vpData.length > 0) {
+          const ids = new Set(list.map((v) => v.id));
+          for (const vp of vpData) {
+            if (!ids.has(vp.vendor_id)) {
+              const sl = (vp.social_links as any) || {};
+              list.push({
+                id: vp.vendor_id,
+                status: sl.status || "pending",
+                onboarding_status: sl.onboarding_status || "submitted",
+                created_at: sl.submitted_at || vp.created_at,
+                store_name: sl.store_name || sl.representative_name || "Artisan Store",
+              });
+              ids.add(vp.vendor_id);
+            }
+          }
+        }
+      } catch {}
+
+      return list;
+    },
   });
 
   const { data: products = [], isLoading: loadingProducts } = useQuery({
@@ -99,7 +139,12 @@ function AdminDashboard() {
   // KPI Calculations
   const totalUsers = profiles.length;
   const totalVendors = vendors.length;
-  const pendingVendors = vendors.filter((v) => v.status === "pending").length;
+  const pendingVendors = vendors.filter(
+    (v: any) =>
+      v.status === "pending" ||
+      v.onboarding_status === "submitted" ||
+      (v.onboarding_status && v.onboarding_status !== "approved"),
+  ).length;
   const totalProducts = products.length;
   const totalOrders = orders.length;
 
@@ -210,7 +255,7 @@ function AdminDashboard() {
     }
 
     // Distribute vendors
-    vendors.forEach((v) => {
+    vendors.forEach((v: VendorSummary) => {
       const regDate = new Date(v.created_at);
       const key = `${regDate.getFullYear()}-${String(regDate.getMonth() + 1).padStart(2, "0")}`;
       if (growthData[key]) {
@@ -219,7 +264,7 @@ function AdminDashboard() {
     });
 
     // Accumulate growth
-    let accumulator = vendors.filter((v) => {
+    let accumulator = vendors.filter((v: VendorSummary) => {
       const regDate = new Date(v.created_at);
       const oldestMonth = new Date();
       oldestMonth.setMonth(oldestMonth.getMonth() - 5);
